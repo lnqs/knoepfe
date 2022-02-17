@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "deckconnect"
+version = "0.1.0"
+description = "Connect and control Elgato Stream Decks"
+authors = ["Simon Hayessen <simon@lnqs.io>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+homepage = "https://github.com/lnqs/deckconnect"
+repository = "https://github.com/lnqs/deckconnect"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.931"
+flake8 = "^4.0.1"
+flake8-bugbear = "^22.1.11"
+black = "^22.1.0"
+isort = "^5.10.1"
+pre-commit = "^2.17.0"
+pytest = "^7.0.1"
+
+[tool.poetry.scripts]
+deckconnect = 'deckconnect.__main__:main'
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
