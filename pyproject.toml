@@ -10,6 +10,10 @@ repository = "https://github.com/lnqs/deckconnect"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+schema = "^0.7.5"
+appdirs = "^1.4.4"
+docopt = "^0.6.2"
+pytest-cov = "^3.0.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
@@ -19,12 +23,17 @@ black = "^22.1.0"
 isort = "^5.10.1"
 pre-commit = "^2.17.0"
 pytest = "^7.0.1"
+types-docopt = "^0.6.5"
+types-appdirs = "^1.4.2"
 
 [tool.poetry.scripts]
 deckconnect = 'deckconnect.__main__:main'
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "--cov=deckconnect --cov-fail-under=100 --cov-report=term-missing"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
