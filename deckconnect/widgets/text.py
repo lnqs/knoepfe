@@ -1,14 +1,15 @@
-from typing import Any, Dict
-
 from schema import Schema
 
+from deckconnect.key import Key
 from deckconnect.widgets.base import Widget
 
 
 class Text(Widget):
-    def __init__(self, config: Dict[str, Any]) -> None:
-        self.config = config
+    async def update(self, key: Key) -> None:
+        with key.renderer() as renderer:
+            renderer.text(self.config["text"])
 
-    @staticmethod
-    def get_config_schema() -> Schema:
-        return Schema({"text": str})
+    @classmethod
+    def get_config_schema(cls) -> Schema:
+        schema = Schema({"text": str})
+        return cls.add_defaults(schema)

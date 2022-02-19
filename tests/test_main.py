@@ -1,38 +1,54 @@
-from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 from pytest import raises
+from StreamDeck.Transport.Transport import TransportError
 
-from deckconnect.__main__ import main, run
+from deckconnect.__main__ import connect_device, main, run
 
 
 def test_main_success() -> None:
-    with patch("deckconnect.__main__.run") as run:
+    with patch("deckconnect.__main__.run") as run, patch("sys.argv", ["deckconnect"]):
         main()
-    assert run.call_args[0][0] is None
+    assert run.called
 
-
-def test_main_error() -> None:
-    with patch("deckconnect.__main__.run", side_effect=Exception("Error!")):
+    with patch(
+        "deckconnect.__main__.run", side_effect=Exception("Error!")
+    ) as run, patch("sys.argv", ["deckconnect"]):
         with raises(SystemExit):
             main()
+    assert run.called
 
-    with patch("deckconnect.__main__.run", side_effect=Exception("Error!")), patch(
-        "sys.argv", ["deckconnect", "--verbose"]
-    ):
+    with patch(
+        "deckconnect.__main__.run", side_effect=Exception("Error!")
+    ) as run, patch("sys.argv", ["deckconnect", "--verbose"]):
         with raises(Exception):
             main()
+    assert run.called
 
 
-def test_run_success() -> None:
-    with patch(
-        "deckconnect.__main__.process_config", return_value=(Mock(), [Mock()])
-    ) as process_config:
-        run(Path("path"))
-    assert process_config.called
-
-
-def test_run_error() -> None:
-    with patch("deckconnect.__main__.process_config", side_effect=Exception("Error!")):
+async def test_run() -> None:
+    with patch("deckconnect.__main__.process_config", side_effect=Exception("Error")):
         with raises(Exception):
-            run(Path("path"))
+            await run(None)
+
+    with patch.multiple(
+        "deckconnect.__main__",
+        process_config=Mock(return_value=(Mock(), [Mock()])),
+        connect_device=AsyncMock(return_value=Mock()),
+        DeckManager=Mock(
+            return_value=Mock(
+                run=Mock(side_effect=[TransportError(), Exception("Error")])
+            )
+        ),
+    ):
+        with raises(Exception):
+            await run(None)
+
+
+async def test_connect_device() -> None:
+    with patch(
+        "deckconnect.__main__.DeviceManager.enumerate",
+        side_effect=([], [Mock(key_layout=Mock(return_value=(2, 2)))]),
+    ) as device_manager_enumerate, patch("deckconnect.__main__.sleep", AsyncMock()):
+        await connect_device()
+    assert device_manager_enumerate.called

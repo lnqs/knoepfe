@@ -14,6 +14,8 @@ schema = "^0.7.5"
 appdirs = "^1.4.4"
 docopt = "^0.6.2"
 pytest-cov = "^3.0.0"
+streamdeck = "^0.9.0"
+Pillow = "^9.0.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
@@ -25,6 +27,8 @@ pre-commit = "^2.17.0"
 pytest = "^7.0.1"
 types-docopt = "^0.6.5"
 types-appdirs = "^1.4.2"
+types-Pillow = "^9.0.6"
+pytest-asyncio = "^0.18.1"
 
 [tool.poetry.scripts]
 deckconnect = 'deckconnect.__main__:main'
@@ -33,7 +37,7 @@ deckconnect = 'deckconnect.__main__:main'
 profile = "black"
 
 [tool.pytest.ini_options]
-addopts = "--cov=deckconnect --cov-fail-under=100 --cov-report=term-missing"
+addopts = "--cov=deckconnect --cov-fail-under=100 --cov-report=term-missing --asyncio-mode=auto"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

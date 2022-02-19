@@ -3,7 +3,7 @@
 Connect and control Elgato Stream Decks
 
 Usage:
-  deckconnect [(-v | --verbose)] [--config=<path>] [--deck=<path>]
+  deckconnect [(-v | --verbose)] [--config=<path>]
   deckconnect (-h | --help)
   deckconnect --version
 
@@ -13,24 +13,60 @@ Options:
   --config=<path> Config file to use.
 """
 
+import asyncio
 import sys
+from asyncio import sleep
 from pathlib import Path
 from textwrap import indent
 
 from docopt import docopt
+from StreamDeck.DeviceManager import DeviceManager
+from StreamDeck.Devices import StreamDeck
+from StreamDeck.Transport.Transport import TransportError
 
 from deckconnect import __version__
 from deckconnect.config import process_config
+from deckconnect.deckmanager import DeckManager
 from deckconnect.log import error, info
 
 
-def run(config_path: Path | None) -> None:
+async def connect_device() -> StreamDeck:
+    info("Searching for devices")
+    device = None
+
+    while True:
+        devices = DeviceManager().enumerate()
+        if len(devices):
+            device = devices[0]
+            break
+        await sleep(1.0)
+
+    device.open()
+    device.reset()
+
+    info(
+        f"Connected to {device.deck_type()} {device.get_serial_number()} "
+        f"(Firmware {device.get_firmware_version()}, {device.key_layout()[0]}x{device.key_layout()[1]} keys)"
+    )
+
+    return device
+
+
+async def run(config_path: Path | None) -> None:
     try:
         active_deck, decks = process_config(config_path)
     except Exception as e:
         raise RuntimeError(f'Failed to parse configuration:\n{indent(str(e), "  ")}')
 
-    info(f"active_deck = {active_deck}; decks = {decks}")
+    while True:
+        device = await connect_device()
+        try:
+            deck_manager = DeckManager(active_deck, decks, device)
+            await deck_manager.run()
+        except TransportError:
+            continue
+        finally:
+            device.close()
 
 
 def main() -> None:
@@ -40,7 +76,7 @@ def main() -> None:
     verbose = arguments["--verbose"]
 
     try:
-        run(config_path)
+        asyncio.run(run(config_path))
     except Exception as e:
         if verbose:
             raise

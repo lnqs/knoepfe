@@ -72,11 +72,11 @@ def test_process_config() -> None:
 
 def test_create_deck() -> None:
     with patch("deckconnect.config.Deck") as deck:
-        create_deck({"widgets": []})
+        create_deck({"id": "id", "widgets": []})
     assert deck.called
 
 
-def test_create_button_success() -> None:
+def test_create_widget_success() -> None:
     class TestWidget(Widget):
         def get_schema(self) -> Schema:
             return Schema({})
@@ -86,7 +86,7 @@ def test_create_button_success() -> None:
     assert isinstance(w, TestWidget)
 
 
-def test_create_button_invalid_type() -> None:
+def test_create_widget_invalid_type() -> None:
     with patch("deckconnect.config.import_module", return_value=Mock(Class=int)):
         with raises(Exception):
             create_widget({"type": "a.b.c.Class"})

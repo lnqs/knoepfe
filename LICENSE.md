@@ -593,3 +593,11 @@ more useful to permit linking proprietary applications with the library. If this
 what you want to do, use the GNU Lesser General Public License instead of this
 License. But first, please read
 &lt;<http://www.gnu.org/philosophy/why-not-lgpl.html>&gt;.
+
+
+Third Party Work
+================
+
+This repository/package includes the font "Roboto Regular" by Christian Robertson that
+was released under the terms of the Apache License, Version 2.0
+(<https://www.apache.org/licenses/LICENSE-2.0>).

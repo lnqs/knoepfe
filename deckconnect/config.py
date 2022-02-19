@@ -7,7 +7,7 @@ import appdirs
 from deckconnect.deck import Deck
 from deckconnect.widgets.base import Widget
 
-DeckConfig = TypedDict("DeckConfig", {"widgets": List[Widget]})
+DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": List[Widget | None]})
 
 
 def get_config_path(path: Path | None = None) -> Path:
@@ -59,7 +59,7 @@ def process_config(path: Path | None = None) -> Tuple[Deck, List[Deck]]:
 
 
 def create_deck(config: DeckConfig) -> Deck:
-    return Deck(config["widgets"])
+    return Deck(**config)
 
 
 def create_widget(config: Dict[str, Any]) -> Widget:
