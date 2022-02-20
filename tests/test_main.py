@@ -33,7 +33,7 @@ async def test_run() -> None:
 
     with patch.multiple(
         "deckconnect.__main__",
-        process_config=Mock(return_value=(Mock(), [Mock()])),
+        process_config=Mock(return_value=({}, Mock(), [Mock()])),
         connect_device=AsyncMock(return_value=Mock()),
         DeckManager=Mock(
             return_value=Mock(

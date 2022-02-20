@@ -3,11 +3,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple, Type, TypedDict
 
 import appdirs
+from schema import And, Optional, Schema
 
 from deckconnect.deck import Deck
 from deckconnect.widgets.base import Widget
 
 DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": List[Widget | None]})
+
+global_config_schema = Schema(
+    {
+        Optional("brightness"): And(int, lambda b: 0 <= b <= 100),
+        Optional("sleep_timeout"): And(float, lambda b: b > 0.0),
+    }
+)
 
 
 def get_config_path(path: Path | None = None) -> Path:
@@ -21,9 +29,16 @@ def get_config_path(path: Path | None = None) -> Path:
     return Path(__file__).parent.joinpath("default.cfg")
 
 
-def exec_config(config: str) -> Tuple[Deck, List[Deck]]:
+def exec_config(config: str) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
+    global_config: Dict[str, Any] = {}
     decks = []
     default = None
+
+    def set_config(c: Dict[str, Any]) -> None:
+        nonlocal global_config
+        if global_config:
+            raise RuntimeError("config already set")
+        global_config = create_global_config(c)
 
     def deck(c: DeckConfig) -> Deck:
         d = create_deck(c)
@@ -41,21 +56,33 @@ def exec_config(config: str) -> Tuple[Deck, List[Deck]]:
     def widget(c: Dict[str, Any]) -> Widget:
         return create_widget(c)
 
-    exec(config, {"deck": deck, "default_deck": default_deck, "widget": widget})
+    exec(
+        config,
+        {
+            "config": set_config,
+            "deck": deck,
+            "default_deck": default_deck,
+            "widget": widget,
+        },
+    )
 
     if not default:
         raise RuntimeError("No default deck specified")
 
-    return (default, decks)
+    return (global_config, default, decks)
 
 
-def process_config(path: Path | None = None) -> Tuple[Deck, List[Deck]]:
+def process_config(path: Path | None = None) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
     path = get_config_path(path)
     with open(path) as f:
         config = f.read()
 
-    default, decks = exec_config(config)
-    return default, decks
+    return exec_config(config)
+
+
+def create_global_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    global_config_schema.validate(config)
+    return config
 
 
 def create_deck(config: DeckConfig) -> Deck:

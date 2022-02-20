@@ -18,6 +18,11 @@ deck({ 'widgets': [widget({'type': 'test'})] })
 default_deck({ 'widgets': [widget({'type': 'test'})] })
 """
 
+test_config_multiple_config = """
+config({ 'brightness': 100 })
+config({ 'brightness': 90 })
+"""
+
 test_config_no_default = """
 deck({ 'widgets': [widget({'type': 'test'})] })
 """
@@ -44,6 +49,11 @@ def test_exec_config_success() -> None:
         exec_config(test_config)
     assert create_deck.called
     assert create_widget.called
+
+
+def test_exec_config_multiple_config() -> None:
+    with raises(RuntimeError):
+        exec_config(test_config_multiple_config)
 
 
 def test_exec_config_multiple_default() -> None:

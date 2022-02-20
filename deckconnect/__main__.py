@@ -54,14 +54,14 @@ async def connect_device() -> StreamDeck:
 
 async def run(config_path: Path | None) -> None:
     try:
-        active_deck, decks = process_config(config_path)
+        global_config, active_deck, decks = process_config(config_path)
     except Exception as e:
         raise RuntimeError(f'Failed to parse configuration:\n{indent(str(e), "  ")}')
 
     while True:
         device = await connect_device()
         try:
-            deck_manager = DeckManager(active_deck, decks, device)
+            deck_manager = DeckManager(active_deck, decks, global_config, device)
             await deck_manager.run()
         except TransportError:
             continue
