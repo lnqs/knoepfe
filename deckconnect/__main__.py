@@ -24,10 +24,10 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices import StreamDeck
 from StreamDeck.Transport.Transport import TransportError
 
-from deckconnect import __version__
+from deckconnect import __version__, log
 from deckconnect.config import process_config
 from deckconnect.deckmanager import DeckManager
-from deckconnect.log import error, info
+from deckconnect.log import debug, error, info
 
 
 async def connect_device() -> StreamDeck:
@@ -54,6 +54,7 @@ async def connect_device() -> StreamDeck:
 
 async def run(config_path: Path | None) -> None:
     try:
+        debug("Processing config")
         global_config, active_deck, decks = process_config(config_path)
     except Exception as e:
         raise RuntimeError(f'Failed to parse configuration:\n{indent(str(e), "  ")}')
@@ -64,8 +65,10 @@ async def run(config_path: Path | None) -> None:
             deck_manager = DeckManager(active_deck, decks, global_config, device)
             await deck_manager.run()
         except TransportError:
+            debug("Transport error, trying to reconnect")
             continue
         finally:
+            debug("Closing device")
             device.close()
 
 
@@ -73,12 +76,12 @@ def main() -> None:
     arguments = docopt(__doc__, version=__version__)
 
     config_path = Path(arguments["--config"]) if arguments["--config"] else None
-    verbose = arguments["--verbose"]
+    log.verbose = arguments["--verbose"]
 
     try:
         asyncio.run(run(config_path))
     except Exception as e:
-        if verbose:
+        if log.verbose:
             raise
         error(f"{e}")
         sys.exit(2)

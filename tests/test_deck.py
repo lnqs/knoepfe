@@ -16,9 +16,19 @@ def test_deck_init() -> None:
 
 async def test_deck_activate() -> None:
     device: StreamDeck = MagicMock(key_count=Mock(return_value=4))
-    deck = Deck("id", [])
-    await deck.activate(device)
+    widget = Mock(spec=Widget)
+    deck = Deck("id", [widget])
+    await deck.activate(device, Mock())
     assert device.set_key_image.called
+    assert widget.activate.called
+
+
+async def test_deck_deactivate() -> None:
+    device: StreamDeck = MagicMock(key_count=Mock(return_value=4))
+    widget = Mock(spec=Widget)
+    deck = Deck("id", [widget])
+    await deck.deactivate(device)
+    assert widget.deactivate.called
 
 
 async def test_deck_update() -> None:

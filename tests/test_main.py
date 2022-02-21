@@ -36,12 +36,10 @@ async def test_run() -> None:
         process_config=Mock(return_value=({}, Mock(), [Mock()])),
         connect_device=AsyncMock(return_value=Mock()),
         DeckManager=Mock(
-            return_value=Mock(
-                run=Mock(side_effect=[TransportError(), Exception("Error")])
-            )
+            return_value=Mock(run=Mock(side_effect=[TransportError(), SystemExit()]))
         ),
     ):
-        with raises(Exception):
+        with raises(SystemExit):
             await run(None)
 
 

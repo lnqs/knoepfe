@@ -599,5 +599,9 @@ Third Party Work
 ================
 
 This repository/package includes the font "Roboto Regular" by Christian Robertson that
-was released under the terms of the Apache License, Version 2.0
+is released under the terms of the Apache License, Version 2.0
 (<https://www.apache.org/licenses/LICENSE-2.0>).
+
+Also the font "Material Icons" is included. It is licensed under the terms of the
+Apache License, Version 2.0 (<https://www.apache.org/licenses/LICENSE-2.0>).
+See <https://google.github.io/material-design-icons> for more information.

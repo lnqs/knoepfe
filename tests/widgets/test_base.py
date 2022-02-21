@@ -1,15 +1,9 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from pytest import raises
 
 from deckconnect.deck import SwitchDeckException
 from deckconnect.widgets.base import Widget
-
-
-async def test_base_update() -> None:
-    # Not really a useful test. But let's stick to 100% coverage.
-    widget = Widget({})
-    await widget.update(Mock())
 
 
 async def test_presses() -> None:
@@ -31,3 +25,11 @@ async def test_switch_deck() -> None:
     with raises(SwitchDeckException) as e:
         await widget.released()
     assert e.value.new_deck == "new_deck"
+
+
+async def test_request_update() -> None:
+    widget = Widget({})
+    with patch.object(widget, "update_requested_event") as event:
+        widget.request_update()
+    assert event.set.called
+    assert widget.needs_update
