@@ -1,5 +1,5 @@
 import time
-from asyncio import Event
+from asyncio import Event, Task, get_event_loop, sleep
 from typing import Any, Dict
 
 from schema import Optional, Schema
@@ -14,6 +14,7 @@ class Widget:
         self.update_requested_event: Event | None = None
         self.needs_update = False
         self.press_time: float | None = None
+        self.periodic_update_task: Task[None] | None = None
 
     async def activate(self) -> None:  # pragma: no cover
         pass
@@ -44,6 +45,23 @@ class Widget:
         self.needs_update = True
         if self.update_requested_event:
             self.update_requested_event.set()
+
+    def request_periodic_update(self, interval: float) -> None:
+        if not self.periodic_update_task:
+            loop = get_event_loop()
+            self.periodic_update_task = loop.create_task(
+                self.periodic_update_loop(interval)
+            )
+
+    def stop_periodic_update(self) -> None:
+        if self.periodic_update_task:
+            self.periodic_update_task.cancel()
+            self.periodic_update_task = None
+
+    async def periodic_update_loop(self, interval: float) -> None:
+        while True:
+            await sleep(interval)
+            self.request_update()
 
     @classmethod
     def get_config_schema(cls) -> Schema:
