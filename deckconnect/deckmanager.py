@@ -61,8 +61,9 @@ class DeckManager:
         self.last_action = time.monotonic()
 
         if self.sleeping:
-            await self.wake_up()
-            self.update_requested_event.set()
+            if not pressed:
+                await self.wake_up()
+                self.update_requested_event.set()
             return
 
         try:
