@@ -1,4 +1,3 @@
-import time
 from asyncio import Event, Task, get_event_loop, sleep
 from typing import Any, Dict
 
@@ -19,8 +18,8 @@ class Widget:
         self.wake_lock: WakeLock | None = None
         self.holds_wait_lock = False
         self.needs_update = False
-        self.press_time: float | None = None
         self.periodic_update_task: Task[None] | None = None
+        self.long_press_task: Task[None] | None = None
 
     async def activate(self) -> None:  # pragma: no cover
         pass
@@ -32,17 +31,21 @@ class Widget:
         pass
 
     async def pressed(self) -> None:
-        self.press_time = time.monotonic()
+        async def maybe_trigger_longpress() -> None:
+            await sleep(1.0)
+            self.long_press_task = None
+            await self.triggered(True)
+
+        self.long_press_task = get_event_loop().create_task(maybe_trigger_longpress())
 
     async def released(self) -> None:
-        long_press = (
-            time.monotonic() - self.press_time >= 1.0 if self.press_time else False
-        )
-        self.press_time = None
-        await self.triggered(long_press)
+        if self.long_press_task:
+            self.long_press_task.cancel()
+            self.long_press_task = None
+            await self.triggered(False)
 
-        if "switch_deck" in self.config:
-            raise SwitchDeckException(self.config["switch_deck"])
+            if "switch_deck" in self.config:
+                raise SwitchDeckException(self.config["switch_deck"])
 
     async def triggered(self, long_press: bool = False) -> None:
         pass

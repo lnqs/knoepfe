@@ -1,4 +1,5 @@
-from unittest.mock import patch
+from asyncio import sleep
+from unittest.mock import AsyncMock, Mock, patch
 
 from pytest import raises
 
@@ -13,16 +14,20 @@ async def test_presses() -> None:
         await widget.released()
     assert triggered.call_args[0][0] is False
 
-    with patch.object(widget, "triggered") as triggered:
+    with patch.object(widget, "triggered") as triggered, patch(
+        "deckconnect.widgets.base.sleep", AsyncMock()
+    ):
         await widget.pressed()
-        widget.press_time = -2.0
+        await sleep(0.1)
         await widget.released()
+    assert triggered.call_count == 1
     assert triggered.call_args[0][0] is True
 
 
 async def test_switch_deck() -> None:
     widget = Widget({"switch_deck": "new_deck"}, {})
     with raises(SwitchDeckException) as e:
+        widget.long_press_task = Mock()
         await widget.released()
     assert e.value.new_deck == "new_deck"
 
