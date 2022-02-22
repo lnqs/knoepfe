@@ -1,7 +1,7 @@
 from schema import Schema
 
-from deckconnect.key import Key
-from deckconnect.widgets.base import Widget
+from knoepfe.key import Key
+from knoepfe.widgets.base import Widget
 
 
 class Text(Widget):

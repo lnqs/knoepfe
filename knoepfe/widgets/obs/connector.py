@@ -14,7 +14,7 @@ from obswebsocket.events import (
 )
 from schema import Optional, Schema
 
-from deckconnect.log import debug, info
+from knoepfe.log import debug, info
 
 config = Schema(
     {

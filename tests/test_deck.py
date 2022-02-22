@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock
 from pytest import raises
 from StreamDeck.Devices import StreamDeck
 
-from deckconnect.deck import Deck
-from deckconnect.widgets.base import Widget
+from knoepfe.deck import Deck
+from knoepfe.widgets.base import Widget
 
 
 def test_deck_init() -> None:

@@ -4,9 +4,9 @@ from typing import Any, Dict, List
 
 from StreamDeck.Devices import StreamDeck
 
-from deckconnect.deck import Deck, SwitchDeckException
-from deckconnect.log import debug, error
-from deckconnect.wakelock import WakeLock
+from knoepfe.deck import Deck, SwitchDeckException
+from knoepfe.log import debug, error
+from knoepfe.wakelock import WakeLock
 
 
 class DeckManager:
@@ -19,7 +19,7 @@ class DeckManager:
     ) -> None:
         self.active_deck = active_deck
         self.decks = decks
-        device_config = global_config.get("deckconnect.config.device", {})
+        device_config = global_config.get("knoepfe.config.device", {})
         self.brightness = device_config.get("brightness", 100)
         self.device_poll_frequency = device_config.get("device_poll_frequency", 5)
         self.sleep_timeout = device_config.get("sleep_timeout", None)

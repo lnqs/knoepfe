@@ -5,9 +5,9 @@ from pulsectl import PulseEventTypeEnum
 from pulsectl_asyncio import PulseAsync
 from schema import Optional, Schema
 
-from deckconnect.key import Key
-from deckconnect.log import error
-from deckconnect.widgets.base import Widget
+from knoepfe.key import Key
+from knoepfe.log import error
+from knoepfe.widgets.base import Widget
 
 
 class MicMute(Widget):

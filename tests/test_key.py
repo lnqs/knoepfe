@@ -1,6 +1,6 @@
 from unittest.mock import DEFAULT, MagicMock, Mock, patch
 
-from deckconnect.key import Key, Renderer
+from knoepfe.key import Key, Renderer
 
 
 def test_renderer_text() -> None:
@@ -28,21 +28,21 @@ def test_renderer_draw_text() -> None:
     renderer = Renderer()
 
     with patch(
-        "deckconnect.key.ImageDraw.Draw",
+        "knoepfe.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="top")
         assert draw.return_value.text.call_args[0][0] == (48, 0)
 
     with patch(
-        "deckconnect.key.ImageDraw.Draw",
+        "knoepfe.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="middle")
         assert draw.return_value.text.call_args[0][0] == (48, 48)
 
     with patch(
-        "deckconnect.key.ImageDraw.Draw",
+        "knoepfe.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="bottom")
@@ -52,7 +52,7 @@ def test_renderer_draw_text() -> None:
 def test_key_render() -> None:
     key = Key(MagicMock(), 0)
 
-    with patch.multiple("deckconnect.key", PILHelper=DEFAULT, Renderer=DEFAULT):
+    with patch.multiple("knoepfe.key", PILHelper=DEFAULT, Renderer=DEFAULT):
         with key.renderer():
             pass
 

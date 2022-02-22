@@ -1,8 +1,8 @@
 from schema import Schema
 
-from deckconnect.key import Key
-from deckconnect.widgets.obs.base import OBSWidget
-from deckconnect.widgets.obs.connector import obs
+from knoepfe.key import Key
+from knoepfe.widgets.obs.base import OBSWidget
+from knoepfe.widgets.obs.connector import obs
 
 
 class CurrentScene(OBSWidget):

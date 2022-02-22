@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "deckconnect"
+name = "knoepfe"
 version = "0.1.0"
 description = "Connect and control Elgato Stream Decks"
 authors = ["Simon Hayessen <simon@lnqs.io>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
-homepage = "https://github.com/lnqs/deckconnect"
-repository = "https://github.com/lnqs/deckconnect"
+homepage = "https://github.com/lnqs/knoepfe"
+repository = "https://github.com/lnqs/knoepfe"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -33,14 +33,14 @@ types-Pillow = "^9.0.6"
 pytest-asyncio = "^0.18.1"
 
 [tool.poetry.scripts]
-deckconnect = 'deckconnect.__main__:main'
+knoepfe = 'knoepfe.__main__:main'
 
 [tool.isort]
 profile = "black"
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::DeprecationWarning:pulsectl_asyncio"
-addopts = "--cov=deckconnect --cov-report=term-missing --asyncio-mode=auto"
+addopts = "--cov=knoepfe --cov-report=term-missing --asyncio-mode=auto"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

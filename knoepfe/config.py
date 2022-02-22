@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Tuple, Type, TypedDict
 import appdirs
 from schema import And, Optional, Schema
 
-from deckconnect.deck import Deck
-from deckconnect.widgets.base import Widget
+from knoepfe.deck import Deck
+from knoepfe.widgets.base import Widget
 
 DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": List[Widget | None]})
 

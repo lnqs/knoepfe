@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from pytest import raises
 
-from deckconnect.deck import SwitchDeckException
-from deckconnect.widgets.base import Widget
+from knoepfe.deck import SwitchDeckException
+from knoepfe.widgets.base import Widget
 
 
 async def test_presses() -> None:
@@ -15,7 +15,7 @@ async def test_presses() -> None:
     assert triggered.call_args[0][0] is False
 
     with patch.object(widget, "triggered") as triggered, patch(
-        "deckconnect.widgets.base.sleep", AsyncMock()
+        "knoepfe.widgets.base.sleep", AsyncMock()
     ):
         await widget.pressed()
         await sleep(0.1)

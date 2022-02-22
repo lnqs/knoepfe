@@ -3,8 +3,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from pytest import raises
 
-from deckconnect.deck import Deck, SwitchDeckException
-from deckconnect.deckmanager import DeckManager
+from knoepfe.deck import Deck, SwitchDeckException
+from knoepfe.deckmanager import DeckManager
 
 
 async def test_deck_manager_run() -> None:
@@ -66,7 +66,7 @@ async def test_deck_manager_switch_deck() -> None:
 async def test_deck_manager_sleep_activation() -> None:
     deck = Mock(spec=Deck)
     deck_manager = DeckManager(
-        deck, [deck], {"deckconnect.config.device": {"sleep_timeout": 1.0}}, MagicMock()
+        deck, [deck], {"knoepfe.config.device": {"sleep_timeout": 1.0}}, MagicMock()
     )
     deck_manager.last_action = 0.0
 
@@ -83,7 +83,7 @@ async def test_deck_manager_sleep_activation() -> None:
 
 async def test_deck_manager_sleep() -> None:
     deck_manager = DeckManager(Mock(), [], {}, MagicMock())
-    with patch("deckconnect.deckmanager.sleep", AsyncMock()):
+    with patch("knoepfe.deckmanager.sleep", AsyncMock()):
         await deck_manager.sleep()
     assert deck_manager.sleeping
 

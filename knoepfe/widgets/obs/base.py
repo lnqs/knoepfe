@@ -1,8 +1,8 @@
 from asyncio import Task, get_event_loop
 from typing import Any, Dict, List
 
-from deckconnect.widgets.base import Widget
-from deckconnect.widgets.obs.connector import obs
+from knoepfe.widgets.base import Widget
+from knoepfe.widgets.obs.connector import obs
 
 
 class OBSWidget(Widget):
@@ -15,7 +15,7 @@ class OBSWidget(Widget):
         self.listening_task: Task[None] | None = None
 
     async def activate(self) -> None:
-        await obs.connect(self.global_config.get("deckconnect.widgets.obs.config", {}))
+        await obs.connect(self.global_config.get("knoepfe.widgets.obs.config", {}))
 
         if not self.listening_task:
             self.listening_task = get_event_loop().create_task(self.listener())

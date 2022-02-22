@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, List, Optional
 
 from StreamDeck.Devices import StreamDeck
 
-from deckconnect.key import Key
-from deckconnect.log import debug
-from deckconnect.wakelock import WakeLock
+from knoepfe.key import Key
+from knoepfe.log import debug
+from knoepfe.wakelock import WakeLock
 
 if TYPE_CHECKING:  # pragma: no cover
-    from deckconnect.widgets.base import Widget
+    from knoepfe.widgets.base import Widget
 
 
 class SwitchDeckException(BaseException):

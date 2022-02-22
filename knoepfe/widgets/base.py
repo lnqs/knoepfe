@@ -3,9 +3,9 @@ from typing import Any, Dict
 
 from schema import Optional, Schema
 
-from deckconnect.deck import SwitchDeckException
-from deckconnect.key import Key
-from deckconnect.wakelock import WakeLock
+from knoepfe.deck import SwitchDeckException
+from knoepfe.key import Key
+from knoepfe.wakelock import WakeLock
 
 
 class Widget:

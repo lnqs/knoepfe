@@ -1,11 +1,11 @@
-"""deckconnect
+"""knoepfe
 
 Connect and control Elgato Stream Decks
 
 Usage:
-  deckconnect [(-v | --verbose)] [--config=<path>]
-  deckconnect (-h | --help)
-  deckconnect --version
+  knoepfe [(-v | --verbose)] [--config=<path>]
+  knoepfe (-h | --help)
+  knoepfe --version
 
 Options:
   -h --help       Show this screen.
@@ -24,10 +24,10 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices import StreamDeck
 from StreamDeck.Transport.Transport import TransportError
 
-from deckconnect import __version__, log
-from deckconnect.config import process_config
-from deckconnect.deckmanager import DeckManager
-from deckconnect.log import debug, error, info
+from knoepfe import __version__, log
+from knoepfe.config import process_config
+from knoepfe.deckmanager import DeckManager
+from knoepfe.log import debug, error, info
 
 
 async def connect_device() -> StreamDeck:
