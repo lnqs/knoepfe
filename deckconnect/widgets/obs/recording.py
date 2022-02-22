@@ -1,47 +1,27 @@
-from asyncio import Task, get_event_loop, sleep
+from asyncio import sleep
 from typing import Any, Dict
 
 from schema import Schema
 
 from deckconnect.key import Key
-from deckconnect.widgets.base import Widget
+from deckconnect.widgets.obs.base import OBSWidget
 from deckconnect.widgets.obs.connector import obs
 
 
-class Recording(Widget):
+class Recording(OBSWidget):
+    relevant_events = [
+        "ConnectionEstablished",
+        "ConnectionLost",
+        "RecordingStarted",
+        "RecordingStopped",
+        "StreamingStatus",
+    ]
+
     def __init__(
         self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
     ) -> None:
         super().__init__(widget_config, global_config)
-        self.listening_task: Task[None] | None = None
         self.show_help = False
-
-    async def activate(self) -> None:
-        await obs.connect(self.global_config.get("deckconnect.widgets.obs.config", {}))
-
-        if not self.listening_task:
-            self.listening_task = get_event_loop().create_task(self.listener())
-
-    async def deactivate(self) -> None:
-        if self.listening_task:
-            self.listening_task.cancel()
-            self.listening_task = None
-
-    async def listener(self) -> None:
-        async for event in obs.listen():
-            if event == "ConnectionEstablished":
-                self.acquire_wake_lock()
-            elif event == "ConnectionLost":
-                self.release_wake_lock()
-
-            if event in [
-                "ConnectionEstablished",
-                "ConnectionLost",
-                "RecordingStarted",
-                "RecordingStopped",
-                "StreamingStatus",
-            ]:
-                self.request_update()
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
