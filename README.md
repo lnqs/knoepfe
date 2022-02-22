@@ -1,3 +1,3 @@
-# knoepfe
+# Knöpfe
 
-Connect and control Elgato Stream Decks
+Connect and control Elgato Stream Decks.
