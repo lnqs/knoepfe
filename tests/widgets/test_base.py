@@ -7,7 +7,7 @@ from deckconnect.widgets.base import Widget
 
 
 async def test_presses() -> None:
-    widget = Widget({})
+    widget = Widget({}, {})
     with patch.object(widget, "triggered") as triggered:
         await widget.pressed()
         await widget.released()
@@ -21,14 +21,14 @@ async def test_presses() -> None:
 
 
 async def test_switch_deck() -> None:
-    widget = Widget({"switch_deck": "new_deck"})
+    widget = Widget({"switch_deck": "new_deck"}, {})
     with raises(SwitchDeckException) as e:
         await widget.released()
     assert e.value.new_deck == "new_deck"
 
 
 async def test_request_update() -> None:
-    widget = Widget({})
+    widget = Widget({}, {})
     with patch.object(widget, "update_requested_event") as event:
         widget.request_update()
     assert event.set.called

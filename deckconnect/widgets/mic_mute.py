@@ -11,8 +11,10 @@ from deckconnect.widgets.base import Widget
 
 
 class MicMute(Widget):
-    def __init__(self, config: Dict[str, Any]) -> None:
-        super().__init__(config)
+    def __init__(
+        self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
+    ) -> None:
+        super().__init__(widget_config, global_config)
         self.pulse: None | PulseAsync = None
         self.event_listener: Task[None] | None = None
 

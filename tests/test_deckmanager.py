@@ -65,7 +65,9 @@ async def test_deck_manager_switch_deck() -> None:
 
 async def test_deck_manager_sleep_activation() -> None:
     deck = Mock(spec=Deck)
-    deck_manager = DeckManager(deck, [deck], {"sleep_timeout": 1.0}, MagicMock())
+    deck_manager = DeckManager(
+        deck, [deck], {"deckconnect.config.device": {"sleep_timeout": 1.0}}, MagicMock()
+    )
     deck_manager.last_action = 0.0
 
     with patch("time.monotonic", side_effect=[0.0, 0.0, 10.0]), patch.object(

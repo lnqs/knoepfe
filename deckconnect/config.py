@@ -10,7 +10,7 @@ from deckconnect.widgets.base import Widget
 
 DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": List[Widget | None]})
 
-global_config_schema = Schema(
+device = Schema(
     {
         Optional("brightness"): And(int, lambda b: 0 <= b <= 100),
         Optional("sleep_timeout"): And(float, lambda b: b > 0.0),
@@ -34,11 +34,11 @@ def exec_config(config: str) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
     decks = []
     default = None
 
-    def set_config(c: Dict[str, Any]) -> None:
-        nonlocal global_config
-        if global_config:
-            raise RuntimeError("config already set")
-        global_config = create_global_config(c)
+    def config_(c: Dict[str, Any]) -> None:
+        type_, conf = create_config(c)
+        if type_ in global_config:
+            raise RuntimeError(f"Config {type_} already set")
+        global_config[type_] = conf
 
     def deck(c: DeckConfig) -> Deck:
         d = create_deck(c)
@@ -54,12 +54,12 @@ def exec_config(config: str) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
         return d
 
     def widget(c: Dict[str, Any]) -> Widget:
-        return create_widget(c)
+        return create_widget(c, global_config)
 
     exec(
         config,
         {
-            "config": set_config,
+            "config": config_,
             "deck": deck,
             "default_deck": default_deck,
             "widget": widget,
@@ -69,7 +69,7 @@ def exec_config(config: str) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
     if not default:
         raise RuntimeError("No default deck specified")
 
-    return (global_config, default, decks)
+    return global_config, default, decks
 
 
 def process_config(path: Path | None = None) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
@@ -80,16 +80,27 @@ def process_config(path: Path | None = None) -> Tuple[Dict[str, Any], Deck, List
     return exec_config(config)
 
 
-def create_global_config(config: Dict[str, Any]) -> Dict[str, Any]:
-    global_config_schema.validate(config)
-    return config
+def create_config(config: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+    type_ = config["type"]
+    parts = type_.rsplit(".", 1)
+    module = import_module(parts[0])
+    schema: Schema = getattr(module, parts[-1])
+
+    if not isinstance(schema, Schema):
+        raise RuntimeError(f"{schema} isn't a Schema")
+
+    config = config.copy()
+    del config["type"]
+    schema.validate(config)
+
+    return type_, config
 
 
 def create_deck(config: DeckConfig) -> Deck:
     return Deck(**config)
 
 
-def create_widget(config: Dict[str, Any]) -> Widget:
+def create_widget(config: Dict[str, Any], global_config: Dict[str, Any]) -> Widget:
     parts = config["type"].rsplit(".", 1)
     module = import_module(parts[0])
     class_: Type[Widget] = getattr(module, parts[-1])
@@ -102,4 +113,4 @@ def create_widget(config: Dict[str, Any]) -> Widget:
     schema = class_.get_config_schema()
     schema.validate(config)
 
-    return class_(config)
+    return class_(config, global_config)

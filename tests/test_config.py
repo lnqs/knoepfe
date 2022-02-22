@@ -19,8 +19,8 @@ default_deck({ 'widgets': [widget({'type': 'test'})] })
 """
 
 test_config_multiple_config = """
-config({ 'brightness': 100 })
-config({ 'brightness': 90 })
+config({ 'type': 'deckconnect.config.device', 'brightness': 100 })
+config({ 'type': 'deckconnect.config.device', 'brightness': 90 })
 """
 
 test_config_no_default = """
@@ -64,6 +64,12 @@ def test_exec_config_multiple_default() -> None:
             exec_config(test_config_multiple_default)
 
 
+def test_exec_config_invalid_global() -> None:
+    with patch("deckconnect.config.import_module", return_value=Mock(Class=int)):
+        with raises(RuntimeError):
+            exec_config(test_config_multiple_config)
+
+
 def test_exec_config_no_default() -> None:
     with patch("deckconnect.config.create_deck"), patch(
         "deckconnect.config.create_widget"
@@ -92,11 +98,11 @@ def test_create_widget_success() -> None:
             return Schema({})
 
     with patch("deckconnect.config.import_module", return_value=Mock(Class=TestWidget)):
-        w = create_widget({"type": "a.b.c.Class"})
+        w = create_widget({"type": "a.b.c.Class"}, {})
     assert isinstance(w, TestWidget)
 
 
 def test_create_widget_invalid_type() -> None:
     with patch("deckconnect.config.import_module", return_value=Mock(Class=int)):
         with raises(Exception):
-            create_widget({"type": "a.b.c.Class"})
+            create_widget({"type": "a.b.c.Class"}, {})

@@ -9,8 +9,11 @@ from deckconnect.key import Key
 
 
 class Widget:
-    def __init__(self, config: Dict[str, Any]) -> None:
-        self.config = config
+    def __init__(
+        self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
+    ) -> None:
+        self.config = widget_config
+        self.global_config = global_config
         self.update_requested_event: Event | None = None
         self.needs_update = False
         self.press_time: float | None = None

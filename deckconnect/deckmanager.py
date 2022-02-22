@@ -18,8 +18,9 @@ class DeckManager:
     ) -> None:
         self.active_deck = active_deck
         self.decks = decks
-        self.brightness = global_config.get("brightness", 100)
-        self.sleep_timeout = global_config.get("sleep_timeout", None)
+        device_config = global_config.get("deckconnect.config.device", {})
+        self.brightness = device_config.get("brightness", 100)
+        self.sleep_timeout = device_config.get("sleep_timeout", None)
         self.device = device
 
         self.update_requested_event = Event()

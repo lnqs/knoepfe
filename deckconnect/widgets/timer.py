@@ -9,8 +9,10 @@ from deckconnect.widgets.base import Widget
 
 
 class Timer(Widget):
-    def __init__(self, config: Dict[str, Any]) -> None:
-        super().__init__(config)
+    def __init__(
+        self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
+    ) -> None:
+        super().__init__(widget_config, global_config)
         self.start: float | None = None
         self.stop: float | None = None
 
