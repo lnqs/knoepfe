@@ -8,12 +8,12 @@ from deckconnect.widgets.obs.base import OBSWidget
 from deckconnect.widgets.obs.connector import obs
 
 
-class Recording(OBSWidget):
+class Streaming(OBSWidget):
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",
-        "RecordingStarted",
-        "RecordingStopped",
+        "StreamStarted",
+        "StreamStopped",
         "StreamingStatus",
     ]
 
@@ -30,21 +30,21 @@ class Recording(OBSWidget):
                 self.show_loading = False
                 renderer.icon("more_horiz")
             elif not obs.connected:
-                renderer.icon("videocam_off", color="#202020")
+                renderer.icon("stop_screen_share", color="#202020")
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
-            elif obs.recording:
-                timecode = (obs.recording_timecode or "").rsplit(".", 1)[0]
-                renderer.icon_and_text("videocam", timecode, color="red")
+            elif obs.streaming:
+                timecode = (obs.streaming_timecode or "").rsplit(".", 1)[0]
+                renderer.icon_and_text("screen_share", timecode, color="red")
             else:
-                renderer.icon("videocam_off")
+                renderer.icon("stop_screen_share")
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:
-            if obs.recording:
-                await obs.stop_recording()
+            if obs.streaming:
+                await obs.stop_streaming()
             else:
-                await obs.start_recording()
+                await obs.start_streaming()
 
             self.show_loading = True
             self.request_update()

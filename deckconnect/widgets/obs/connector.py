@@ -72,7 +72,23 @@ class OBS:
     @property
     def recording_timecode(self) -> str | None:
         if self.streaming_status:
-            return cast(str, self.streaming_status.getRecTimecode())
+            try:
+                return cast(str, self.streaming_status.getRecTimecode())
+            except KeyError:
+                pass
+        return None
+
+    @property
+    def streaming(self) -> bool:
+        return bool(self.streaming_status and self.streaming_status.getStreaming())
+
+    @property
+    def streaming_timecode(self) -> str | None:
+        if self.streaming_status:
+            try:
+                return cast(str, self.streaming_status.getStreamTimecode())
+            except KeyError:
+                pass
         return None
 
     async def connect(self, config: Dict[str, Any]) -> None:
@@ -101,6 +117,14 @@ class OBS:
     async def stop_recording(self) -> None:
         info("Stopping OBS recording")
         await self.perform_request(requests.StopRecording())
+
+    async def start_streaming(self) -> None:
+        info("Starting OBS streaming")
+        await self.perform_request(requests.StartStreaming())
+
+    async def stop_streaming(self) -> None:
+        info("Stopping OBS streaming")
+        await self.perform_request(requests.StopStreaming())
 
     async def watch_connection(self) -> None:
         was_connected = False
