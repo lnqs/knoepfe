@@ -29,6 +29,11 @@ class Recording(Widget):
 
     async def listener(self) -> None:
         async for event in obs.listen():
+            if event == "ConnectionEstablished":
+                self.acquire_wake_lock()
+            elif event == "ConnectionLost":
+                self.release_wake_lock()
+
             if event in [
                 "ConnectionEstablished",
                 "ConnectionLost",

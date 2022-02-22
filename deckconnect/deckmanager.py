@@ -6,6 +6,7 @@ from StreamDeck.Devices import StreamDeck
 
 from deckconnect.deck import Deck, SwitchDeckException
 from deckconnect.log import debug, error
+from deckconnect.wakelock import WakeLock
 
 
 class DeckManager:
@@ -23,8 +24,8 @@ class DeckManager:
         self.device_poll_frequency = device_config.get("device_poll_frequency", 5)
         self.sleep_timeout = device_config.get("sleep_timeout", None)
         self.device = device
-
         self.update_requested_event = Event()
+        self.wake_lock = WakeLock(self.update_requested_event)
         self.sleeping = False
         self.last_action = time.monotonic()
         device.set_key_callback_async(self.key_callback)
@@ -33,16 +34,22 @@ class DeckManager:
         self.device.set_brightness(self.brightness)
         self.device.set_poll_frequency(self.device_poll_frequency)
         self.last_action = time.monotonic()
-        await self.active_deck.activate(self.device, self.update_requested_event)
+        await self.active_deck.activate(
+            self.device, self.update_requested_event, self.wake_lock
+        )
 
         while True:
             now = time.monotonic()
             if (
                 self.sleep_timeout
+                and not self.wake_lock.held()
                 and not self.sleeping
                 and now - self.last_action > self.sleep_timeout
             ):
                 await self.sleep()
+
+            if self.sleeping and self.wake_lock.held():
+                await self.wake_up()
 
             if not self.sleeping:
                 await self.active_deck.update(self.device)
@@ -86,7 +93,7 @@ class DeckManager:
                 await self.active_deck.deactivate(self.device)
                 self.active_deck = deck
                 await self.active_deck.activate(
-                    self.device, self.update_requested_event
+                    self.device, self.update_requested_event, self.wake_lock
                 )
                 break
         else:

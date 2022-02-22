@@ -6,6 +6,7 @@ from schema import Optional, Schema
 
 from deckconnect.deck import SwitchDeckException
 from deckconnect.key import Key
+from deckconnect.wakelock import WakeLock
 
 
 class Widget:
@@ -15,6 +16,8 @@ class Widget:
         self.config = widget_config
         self.global_config = global_config
         self.update_requested_event: Event | None = None
+        self.wake_lock: WakeLock | None = None
+        self.holds_wait_lock = False
         self.needs_update = False
         self.press_time: float | None = None
         self.periodic_update_task: Task[None] | None = None
@@ -65,6 +68,16 @@ class Widget:
         while True:
             await sleep(interval)
             self.request_update()
+
+    def acquire_wake_lock(self) -> None:
+        if self.wake_lock and not self.holds_wait_lock:
+            self.wake_lock.acquire()
+            self.holds_wait_lock = True
+
+    def release_wake_lock(self) -> None:
+        if self.wake_lock and self.holds_wait_lock:
+            self.wake_lock.release()
+            self.holds_wait_lock = False
 
     @classmethod
     def get_config_schema(cls) -> Schema:

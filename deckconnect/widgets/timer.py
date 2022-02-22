@@ -20,6 +20,7 @@ class Timer(Widget):
         self.stop_periodic_update()
         self.start = None
         self.stop = None
+        self.release_wake_lock()
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
@@ -42,10 +43,12 @@ class Timer(Widget):
             self.start = time.monotonic()
             self.request_periodic_update(1.0)
             self.request_update()
+            self.acquire_wake_lock()
         elif self.start and not self.stop:
             self.stop = time.monotonic()
             self.stop_periodic_update()
             self.request_update()
+            self.release_wake_lock()
         else:
             self.stop_periodic_update()
             self.start = None

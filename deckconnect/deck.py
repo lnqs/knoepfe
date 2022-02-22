@@ -6,6 +6,7 @@ from StreamDeck.Devices import StreamDeck
 
 from deckconnect.key import Key
 from deckconnect.log import debug
+from deckconnect.wakelock import WakeLock
 
 if TYPE_CHECKING:  # pragma: no cover
     from deckconnect.widgets.base import Widget
@@ -21,7 +22,9 @@ class Deck:
         self.id = id
         self.widgets = widgets
 
-    async def activate(self, device: StreamDeck, update_requested_event: Event) -> None:
+    async def activate(
+        self, device: StreamDeck, update_requested_event: Event, wake_lock: WakeLock
+    ) -> None:
         with device:
             for i in range(device.key_count()):
                 device.set_key_image(i, None)
@@ -29,6 +32,7 @@ class Deck:
         for widget in self.widgets:
             if widget:
                 widget.update_requested_event = update_requested_event
+                widget.wake_lock = wake_lock
         await asyncio.gather(*[w.activate() for w in self.widgets if w])
         await self.update(device, True)
 
