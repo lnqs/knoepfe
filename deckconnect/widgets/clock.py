@@ -19,6 +19,7 @@ class Clock(Widget):
 
     async def deactivate(self) -> None:
         self.stop_periodic_update()
+        self.last_time = ""
 
     async def update(self, key: Key) -> None:
         time = datetime.now().strftime(self.config["format"])

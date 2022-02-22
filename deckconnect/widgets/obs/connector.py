@@ -128,6 +128,11 @@ class OBS:
         info("Stopping OBS streaming")
         await self.perform_request(requests.StopStreaming())
 
+    async def set_scene(self, scene: str) -> None:
+        if scene != self.current_scene:
+            info(f"Setting current OBS scene to {scene}")
+            await self.perform_request(requests.SetCurrentScene(scene))
+
     async def watch_connection(self) -> None:
         was_connected = False
 

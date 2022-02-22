@@ -112,6 +112,7 @@ def create_widget(config: Dict[str, Any], global_config: Dict[str, Any]) -> Widg
     config = config.copy()
     del config["type"]
     schema = class_.get_config_schema()
+
     schema.validate(config)
 
     return class_(config, global_config)
