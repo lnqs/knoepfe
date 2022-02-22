@@ -10,6 +10,7 @@ from obswebsocket.events import (
     RecordingStopped,
     StreamStarted,
     StreamStopped,
+    SwitchScenes,
 )
 from schema import Optional, Schema
 
@@ -51,6 +52,7 @@ class OBS:
 
         self.streaming_status: Any | None = None
         self.streaming_status_watcher: Task[None] | None = None
+        self.current_scene: str | None = None
 
         self.last_event = None
         self.event_condition = Condition()
@@ -175,14 +177,18 @@ class OBS:
 
         if isinstance(event, (ConnectionEstablished, StreamStarted, RecordingStarted)):
             self.streaming_status = self.obsws.call(requests.GetStreamingStatus())
+            self.current_scene = self.obsws.call(requests.GetCurrentScene()).getName()
             if not self.streaming_status_watcher:
                 self.streaming_status_watcher = get_event_loop().create_task(
                     self.watch_streaming_status()
                 )
         elif isinstance(event, (StreamStopped, RecordingStopped)):
             self.streaming_status = self.obsws.call(requests.GetStreamingStatus())
+        elif isinstance(event, SwitchScenes):
+            self.current_scene = event.getSceneName()
         elif isinstance(event, ConnectionLost):
             self.streaming_status = None
+            self.current_scene = None
 
         async with self.event_condition:
             self.last_event = event
