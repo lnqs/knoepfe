@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Dict
 
 from schema import Schema
 
@@ -7,6 +8,12 @@ from deckconnect.widgets.base import Widget
 
 
 class Clock(Widget):
+    def __init__(
+        self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
+    ) -> None:
+        super().__init__(widget_config, global_config)
+        self.last_time = ""
+
     async def activate(self) -> None:
         self.request_periodic_update(1.0)
 
@@ -14,10 +21,14 @@ class Clock(Widget):
         self.stop_periodic_update()
 
     async def update(self, key: Key) -> None:
-        with key.renderer() as renderer:
-            renderer.text(
-                datetime.now().strftime(self.config["format"]),
-            )
+        time = datetime.now().strftime(self.config["format"])
+        if time != self.last_time:
+            self.last_time = time
+
+            with key.renderer() as renderer:
+                renderer.text(
+                    time,
+                )
 
     @classmethod
     def get_config_schema(cls) -> Schema:
