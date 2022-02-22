@@ -14,6 +14,7 @@ device = Schema(
     {
         Optional("brightness"): And(int, lambda b: 0 <= b <= 100),
         Optional("sleep_timeout"): And(float, lambda b: b > 0.0),
+        Optional("device_poll_frequency"): And(int, lambda v: 1 <= v <= 1000),
     }
 )
 

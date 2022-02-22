@@ -20,6 +20,7 @@ class DeckManager:
         self.decks = decks
         device_config = global_config.get("deckconnect.config.device", {})
         self.brightness = device_config.get("brightness", 100)
+        self.device_poll_frequency = device_config.get("device_poll_frequency", 5)
         self.sleep_timeout = device_config.get("sleep_timeout", None)
         self.device = device
 
@@ -30,6 +31,7 @@ class DeckManager:
 
     async def run(self) -> None:
         self.device.set_brightness(self.brightness)
+        self.device.set_poll_frequency(self.device_poll_frequency)
         self.last_action = time.monotonic()
         await self.active_deck.activate(self.device, self.update_requested_event)
 
