@@ -41,28 +41,13 @@ class Recording(Widget):
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
             if not obs.connected:
-                renderer.icon(
-                    "videocam_off", font_size=400, valign="top", color="#202020"
-                )
-                renderer.text(
-                    "disconnected",
-                    font_size=80,
-                    y=-32,
-                    valign="bottom",
-                    color="#202020",
-                )
+                renderer.icon("videocam_off", color="#202020")
             elif self.show_help:
-                renderer.text("long press\nto toggle")
+                renderer.text("long press\nto toggle", size=16)
             elif obs.recording:
                 assert obs.recording_timecode
-                renderer.icon("videocam", font_size=400, valign="top", color="red")
-                renderer.text(
-                    obs.recording_timecode.rsplit(".", 1)[0],
-                    font_size=80,
-                    y=-32,
-                    valign="bottom",
-                    color="red",
-                )
+                timecode = obs.recording_timecode.rsplit(".", 1)[0]
+                renderer.icon_and_text("videocam", timecode, color="red")
             else:
                 renderer.icon("videocam_off")
 

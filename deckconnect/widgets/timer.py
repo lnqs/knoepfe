@@ -28,13 +28,11 @@ class Timer(Widget):
                     f"{timedelta(seconds=time.monotonic() - self.start)}".rsplit(
                         ".", 1
                     )[0],
-                    font_size=112,
                 )
             elif self.start and self.stop:
                 renderer.text(
                     f"{timedelta(seconds=self.stop - self.start)}".rsplit(".", 1)[0],
                     color="red",
-                    font_size=112,
                 )
             else:
                 renderer.icon("timer")

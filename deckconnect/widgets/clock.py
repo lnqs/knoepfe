@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from schema import Optional, Schema
+from schema import Schema
 
 from deckconnect.key import Key
 from deckconnect.widgets.base import Widget
@@ -17,10 +17,9 @@ class Clock(Widget):
         with key.renderer() as renderer:
             renderer.text(
                 datetime.now().strftime(self.config["format"]),
-                font_size=self.config.get("size", 112),
             )
 
     @classmethod
     def get_config_schema(cls) -> Schema:
-        schema = Schema({"format": str, Optional("size"): int})
+        schema = Schema({"format": str})
         return cls.add_defaults(schema)

@@ -5,16 +5,23 @@ from deckconnect.key import Key, Renderer
 
 def test_renderer_text() -> None:
     renderer = Renderer()
-    with patch.object(renderer, "_draw_text") as draw_text:
+    with patch.object(renderer, "_render_text") as draw_text:
         renderer.text("Blubb")
         assert draw_text.called
 
 
 def test_renderer_icon() -> None:
     renderer = Renderer()
-    with patch.object(renderer, "_draw_text") as draw_text:
+    with patch.object(renderer, "_render_text") as draw_text:
         renderer.icon("mic")
         assert draw_text.called
+
+
+def test_renderer_icon_and_text() -> None:
+    renderer = Renderer()
+    with patch.object(renderer, "_render_text") as draw_text:
+        renderer.icon_and_text("mic", "text")
+        assert draw_text.call_count == 2
 
 
 def test_renderer_draw_text() -> None:
@@ -24,49 +31,22 @@ def test_renderer_draw_text() -> None:
         "deckconnect.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
-        renderer._draw_text(
-            "Roboto-Regular.ttf",
-            "Text",
-            x=0,
-            y=0,
-            align="left",
-            valign="top",
-            font_size=42,
-            color=None,
-        )
-        assert draw.return_value.text.call_args[0][0] == (0, 0)
+        renderer._render_text("text", "Text", size=12, color=None, valign="top")
+        assert draw.return_value.text.call_args[0][0] == (48, 0)
 
     with patch(
         "deckconnect.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
-        renderer._draw_text(
-            "Roboto-Regular.ttf",
-            "Text",
-            x=0,
-            y=0,
-            align="center",
-            valign="middle",
-            font_size=42,
-            color=None,
-        )
-        assert draw.return_value.text.call_args[0][0] == (256, 256)
+        renderer._render_text("text", "Text", size=12, color=None, valign="middle")
+        assert draw.return_value.text.call_args[0][0] == (48, 48)
 
     with patch(
         "deckconnect.key.ImageDraw.Draw",
         return_value=Mock(textsize=Mock(return_value=(0, 0))),
     ) as draw:
-        renderer._draw_text(
-            "Roboto-Regular.ttf",
-            "Text",
-            x=0,
-            y=0,
-            align="right",
-            valign="bottom",
-            font_size=42,
-            color=None,
-        )
-        assert draw.return_value.text.call_args[0][0] == (512, 512)
+        renderer._render_text("text", "Text", size=12, color=None, valign="bottom")
+        assert draw.return_value.text.call_args[0][0] == (48, 90)
 
 
 def test_key_render() -> None:
