@@ -37,7 +37,7 @@ def test_config_path() -> None:
     assert get_config_path(Path("path")) == Path("path")
 
     with patch("pathlib.Path.exists", return_value=True):
-        assert str(get_config_path()).endswith(".config/knoepfe/default.cfg")
+        assert str(get_config_path()).endswith(".config/knoepfe/knoepfe.cfg")
 
     assert str(get_config_path()).endswith("knoepfe/default.cfg")
 

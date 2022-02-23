@@ -6,6 +6,7 @@ import appdirs
 from schema import And, Optional, Schema
 
 from knoepfe.deck import Deck
+from knoepfe.log import info
 from knoepfe.widgets.base import Widget
 
 DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": List[Widget | None]})
@@ -23,11 +24,17 @@ def get_config_path(path: Path | None = None) -> Path:
     if path:
         return path
 
-    path = Path(appdirs.user_config_dir(__package__), "default.cfg")
+    path = Path(appdirs.user_config_dir(__package__), "knoepfe.cfg")
     if path.exists():
         return path
 
-    return Path(__file__).parent.joinpath("default.cfg")
+    default_config = Path(__file__).parent.joinpath("default.cfg")
+    info(
+        f"No configuration file found at `{path}`. Consider copying the default"
+        f"config from `{default_config}` to this place and adjust it to your needs."
+    )
+
+    return default_config
 
 
 def exec_config(config: str) -> Tuple[Dict[str, Any], Deck, List[Deck]]:
