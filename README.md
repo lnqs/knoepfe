@@ -7,11 +7,11 @@ Connect and control Elgato Stream Decks from Linux.
 - Several integrated widgets
 - OBS integration including
     - Showing and changing if stream is running
-    - Showing and recording if stream is running
+    - Showing and changing if recording is running
     - Showing current scene
     - Switching between scenes
 - Multiple pages to switch between
-- Configuring device brightness and hardware polling interval
+- Configuring device's brightness and hardware polling interval
 - Automatic sleeping if device isn't used with the possibility for widgets to prevent this (i.e. while OBS is running)
 
 ## Installation
@@ -45,7 +45,7 @@ Then, run `sudo udevadm control --reload-rules` and reconnect the device. You sh
 
 ## systemd unit
 
-If you want to start Knöpfe automatically on user login consider creating and enabling a systemd unit in `~/.config/systemd/user/knoepfe.service`:
+If you want to start Knöpfe automatically on user login, consider creating and enabling a systemd unit in `~/.config/systemd/user/knoepfe.service`:
 
     [Unit]
     Description=Knoepfe
@@ -136,7 +136,7 @@ Instantiated with:
 
     widget({'type': 'knoepfe.widgets.MicMute'})
 
-Accepts `device` as optional argument with the name of source the operate with. If not set the default source is used.
+Accepts `device` as optional argument with the name of source the operate with. If not set, the default source is used.
 This widget shows if the source is muted and toggles the state on pressing it.
 
 ### OBS Streaming and Recording
@@ -179,7 +179,7 @@ Please feel free to open an [issue](https://github.com/lnqs/knoepfe/issues) if y
 
 Pull requests are also very welcome :)
 
-As widgets are loaded by their module path is should also be possible to add new functionality in a plugin-ish way by just creating independent python modules defining their behaviour. But, well, I haven't tested that yet.
+As widgets are loaded by their module path it should also be possible to add new functionality in a plugin-ish way by just creating independent python modules defining their behaviour. But, well, I haven't tested that yet.
 
 ## Mentions
 
