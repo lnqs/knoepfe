@@ -16,18 +16,11 @@ Connect and control Elgato Stream Decks from Linux.
 
 ## Installation
 
-### From source
+### PyPI
 
-Clone the repository and use pip to install it:
+    pip install knoepfe
 
-    git clone git@github.com:lnqs/knoepfe.git
-    cd knoepfe
-    pip install .
-
-### Other channels
-
-Currently cloning the repository is the only way to go.
-PyPI and Arch Linux AUR are going to be available soon :)
+should do the trick :)
 
 ### Prerequisites
 
