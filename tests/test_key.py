@@ -57,3 +57,10 @@ def test_key_render() -> None:
             pass
 
     assert key.device.set_key_image.called
+
+
+def test_key_aligned() -> None:
+    renderer = Renderer()
+    assert renderer._aligned(10, 10, "left", "top") == (0, 0)
+    assert renderer._aligned(10, 10, "center", "middle") == (43, 43)
+    assert renderer._aligned(10, 10, "right", "bottom") == (86, 80)

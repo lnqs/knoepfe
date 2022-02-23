@@ -89,7 +89,10 @@ async def test_deck_manager_sleep() -> None:
 
 
 async def test_deck_wake_up() -> None:
-    deck = Mock(handle_key=AsyncMock(side_effect=SwitchDeckException("new_deck")))
+    deck = Mock(
+        activate=AsyncMock(),
+        handle_key=AsyncMock(side_effect=SwitchDeckException("new_deck")),
+    )
     deck_manager = DeckManager(deck, [deck], {}, MagicMock())
     deck_manager.sleeping = True
 
@@ -97,3 +100,16 @@ async def test_deck_wake_up() -> None:
         await deck_manager.key_callback(Mock(), 0, False)
         assert not switch_deck.called
         assert not deck_manager.sleeping
+
+    deck = Mock(activate=AsyncMock())
+    deck_manager = DeckManager(deck, [deck], {}, MagicMock())
+    deck_manager.sleeping = True
+    deck_manager.wake_lock.acquire()
+
+    with patch.object(deck_manager, "wake_up", AsyncMock()) as wake_up, patch.object(
+        deck_manager.update_requested_event, "wait", AsyncMock(side_effect=SystemExit())
+    ):
+        with raises(SystemExit):
+            await deck_manager.run()
+
+        assert wake_up.called
