@@ -22,6 +22,16 @@ Connect and control Elgato Stream Decks from Linux.
 
 should do the trick :)
 
+
+### Arch Linux AUR
+
+If you're on Arch Linux you can use the [PKGBUILD in the AUR](https://aur.archlinux.org/packages/knoepfe) to install Knöpfe.
+Provided you're using `yay`
+
+    yay -S knoepfe
+
+should be enough.
+
 ### Prerequisites
 
 udev rules are required for Knöpfe to be able to communicate with the device.
