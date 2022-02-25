@@ -53,8 +53,8 @@ If you want to start Knöpfe automatically on user login, consider creating and 
 
 And start and enable it by running:
 
-    systemd --user enable knoepfe
-    systemd --user start knoepfe
+    systemctl --user enable knoepfe
+    systemctl --user start knoepfe
 
 ## Usage
 
