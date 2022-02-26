@@ -149,8 +149,8 @@ class OBS:
                     debug("Connected to OBS")
                     self.obsws.eventmanager.trigger(ConnectionEstablished())
                     was_connected = True
-                except obswebsocket.exceptions.ConnectionFailure:
-                    debug("Failed to connect to OBS")
+                except obswebsocket.exceptions.ConnectionFailure as e:
+                    debug(f"Failed to connect to OBS: {e}")
 
             await sleep(3.0)
 
