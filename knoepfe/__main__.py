@@ -3,7 +3,7 @@
 Connect and control Elgato Stream Decks
 
 Usage:
-  knoepfe [(-v | --verbose)] [--config=<path>]
+  knoepfe [(-v | --verbose)] [--config=<path>] [--mock-device]
   knoepfe (-h | --help)
   knoepfe --version
 
@@ -11,6 +11,7 @@ Options:
   -h --help       Show this screen.
   -v --verbose    Print debug information.
   --config=<path> Config file to use.
+  --mock-device   Don't connect to a real device. Mainly useful for debugging.
 """
 
 import asyncio
@@ -28,6 +29,7 @@ from knoepfe import __version__, log
 from knoepfe.config import process_config
 from knoepfe.deckmanager import DeckManager
 from knoepfe.log import debug, error, info
+from knoepfe.mockdeck import MockDeck
 
 
 async def connect_device() -> StreamDeck:
@@ -52,7 +54,7 @@ async def connect_device() -> StreamDeck:
     return device
 
 
-async def run(config_path: Path | None) -> None:
+async def run(config_path: Path | None, mock_device: bool = False) -> None:
     try:
         debug("Processing config")
         global_config, active_deck, decks = process_config(config_path)
@@ -60,7 +62,10 @@ async def run(config_path: Path | None) -> None:
         raise RuntimeError(f'Failed to parse configuration:\n{indent(str(e), "  ")}')
 
     while True:
-        device = await connect_device()
+        if not mock_device:
+            device = await connect_device()
+        else:
+            device = MockDeck()
         try:
             deck_manager = DeckManager(active_deck, decks, global_config, device)
             await deck_manager.run()
@@ -76,10 +81,11 @@ def main() -> None:
     arguments = docopt(__doc__, version=__version__)
 
     config_path = Path(arguments["--config"]) if arguments["--config"] else None
+    mock_device = arguments["--mock-device"]
     log.verbose = arguments["--verbose"]
 
     try:
-        asyncio.run(run(config_path))
+        asyncio.run(run(config_path, mock_device))
     except Exception as e:
         if log.verbose:
             raise
