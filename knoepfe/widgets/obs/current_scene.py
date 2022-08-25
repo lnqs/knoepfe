@@ -9,7 +9,7 @@ class CurrentScene(OBSWidget):
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",
-        "SwitchScenes",
+        "CurrentProgramSceneChanged",
     ]
 
     async def update(self, key: Key) -> None:

@@ -12,19 +12,25 @@ class Streaming(OBSWidget):
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",
-        "StreamStarted",
-        "StreamStopped",
-        "StreamingStatus",
+        "StreamStateChanged",
     ]
 
     def __init__(
         self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
     ) -> None:
         super().__init__(widget_config, global_config)
+        self.streaming = False
         self.show_help = False
         self.show_loading = False
 
     async def update(self, key: Key) -> None:
+        if obs.streaming != self.streaming:
+            if obs.streaming:
+                self.request_periodic_update(1.0)
+            else:
+                self.stop_periodic_update()
+            self.streaming = obs.streaming
+
         with key.renderer() as renderer:
             if self.show_loading:
                 self.show_loading = False
@@ -34,7 +40,7 @@ class Streaming(OBSWidget):
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
             elif obs.streaming:
-                timecode = (obs.streaming_timecode or "").rsplit(".", 1)[0]
+                timecode = (await obs.get_streaming_timecode() or "").rsplit(".", 1)[0]
                 renderer.icon_and_text("screen_share", timecode, color="red")
             else:
                 renderer.icon("stop_screen_share")

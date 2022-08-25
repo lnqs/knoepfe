@@ -1,19 +1,9 @@
-import asyncio
 from asyncio import Condition, Task, get_event_loop, sleep
-from typing import Any, AsyncIterator, Dict, cast
+from typing import Any, AsyncIterator, Awaitable, Callable, Dict, cast
 
-import obswebsocket
-from obswebsocket import obsws, requests
-from obswebsocket.base_classes import Baseevents, Baserequests
-from obswebsocket.events import (
-    RecordingStarted,
-    RecordingStopped,
-    StreamStarted,
-    StreamStopped,
-    SwitchScenes,
-)
 from schema import Optional, Schema
 
+from knoepfe import simpleobsws
 from knoepfe.log import debug, info
 
 config = Schema(
@@ -25,183 +15,135 @@ config = Schema(
 )
 
 
-class ConnectionEstablished(Baseevents):  # type: ignore
-    def __init__(self) -> None:
-        obswebsocket.events.Baseevents.__init__(self)
-        self.name = "ConnectionEstablished"
-
-
-class ConnectionLost(Baseevents):  # type: ignore
-    def __init__(self) -> None:
-        obswebsocket.events.Baseevents.__init__(self)
-        self.name = "ConnectionLost"
-
-
-class StreamingStatus(Baseevents):  # type: ignore
-    def __init__(self) -> None:
-        obswebsocket.events.Baseevents.__init__(self)
-        self.name = "StreamingStatus"
-
-
 class OBS:
     def __init__(self) -> None:
-        self.obsws = obsws()
+        self.ws = simpleobsws.WebSocketClient()
+        self.ws.register_event_callback(self._handle_event)
         self.connection_watcher: Task[None] | None = None
-
-        loop = get_event_loop()
-
-        self.streaming_status: Any | None = None
-        self.streaming_status_watcher: Task[None] | None = None
+        self.status_watcher: Task[None] | None = None
+        self.streaming = False
+        self.recording = False
+        self.streaming_timecode = None
+        self.recording_timecode = None
         self.current_scene: str | None = None
 
-        self.last_event = None
+        self.last_event: Any = None
         self.event_condition = Condition()
-
-        self.obsws.register(
-            lambda *args: asyncio.run_coroutine_threadsafe(
-                self.handle_event(*args), loop
-            )
-        )
-
-    @property
-    def connected(self) -> bool:
-        return bool(self.obsws.ws and self.obsws.ws.connected)
-
-    @property
-    def recording(self) -> bool:
-        return bool(self.streaming_status and self.streaming_status.getRecording())
-
-    @property
-    def recording_timecode(self) -> str | None:
-        if self.streaming_status:
-            try:
-                return cast(str, self.streaming_status.getRecTimecode())
-            except KeyError:
-                pass
-        return None
-
-    @property
-    def streaming(self) -> bool:
-        return bool(self.streaming_status and self.streaming_status.getStreaming())
-
-    @property
-    def streaming_timecode(self) -> str | None:
-        if self.streaming_status:
-            try:
-                return cast(str, self.streaming_status.getStreamTimecode())
-            except KeyError:
-                pass
-        return None
 
     async def connect(self, config: Dict[str, Any]) -> None:
         if self.connection_watcher:
             return
 
-        self.obsws.host = config.get("host", "localhost")
-        self.obsws.port = config.get("port", 4444)
-        self.obsws.password = config.get("password")
+        host = config.get("host", "localhost")
+        port = config.get("port", 4444)
+        password = cast(str, config.get("password"))
+        self.ws.url = f"ws://{host}:{port}"
+        self.ws.password = password
 
         loop = get_event_loop()
-        self.connection_watcher = loop.create_task(self.watch_connection())
+        self.connection_watcher = loop.create_task(self._watch_connection())
+
+    @property
+    def connected(self) -> bool:
+        return bool(self.ws and self.ws.ws and self.ws.ws.open)
 
     async def listen(self) -> AsyncIterator[str]:
         while True:
             async with self.event_condition:
                 await self.event_condition.wait()
                 assert self.last_event
-                event = self.last_event.name
+                event = self.last_event["eventType"]
             yield event
 
     async def start_recording(self) -> None:
         info("Starting OBS recording")
-        await self.perform_request(requests.StartRecording())
+        await self.ws.call(simpleobsws.Request("StartRecord"))
 
     async def stop_recording(self) -> None:
         info("Stopping OBS recording")
-        await self.perform_request(requests.StopRecording())
+        await self.ws.call(simpleobsws.Request("StopRecord"))
 
     async def start_streaming(self) -> None:
         info("Starting OBS streaming")
-        await self.perform_request(requests.StartStreaming())
+        await self.ws.call(simpleobsws.Request("StartStream"))
 
     async def stop_streaming(self) -> None:
         info("Stopping OBS streaming")
-        await self.perform_request(requests.StopStreaming())
+        await self.ws.call(simpleobsws.Request("StopStream"))
 
     async def set_scene(self, scene: str) -> None:
         if scene != self.current_scene:
             info(f"Setting current OBS scene to {scene}")
-            await self.perform_request(requests.SetCurrentScene(scene))
+            await self.ws.call(
+                simpleobsws.Request("SetCurrentProgramScene", {"sceneName": scene})
+            )
 
-    async def watch_connection(self) -> None:
+    async def get_streaming_timecode(self) -> str | None:
+        status = await self.ws.call(simpleobsws.Request("GetStreamStatus"))
+        if status.ok():
+            return cast(str, status.responseData["outputTimecode"])
+        return None
+
+    async def get_recording_timecode(self) -> str | None:
+        status = await self.ws.call(simpleobsws.Request("GetRecordStatus"))
+        if status.ok():
+            return cast(str, status.responseData["outputTimecode"])
+        return None
+
+    async def _watch_connection(self) -> None:
         was_connected = False
 
         while True:
             if not self.connected and was_connected:
                 debug("Connection to OBS lost")
-                self.obsws.eventmanager.trigger(ConnectionLost())
                 was_connected = False
+                await self._handle_event(
+                    {"eventType": "ConnectionLost"}
+                )  # Fake connection lost event
 
             if not self.connected:
                 try:
                     debug("Trying to connect to OBS")
-                    self.obsws.connect()
+                    await cast(Callable[[], Awaitable[bool]], self.ws.connect)()
+                    if not await self.ws.wait_until_identified():
+                        raise OSError("Failed to identify to OBS")
                     debug("Connected to OBS")
-                    self.obsws.eventmanager.trigger(ConnectionEstablished())
                     was_connected = True
-                except obswebsocket.exceptions.ConnectionFailure as e:
+                    await self._handle_event(
+                        {"eventType": "ConnectionEstablished"}
+                    )  # Fake connection established event
+                except OSError as e:
                     debug(f"Failed to connect to OBS: {e}")
 
-            await sleep(3.0)
+            await sleep(5.0)
 
-    async def watch_streaming_status(self) -> None:
-        while True:
-            if self.connected:
-                status = self.obsws.call(requests.GetStreamingStatus())
-                if (
-                    not self.streaming_status
-                    or status.datain != self.streaming_status.datain
-                ):
-                    self.streaming_status = status
-                    self.obsws.eventmanager.trigger(StreamingStatus())
-            if (
-                not self.connected
-                or not self.streaming_status
-                or (
-                    not self.streaming_status.getRecording()
-                    and not self.streaming_status.getStreaming()
-                )
-            ):
-                self.streaming_status = None
-                self.streaming_status_watcher = None
-                return
-            await sleep(1.0)
-
-    async def handle_event(self, event: Baseevents) -> None:
-        debug(f"OBS event received: {event.name}")
-
-        if isinstance(event, (ConnectionEstablished, StreamStarted, RecordingStarted)):
-            self.streaming_status = self.obsws.call(requests.GetStreamingStatus())
-            self.current_scene = self.obsws.call(requests.GetCurrentScene()).getName()
-            if not self.streaming_status_watcher:
-                self.streaming_status_watcher = get_event_loop().create_task(
-                    self.watch_streaming_status()
-                )
-        elif isinstance(event, (StreamStopped, RecordingStopped)):
-            self.streaming_status = self.obsws.call(requests.GetStreamingStatus())
-        elif isinstance(event, SwitchScenes):
-            self.current_scene = event.getSceneName()
-        elif isinstance(event, ConnectionLost):
-            self.streaming_status = None
+    async def _handle_event(self, event: Dict[str, Any]) -> None:
+        debug(f"OBS event received: {event}")
+        if event["eventType"] == "ConnectionEstablished":
+            self.current_scene = (
+                await self.ws.call(simpleobsws.Request("GetCurrentProgramScene"))
+            ).responseData["currentProgramSceneName"]
+            self.streaming = (
+                await self.ws.call(simpleobsws.Request("GetStreamStatus"))
+            ).responseData["outputActive"]
+            self.recording = (
+                await self.ws.call(simpleobsws.Request("GetRecordStatus"))
+            ).responseData["outputActive"]
+            await self.get_recording_timecode()
+        elif event["eventType"] == "CurrentProgramSceneChanged":
+            self.current_scene = event["eventData"]["sceneName"]
+        elif event["eventType"] == "StreamStateChanged":
+            self.streaming = event["eventData"]["outputActive"]
+        elif event["eventType"] == "RecordStateChanged":
+            self.recording = event["eventData"]["outputActive"]
+        elif event["eventType"] == "ConnectionLost":
             self.current_scene = None
+            self.streaming = False
+            self.recording = False
 
         async with self.event_condition:
             self.last_event = event
             self.event_condition.notify_all()
-
-    async def perform_request(self, request: Baserequests) -> None:
-        if self.connected:
-            self.obsws.call(request)
 
 
 obs = OBS()

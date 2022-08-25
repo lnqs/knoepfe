@@ -59,7 +59,11 @@ class DeckManager:
 
             try:
                 timeout = None
-                if self.sleep_timeout and not self.sleeping:
+                if (
+                    self.sleep_timeout
+                    and not self.sleeping
+                    and not self.wake_lock.held()
+                ):
                     timeout = self.sleep_timeout - (now - self.last_action)
                 await wait_for(self.update_requested_event.wait(), timeout)
             except TimeoutError:

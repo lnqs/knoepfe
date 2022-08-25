@@ -23,7 +23,8 @@ class SwitchScene(OBSWidget):
             renderer.icon_and_text("panorama", self.config["scene"], color=color)
 
     async def triggered(self, long_press: bool = False) -> None:
-        await obs.set_scene(self.config["scene"])
+        if obs.connected:
+            await obs.set_scene(self.config["scene"])
 
     @classmethod
     def get_config_schema(cls) -> Schema:

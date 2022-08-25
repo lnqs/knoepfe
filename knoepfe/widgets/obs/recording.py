@@ -12,19 +12,25 @@ class Recording(OBSWidget):
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",
-        "RecordingStarted",
-        "RecordingStopped",
-        "StreamingStatus",
+        "RecordStateChanged",
     ]
 
     def __init__(
         self, widget_config: Dict[str, Any], global_config: Dict[str, Any]
     ) -> None:
         super().__init__(widget_config, global_config)
+        self.recording = False
         self.show_help = False
         self.show_loading = False
 
     async def update(self, key: Key) -> None:
+        if obs.recording != self.recording:
+            if obs.recording:
+                self.request_periodic_update(1.0)
+            else:
+                self.stop_periodic_update()
+            self.recording = obs.recording
+
         with key.renderer() as renderer:
             if self.show_loading:
                 self.show_loading = False
@@ -34,7 +40,7 @@ class Recording(OBSWidget):
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
             elif obs.recording:
-                timecode = (obs.recording_timecode or "").rsplit(".", 1)[0]
+                timecode = (await obs.get_recording_timecode() or "").rsplit(".", 1)[0]
                 renderer.icon_and_text("videocam", timecode, color="red")
             else:
                 renderer.icon("videocam_off")
