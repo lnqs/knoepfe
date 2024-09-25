@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "knoepfe"
-version = "0.1.0"
+version = "0.1.1"
 description = "Connect and control Elgato Stream Decks"
 authors = ["Simon Hayessen <simon@lnqs.io>"]
 license = "GPL-3.0-or-later"
