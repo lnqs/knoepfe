@@ -15,8 +15,8 @@ def test_main_success() -> None:
 async def test_run() -> None:
     knoepfe = Knoepfe()
 
-    with patch("knoepfe.__main__.process_config", side_effect=Exception("Error")):
-        with raises(Exception):
+    with patch("knoepfe.__main__.process_config", side_effect=RuntimeError("Error")):
+        with raises(RuntimeError):
             await knoepfe.run(None)
 
     with patch.object(

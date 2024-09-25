@@ -101,5 +101,5 @@ def test_create_widget_success() -> None:
 
 def test_create_widget_invalid_type() -> None:
     with patch("knoepfe.config.import_module", return_value=Mock(Class=int)):
-        with raises(Exception):
+        with raises(RuntimeError):
             create_widget({"type": "a.b.c.Class"}, {})

@@ -29,24 +29,24 @@ def test_renderer_draw_text() -> None:
 
     with patch(
         "knoepfe.key.ImageDraw.Draw",
-        return_value=Mock(textsize=Mock(return_value=(0, 0))),
+        return_value=Mock(textlength=Mock(return_value=0)),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="top")
         assert draw.return_value.text.call_args[0][0] == (48, 0)
 
     with patch(
         "knoepfe.key.ImageDraw.Draw",
-        return_value=Mock(textsize=Mock(return_value=(0, 0))),
+        return_value=Mock(textlength=Mock(return_value=0)),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="middle")
-        assert draw.return_value.text.call_args[0][0] == (48, 48)
+        assert draw.return_value.text.call_args[0][0] == (48, 42)
 
     with patch(
         "knoepfe.key.ImageDraw.Draw",
-        return_value=Mock(textsize=Mock(return_value=(0, 0))),
+        return_value=Mock(textlength=Mock(return_value=0)),
     ) as draw:
         renderer._render_text("text", "Text", size=12, color=None, valign="bottom")
-        assert draw.return_value.text.call_args[0][0] == (48, 90)
+        assert draw.return_value.text.call_args[0][0] == (48, 78)
 
 
 def test_key_render() -> None:

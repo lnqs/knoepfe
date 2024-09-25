@@ -48,7 +48,8 @@ class Renderer:
     ) -> "Renderer":
         font = self._get_font(type, size)
         draw = ImageDraw.Draw(self.image)
-        text_width, text_height = draw.textsize(text, font=font)
+        text_width = int(draw.textlength(text, font=font))
+        text_height = font.size * (text.strip().count("\n") + 1)
         x, y = self._aligned(text_width, text_height, "center", valign)
         draw.text((x, y), text=text, font=font, fill=color, align="center")
         return self
