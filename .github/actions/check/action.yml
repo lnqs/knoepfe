@@ -4,6 +4,14 @@ description: Runs the format check, linter, type check and tests
 runs:
   using: composite
   steps:
+    - name: Disable initramfs update
+      shell: bash
+      run: sudo sed -i 's/yes/no/g' /etc/initramfs-tools/update-initramfs.conf
+
+    - name: Disable man-db update
+      shell: bash
+      run: sudo rm -f /var/lib/man-db/auto-update
+
     - name: Install system dependencies
       shell: bash
       run: sudo apt-get install -y pulseaudio libhidapi-libusb0
@@ -25,19 +33,19 @@ runs:
 
     - name: isort
       shell: bash
-      run: uv run isort --check knoepfe/
+      run: uv run isort --check .
 
     - name: black
       shell: bash
-      run: uv run black --check knoepfe/
+      run: uv run black --check .
 
     - name: flake8
       shell: bash
-      run: uv run flake8 knoepfe/
+      run: uv run flake8 .
 
     - name: mypy
       shell: bash
-      run: uv run mypy knoepfe/
+      run: uv run mypy .
 
     - name: pytest
       shell: bash
