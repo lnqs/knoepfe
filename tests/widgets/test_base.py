@@ -15,8 +15,9 @@ async def test_presses() -> None:
         await widget.released()
     assert triggered.call_args[0][0] is False
 
-    with patch.object(widget, "triggered") as triggered, patch(
-        "knoepfe.widgets.base.sleep", AsyncMock()
+    with (
+        patch.object(widget, "triggered") as triggered,
+        patch("knoepfe.widgets.base.sleep", AsyncMock()),
     ):
         await widget.pressed()
         await sleep(0.1)

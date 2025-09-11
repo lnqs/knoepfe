@@ -44,9 +44,10 @@ def test_config_path() -> None:
 
 
 def test_exec_config_success() -> None:
-    with patch("knoepfe.config.create_deck") as create_deck, patch(
-        "knoepfe.config.create_widget"
-    ) as create_widget:
+    with (
+        patch("knoepfe.config.create_deck") as create_deck,
+        patch("knoepfe.config.create_widget") as create_widget,
+    ):
         exec_config(test_config)
     assert create_deck.called
     assert create_widget.called
@@ -76,9 +77,12 @@ def test_exec_config_no_default() -> None:
 
 
 def test_process_config() -> None:
-    with patch(
-        "knoepfe.config.exec_config", return_value=(Mock(), [Mock()])
-    ) as exec_config, patch("builtins.open", mock_open(read_data=test_config)):
+    with (
+        patch(
+            "knoepfe.config.exec_config", return_value=(Mock(), [Mock()])
+        ) as exec_config,
+        patch("builtins.open", mock_open(read_data=test_config)),
+    ):
         process_config(Path("file"))
     assert exec_config.called
 
