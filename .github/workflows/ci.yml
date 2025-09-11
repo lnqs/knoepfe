@@ -1,0 +1,10 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check-and-build:
+    uses: ./.github/workflows/check-and-build.yml
