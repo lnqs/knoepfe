@@ -13,30 +13,32 @@ runs:
       with:
         python-version: "3.x"
 
-    - name: Install poetry
+    - name: Install uv
       shell: bash
-      run: python3 -m pip install poetry
+      run: python3 -m pip install uv
 
     - name: Setup project
       shell: bash
-      run: poetry install
+      run: uv sync
+      env:
+        UV_PROJECT_ENVIRONMENT: .venv
 
     - name: isort
       shell: bash
-      run: poetry run isort --check .
+      run: uv run isort --check knoepfe/
 
     - name: black
       shell: bash
-      run: poetry run black --check .
+      run: uv run black --check knoepfe/
 
     - name: flake8
       shell: bash
-      run: poetry run flake8 .
+      run: uv run flake8 knoepfe/
 
     - name: mypy
       shell: bash
-      run: poetry run mypy .
+      run: uv run mypy knoepfe/
 
     - name: pytest
       shell: bash
-      run: poetry run pytest
+      run: uv run pytest
