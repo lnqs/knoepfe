@@ -18,7 +18,7 @@ class MockDeck(StreamDeck):  # type: ignore
     DECK_TYPE = None
 
     def __init__(self) -> None:
-        super().__init__(Dummy.Device("0000:0000"))
+        super().__init__(Dummy.Device("0000", "0000"))
 
     def _read_key_states(self) -> List[bool]:
         return self.KEY_COUNT * [False]
@@ -39,4 +39,23 @@ class MockDeck(StreamDeck):  # type: ignore
         return "1.0.0"
 
     def set_key_image(self, key: int, image: str) -> None:
+        pass
+
+    def _read_control_states(self) -> None:
+        pass
+
+    def set_touchscreen_image(
+        self,
+        image: bytes,
+        x_pos: int = 0,
+        y_pos: int = 0,
+        width: int = 0,
+        height: int = 0,
+    ) -> None:
+        pass
+
+    def set_key_color(self, key: int, r: int, g: int, b: int) -> None:
+        pass
+
+    def set_screen_image(self, image: bytes) -> None:
         pass
