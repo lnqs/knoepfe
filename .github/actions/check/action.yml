@@ -31,21 +31,8 @@ runs:
       env:
         UV_PROJECT_ENVIRONMENT: .venv
 
-    - name: isort
-      shell: bash
-      run: uv run isort --check .
-
-    - name: black
-      shell: bash
-      run: uv run black --check .
-
-    - name: flake8
-      shell: bash
-      run: uv run flake8 .
-
-    - name: mypy
-      shell: bash
-      run: uv run mypy .
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.1
 
     - name: pytest
       shell: bash
