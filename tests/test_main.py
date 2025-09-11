@@ -19,13 +19,16 @@ async def test_run() -> None:
         with raises(RuntimeError):
             await knoepfe.run(None)
 
-    with patch.object(
-        knoepfe, "connect_device", AsyncMock(return_value=Mock())
-    ), patch.multiple(
-        "knoepfe.__main__",
-        process_config=Mock(return_value=({}, Mock(), [Mock()])),
-        DeckManager=Mock(
-            return_value=Mock(run=Mock(side_effect=[TransportError(), SystemExit()]))
+    with (
+        patch.object(knoepfe, "connect_device", AsyncMock(return_value=Mock())),
+        patch.multiple(
+            "knoepfe.__main__",
+            process_config=Mock(return_value=({}, Mock(), [Mock()])),
+            DeckManager=Mock(
+                return_value=Mock(
+                    run=Mock(side_effect=[TransportError(), SystemExit()])
+                )
+            ),
         ),
     ):
         with raises(SystemExit):
@@ -35,10 +38,13 @@ async def test_run() -> None:
 async def test_connect_device() -> None:
     knoepfe = Knoepfe()
 
-    with patch(
-        "knoepfe.__main__.DeviceManager.enumerate",
-        side_effect=([], [Mock(key_layout=Mock(return_value=(2, 2)))]),
-    ) as device_manager_enumerate, patch("knoepfe.__main__.sleep", AsyncMock()):
+    with (
+        patch(
+            "knoepfe.__main__.DeviceManager.enumerate",
+            side_effect=([], [Mock(key_layout=Mock(return_value=(2, 2)))]),
+        ) as device_manager_enumerate,
+        patch("knoepfe.__main__.sleep", AsyncMock()),
+    ):
         await knoepfe.connect_device()
 
     assert device_manager_enumerate.called

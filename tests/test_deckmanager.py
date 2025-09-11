@@ -70,12 +70,14 @@ async def test_deck_manager_sleep_activation() -> None:
     )
     deck_manager.last_action = 0.0
 
-    with patch("time.monotonic", side_effect=[0.0, 0.0, 10.0]), patch.object(
-        deck_manager, "sleep", AsyncMock()
-    ), patch.object(
-        deck_manager.update_requested_event,
-        "wait",
-        Mock(side_effect=[TimeoutError(), SystemExit()]),
+    with (
+        patch("time.monotonic", side_effect=[0.0, 0.0, 10.0]),
+        patch.object(deck_manager, "sleep", AsyncMock()),
+        patch.object(
+            deck_manager.update_requested_event,
+            "wait",
+            Mock(side_effect=[TimeoutError(), SystemExit()]),
+        ),
     ):
         with raises(SystemExit):
             await deck_manager.run()
@@ -106,8 +108,13 @@ async def test_deck_wake_up() -> None:
     deck_manager.sleeping = True
     deck_manager.wake_lock.acquire()
 
-    with patch.object(deck_manager, "wake_up", AsyncMock()) as wake_up, patch.object(
-        deck_manager.update_requested_event, "wait", AsyncMock(side_effect=SystemExit())
+    with (
+        patch.object(deck_manager, "wake_up", AsyncMock()) as wake_up,
+        patch.object(
+            deck_manager.update_requested_event,
+            "wait",
+            AsyncMock(side_effect=SystemExit()),
+        ),
     ):
         with raises(SystemExit):
             await deck_manager.run()
