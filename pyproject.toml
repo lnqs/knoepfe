@@ -16,6 +16,7 @@ dependencies = [
   "websockets~=13.1",
   "pulsectl-asyncio>=1.2.1,<2",
   "pulsectl>=24.8.0,<25",
+  "simpleobsws>=1.4.0",
 ]
 
 [project.urls]
@@ -68,11 +69,27 @@ build-backend = "hatchling.build"
 
 [tool.isort]
 profile = "black"
-skip = ["simpleobsws.py"]
 extend_skip_glob = [".venv/*"]
 
 [tool.black]
-exclude = "simpleobsws.py|\\.venv/"
+extend-exclude = '''
+(
+  \.venv/               # exclude .venv directory
+)
+'''
+
+[tool.mypy]
+strict = true
+
+[[tool.mypy.overrides]]
+module = [
+  "StreamDeck.*",
+  "pulsectl.*",
+  "pulsectl_asyncio.*",
+  "aiorun.*",
+  "schema.*",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 filterwarnings = "ignore::DeprecationWarning:pulsectl_asyncio"

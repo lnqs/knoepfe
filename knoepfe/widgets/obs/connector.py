@@ -1,9 +1,9 @@
 from asyncio import Condition, Task, get_event_loop, sleep
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, cast
 
+import simpleobsws
 from schema import Optional, Schema
 
-from knoepfe import simpleobsws
 from knoepfe.log import debug, info
 
 config = Schema(
