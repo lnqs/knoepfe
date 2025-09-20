@@ -56,7 +56,7 @@ def test_key_render() -> None:
         with key.renderer():
             pass
 
-    assert key.device.set_key_image.called
+    assert key.device.set_key_image.called  # type: ignore[attr-defined]
 
 
 def test_key_aligned() -> None:

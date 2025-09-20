@@ -1,0 +1,62 @@
+[project]
+name = "knoepfe-obs-plugin"
+version = "0.1.0"
+description = "OBS Studio integration widgets for knoepfe"
+authors = [
+  { name = "Simon Hayessen", email = "simon@lnqs.io" },
+  { name = "Simon Brakhane", email = "simon@brakhane.net" },
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+keywords = ["streamdeck", "obs", "knoepfe", "plugin"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+dependencies = ["knoepfe", "simpleobsws>=1.4.0"]
+
+[tool.uv.sources]
+knoepfe = { workspace = true }
+
+[project.urls]
+Homepage = "https://github.com/lnqs/knoepfe"
+Repository = "https://github.com/lnqs/knoepfe"
+Issues = "https://github.com/lnqs/knoepfe/issues"
+
+# OBS widget registration via entry points
+[project.entry-points."knoepfe.widgets"]
+OBSRecording = "knoepfe_obs_plugin.recording:Recording"
+OBSStreaming = "knoepfe_obs_plugin.streaming:Streaming"
+OBSCurrentScene = "knoepfe_obs_plugin.current_scene:CurrentScene"
+OBSSwitchScene = "knoepfe_obs_plugin.switch_scene:SwitchScene"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/knoepfe_obs_plugin"]
+
+[dependency-groups]
+dev = ["pytest>=8.4.2", "pytest-asyncio>=0.24.0", "pytest-cov>=5.0.0"]
+
+[tool.pyright]
+include = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.report]
+fail_under = 100
+exclude_lines = ["if __name__ == .__main__.:", "if sys.platform"]
+exclude_also = [
+  "no cover: start(?s:.)*?no cover: stop",
+  "\\A(?s:.*# pragma: exclude file.*)\\Z",
+]

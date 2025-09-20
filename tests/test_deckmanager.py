@@ -3,14 +3,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from pytest import raises
 
-from knoepfe.deck import Deck, SwitchDeckException
+from knoepfe.deck import Deck
 from knoepfe.deckmanager import DeckManager
+from knoepfe.exceptions import SwitchDeckException
 
 
 async def test_deck_manager_run() -> None:
-    deck = Mock(
-        activate=AsyncMock(), update=AsyncMock(side_effect=[None, SystemExit()])
-    )
+    deck = Mock(activate=AsyncMock(), update=AsyncMock(side_effect=[None, SystemExit()]))
     deck_manager = DeckManager(deck, [deck], {}, Mock())
 
     with patch.object(deck_manager.update_requested_event, "wait", AsyncMock()):
@@ -34,9 +33,7 @@ async def test_deck_manager_key_callback() -> None:
     deck = Mock(handle_key=AsyncMock(side_effect=SwitchDeckException("new_deck")))
     deck_manager = DeckManager(deck, [deck], {}, Mock())
 
-    with patch.object(
-        deck_manager, "switch_deck", AsyncMock(side_effect=Exception("Error"))
-    ) as switch_deck:
+    with patch.object(deck_manager, "switch_deck", AsyncMock(side_effect=Exception("Error"))) as switch_deck:
         await deck_manager.key_callback(Mock(), 0, False)
         assert switch_deck.called
 
@@ -65,9 +62,7 @@ async def test_deck_manager_switch_deck() -> None:
 
 async def test_deck_manager_sleep_activation() -> None:
     deck = Mock(spec=Deck)
-    deck_manager = DeckManager(
-        deck, [deck], {"knoepfe.config.device": {"sleep_timeout": 1.0}}, MagicMock()
-    )
+    deck_manager = DeckManager(deck, [deck], {"knoepfe.config.device": {"sleep_timeout": 1.0}}, MagicMock())
     deck_manager.last_action = 0.0
 
     with (

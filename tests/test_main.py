@@ -7,7 +7,11 @@ from knoepfe.__main__ import Knoepfe, main
 
 
 def test_main_success() -> None:
-    with patch("knoepfe.__main__.run"), patch("knoepfe.__main__.Knoepfe") as knoepfe:
+    with (
+        patch("knoepfe.__main__.run"),
+        patch("knoepfe.__main__.Knoepfe") as knoepfe,
+        patch("sys.argv", ["knoepfe"]),
+    ):
         main()
     assert knoepfe.return_value.run.called
 

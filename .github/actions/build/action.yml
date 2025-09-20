@@ -49,7 +49,7 @@ runs:
 
     - name: Build distribution packages
       shell: bash
-      run: uv build
+      run: uv build --all-packages
       env:
         UV_PROJECT_ENVIRONMENT: .venv
 

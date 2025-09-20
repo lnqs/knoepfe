@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from pytest import raises
 
-from knoepfe.deck import SwitchDeckException
+from knoepfe.exceptions import SwitchDeckException
 from knoepfe.wakelock import WakeLock
 from knoepfe.widgets.base import Widget
 

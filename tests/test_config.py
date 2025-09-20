@@ -95,15 +95,18 @@ def test_create_deck() -> None:
 
 def test_create_widget_success() -> None:
     class TestWidget(Widget):
-        def get_schema(self) -> Schema:
+        @classmethod
+        def get_config_schema(cls) -> Schema:
             return Schema({})
 
-    with patch("knoepfe.config.import_module", return_value=Mock(Class=TestWidget)):
-        w = create_widget({"type": "a.b.c.Class"}, {})
+    with patch("knoepfe.config.plugin_manager") as mock_pm:
+        mock_pm.get_widget.return_value = TestWidget
+        w = create_widget({"type": "TestWidget"}, {})
     assert isinstance(w, TestWidget)
 
 
 def test_create_widget_invalid_type() -> None:
-    with patch("knoepfe.config.import_module", return_value=Mock(Class=int)):
-        with raises(RuntimeError):
-            create_widget({"type": "a.b.c.Class"}, {})
+    with patch("knoepfe.config.plugin_manager") as mock_pm:
+        mock_pm.get_widget.side_effect = ValueError("Widget not found")
+        with raises(ValueError):
+            create_widget({"type": "NonExistentWidget"}, {})
