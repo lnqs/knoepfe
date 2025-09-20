@@ -121,6 +121,47 @@ toml = [
 ]
 
 [[package]]
+name = "hidapi"
+version = "0.14.0.post4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "setuptools" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/47/72/21ccaaca6ffb06f544afd16191425025d831c2a6d318635e9c8854070f2d/hidapi-0.14.0.post4.tar.gz", hash = "sha256:48fce253e526d17b663fbf9989c71c7ef7653ced5f4be65f1437c313fb3dbdf6", size = 174388, upload-time = "2024-11-19T16:38:10.316Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/59/b2/6666dfae3c48986a3cf77d049ff8bc6e6620ac0402443ef235b82684eeea/hidapi-0.14.0.post4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:74ae8ce339655b2568d74e49c8ef644d34a445dd0a9b4b89d1bf09447b83f5af", size = 71068, upload-time = "2024-11-19T16:36:11.123Z" },
+    { url = "https://files.pythonhosted.org/packages/35/ad/5c3dfcb986de80f3ea61908bb2c7ff498900ee79df59a894d834e49b55c9/hidapi-0.14.0.post4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e749b79d9cafc1e9fd9d397d8039377c928ca10a36847fda6407169513802f68", size = 68750, upload-time = "2024-11-19T16:36:12.902Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/ab/94ff5dc6c66227bbf316cf8b056145922d1ca931a37092519e8247214df7/hidapi-0.14.0.post4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4169893fe5e368777fce7575a8bdedc1861f13d8fb9fda6b05e8155dde6eb7f1", size = 1072450, upload-time = "2024-11-19T16:36:15.306Z" },
+    { url = "https://files.pythonhosted.org/packages/11/77/1e8c35728a17baae2c61646d7060062249f1f01ecd2c28631d07aa8547af/hidapi-0.14.0.post4-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0d51f8102a2441ce22e080576f8f370d25cb3962161818a89f236b0401840f18", size = 1067973, upload-time = "2024-11-19T16:36:16.932Z" },
+    { url = "https://files.pythonhosted.org/packages/99/82/540a15251d27287742a4c9f897bed01ccc82ab2ea6e4321ed3468741dd33/hidapi-0.14.0.post4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ff021ed0962f2d5d67405ae53c85f6cb3ab8c5af3dff7db8c74672f79f7a39d1", size = 1064054, upload-time = "2024-11-19T16:36:19.53Z" },
+    { url = "https://files.pythonhosted.org/packages/72/93/bb8ed59a06faa0262068486f3f01b49c68e0ae055940f5c9c65bb97064c7/hidapi-0.14.0.post4-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:d8ab5ba9fce95e342335ef48640221a46600c1afb66847432fad9823d40a2022", size = 682621, upload-time = "2024-11-19T16:36:21.214Z" },
+    { url = "https://files.pythonhosted.org/packages/53/42/e262091785d25b30fcfeb0c87b8e0b96ba935336181bab86e7ee25181dd1/hidapi-0.14.0.post4-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:56d7538a4e156041bb80f07f47c327f8944e39da469b010041ce44e324d0657c", size = 669789, upload-time = "2024-11-19T16:36:22.725Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/eb/b0516fadd686ad5b3d99df0db4e16d4d93ae5f74506ac0b2cf4452733e49/hidapi-0.14.0.post4-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:a28de4a03fc276614518d8d0997d8152d0edaf8ca9166522316ef1c455e8bc29", size = 696581, upload-time = "2024-11-19T16:36:25.283Z" },
+    { url = "https://files.pythonhosted.org/packages/d3/b5/35f053d1268c61e1ce6999059d416118d11fd60ba496a3e29c9adcf2ecd7/hidapi-0.14.0.post4-cp311-cp311-win32.whl", hash = "sha256:348e68e3a2145a6ec6bebce13ffdf3e5883d8c720752c365027f16e16764def6", size = 62950, upload-time = "2024-11-19T16:36:26.496Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/e9/d91652ad32f4266c832f8b09879ac1cad9ad5b1660ef35d9ea7171a9e39b/hidapi-0.14.0.post4-cp311-cp311-win_amd64.whl", hash = "sha256:5a5af70dad759b45536a9946d8232ef7d90859845d3554c93bea3e790250df75", size = 70396, upload-time = "2024-11-19T16:36:27.63Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/9a/9b7d5d5e2c003aed2fecdc348caff8d3b6a8ead0220da489ccb822d7e5ef/hidapi-0.14.0.post4-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:129d684c2760fafee9014ce63a58d8e2699cdf00cd1a11bb3d706d4715f5ff96", size = 71668, upload-time = "2024-11-19T16:36:28.666Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/e5/a919eb542a692cc27dc58b1997dd860cace0e4c64e38c8bf9236ff8b95b7/hidapi-0.14.0.post4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4f04de00e40db2efc0bcdd047c160274ba7ccd861100fd87c295dd63cb932f2f", size = 69146, upload-time = "2024-11-19T16:36:30.484Z" },
+    { url = "https://files.pythonhosted.org/packages/37/7c/63316c8cba89cc039a952bb8805c3fb585e79f7fc8a5d27acaa6beb2fe81/hidapi-0.14.0.post4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:10a01af155c51a8089fe44e627af2fbd323cfbef7bd55a86837d971aef6088b0", size = 1083772, upload-time = "2024-11-19T16:36:32.798Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/a8/bb222e3f096467d8e37c717000b9b0c6acee043c1145eaaeba4abfc8cffd/hidapi-0.14.0.post4-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:6eaff1d120c47e1a121eada8dc85eac007d1ed81f3db7fc0da5b6ed17d8edefb", size = 1081215, upload-time = "2024-11-19T16:36:35.512Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/c8/52134f7d3e09fd4feb7756ccd872c55bfd1899ee81ceed4f8ad5ae39f457/hidapi-0.14.0.post4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fedb9c3be6a2376de436d13fcb37a686a9b6bc988585bcc4f5ec61cad925e794", size = 1077222, upload-time = "2024-11-19T16:36:38.062Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/da/88ebbd465dbaff04e9ef3bbdb4a6ca9d24a3458e4726878dbe26bb69236e/hidapi-0.14.0.post4-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:6270677da02e86b56b81afd5f6f313736b8315b493f3c8a431da285e3a3c5de9", size = 694510, upload-time = "2024-11-19T16:36:39.572Z" },
+    { url = "https://files.pythonhosted.org/packages/da/f0/ea437ed339c5f0b446983011000d8cad8c4f8a51ee39e837d16e101b66da/hidapi-0.14.0.post4-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:da700db947562f8c0ac530215b74b5a27e4c669916ec99cfb5accd14ba08562c", size = 682635, upload-time = "2024-11-19T16:36:41.35Z" },
+    { url = "https://files.pythonhosted.org/packages/01/e9/14e63f1a5ec0c2430b84695d28e994b2b63398544adb20d910f6dc41ac66/hidapi-0.14.0.post4-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:707b1ebf5cb051b020e94b039e603351bf2e6620b48fc970228e0dd5d3a91fca", size = 701667, upload-time = "2024-11-19T16:36:43.135Z" },
+    { url = "https://files.pythonhosted.org/packages/df/3d/8a37ed1b250ae45eb7fa5cd3227c865d38a1ddf9ccab626f4f6adfbd424a/hidapi-0.14.0.post4-cp312-cp312-win32.whl", hash = "sha256:1487312ad50cf2c08a5ea786167b3229afd6478c4b26974157c3845a84e91231", size = 63123, upload-time = "2024-11-19T16:36:44.329Z" },
+    { url = "https://files.pythonhosted.org/packages/f4/fd/e642211e579875e35015aed12d3b2c2a25f6a731ff846a2c2aaaf4bf8898/hidapi-0.14.0.post4-cp312-cp312-win_amd64.whl", hash = "sha256:8d924bd002a1c17ca51905b3b7b3d580e80ec211a9b8fe4667b73db0ff9e9b54", size = 70478, upload-time = "2024-11-19T16:36:45.388Z" },
+    { url = "https://files.pythonhosted.org/packages/38/c7/8601f03a6eeeac35655245177b50bb00e707f3392e0a79c34637f8525207/hidapi-0.14.0.post4-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:6f96ae777e906f0a9d6f75e873313145dfec2b774f558bfcae8ba34f09792460", size = 70358, upload-time = "2024-11-19T16:36:46.405Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/5d/7376cf339fbe6fca26048e3c7e183ef4d99c046cc5d8378516a745914327/hidapi-0.14.0.post4-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:6439fc9686518d0336fac8c5e370093279f53c997540065fce131c97567118d8", size = 68034, upload-time = "2024-11-19T16:36:47.419Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/5a/4bca20898c699810f016d2719b980fc57fe36d5012d03eca7a89ace98547/hidapi-0.14.0.post4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2acadb4f1ae569c4f73ddb461af8733e8f5efcb290c3d0ef1b0671ba793b0ae3", size = 1075570, upload-time = "2024-11-19T16:36:48.931Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/c6/66e6b7c27297249bc737115dff4a1e819d3e0e73885160a3104ebec7ac13/hidapi-0.14.0.post4-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:884fa003d899113e14908bd3b519c60b48fc3cec0410264dcbdad1c4a8fc2e8d", size = 1081482, upload-time = "2024-11-19T16:36:51.021Z" },
+    { url = "https://files.pythonhosted.org/packages/86/a8/21e9860eddeefd0dc41b3f7e6e81cd9ff53c2b07130f57776b56a1dddc66/hidapi-0.14.0.post4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8a2d466b995f8ff387d68c052d3b74ee981a4ddc4f1a99f32f2dc7022273dc11", size = 1069549, upload-time = "2024-11-19T16:36:52.808Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/01/3adf46a7ea5bf31f12e09d4392e1810e662101ba6611214ea6e2c35bea7a/hidapi-0.14.0.post4-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:e1f6409854c0a8ed4d1fdbe88d5ee4baf6f19996d1561f76889a132cb083574d", size = 698200, upload-time = "2024-11-19T16:36:54.606Z" },
+    { url = "https://files.pythonhosted.org/packages/f0/19/db15cd21bef1b0dc8ef4309c5734b64affb7e88540efd3c090f153cdae0b/hidapi-0.14.0.post4-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:bca568a2b7d0d454c7921d70b1cc44f427eb6f95961b6d7b3b9b4532d0de74ef", size = 671554, upload-time = "2024-11-19T16:36:56.2Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/23/f896ee8f0977710c354bd1b9ac6d5206c12842bd39d78a357c866f8ec6b6/hidapi-0.14.0.post4-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:9f14ac2737fd6f58d88d2e6bf8ebd03aac7b486c14d3f570b7b1d0013d61b726", size = 703897, upload-time = "2024-11-19T16:36:57.796Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/5e/3c93bb12b01392b538870bc710786fee86a9ced074a8b5c091a59786ee07/hidapi-0.14.0.post4-cp313-cp313-win32.whl", hash = "sha256:b6b9c4dbf7d7e2635ff129ce6ea82174865c073b75888b8b97dda5a3d9a70493", size = 62688, upload-time = "2024-11-19T16:36:59.124Z" },
+    { url = "https://files.pythonhosted.org/packages/6a/a6/0d43ac0be00db25fb0c2c6125e15a3e3536196c9a7cd806d50ebfb37b375/hidapi-0.14.0.post4-cp313-cp313-win_amd64.whl", hash = "sha256:87218eeba366c871adcc273407aacbabab781d6a964919712d5583eded5ca50f", size = 69749, upload-time = "2024-11-19T16:37:00.561Z" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -135,6 +176,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aiorun" },
     { name = "click" },
+    { name = "hidapi" },
     { name = "pillow" },
     { name = "platformdirs" },
     { name = "schema" },
@@ -152,6 +194,7 @@ dev = [
 requires-dist = [
     { name = "aiorun", specifier = ">=2025.1.1" },
     { name = "click", specifier = ">=8.2.1" },
+    { name = "hidapi", specifier = ">=0.14.0.post4" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "platformdirs", specifier = ">=4.4.0" },
     { name = "schema", specifier = ">=0.7.7" },
@@ -477,6 +520,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d4/01/0ea2e66bad2f13271e93b729c653747614784d3ebde219679e41ccdceecd/schema-0.7.7.tar.gz", hash = "sha256:7da553abd2958a19dc2547c388cde53398b39196175a9be59ea1caf5ab0a1807", size = 44245, upload-time = "2024-05-04T10:56:17.318Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ad/1b/81855a88c6db2b114d5b2e9f96339190d5ee4d1b981d217fa32127bb00e0/schema-0.7.7-py2.py3-none-any.whl", hash = "sha256:5d976a5b50f36e74e2157b47097b60002bd4d42e65425fcc9c9befadb4255dde", size = 18632, upload-time = "2024-05-04T10:56:13.86Z" },
+]
+
+[[package]]
+name = "setuptools"
+version = "80.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887f014ea83c24ae194cfcd12b9e0fda66b957c69d1fca/setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c", size = 1319958, upload-time = "2025-05-27T00:56:51.443Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486, upload-time = "2025-05-27T00:56:49.664Z" },
 ]
 
 [[package]]

@@ -8,10 +8,16 @@ from asyncio import sleep
 from pathlib import Path
 
 import click
+import StreamDeck.Transport.LibUSBHIDAPI as LibUSBHIDAPI_module
 from aiorun import run
 from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.Transport.Transport import TransportError
+
+# Use our improved CythonHIDAPI transport instead of the default LibUSBHIDAPI
+from knoepfe.transport import CythonHIDAPI
+
+LibUSBHIDAPI_module.LibUSBHIDAPI = CythonHIDAPI
 
 from knoepfe import __version__
 from knoepfe.config import process_config
