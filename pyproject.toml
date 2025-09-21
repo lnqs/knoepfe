@@ -65,7 +65,7 @@ exclude = [".venv/", "plugins/"]
 lint.select = ["B", "D", "F", "I", "T", "Q"]
 lint.ignore = ["D100", "D101", "D102", "D103", "D104", "D107", "D415"]
 line-length = 120
-exclude = [".env", ".git", ".venv", "__pycache__", "env", "venv"]
+include = ["src/**/*.py", "tests/**/*.py", "plugins/**/*.py"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
