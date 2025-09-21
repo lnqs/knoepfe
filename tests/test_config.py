@@ -78,9 +78,7 @@ def test_exec_config_no_default() -> None:
 
 def test_process_config() -> None:
     with (
-        patch(
-            "knoepfe.config.exec_config", return_value=(Mock(), [Mock()])
-        ) as exec_config,
+        patch("knoepfe.config.exec_config", return_value=(Mock(), [Mock()])) as exec_config,
         patch("builtins.open", mock_open(read_data=test_config)),
     ):
         process_config(Path("file"))

@@ -8,9 +8,7 @@ from knoepfe_obs_plugin.connector import obs
 class OBSWidget(Widget):
     relevant_events: list[str] = []
 
-    def __init__(
-        self, widget_config: dict[str, Any], global_config: dict[str, Any]
-    ) -> None:
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
         super().__init__(widget_config, global_config)
         self.listening_task: Task[None] | None = None
 

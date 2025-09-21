@@ -28,11 +28,7 @@ async def test_run() -> None:
         patch.multiple(
             "knoepfe.__main__",
             process_config=Mock(return_value=({}, Mock(), [Mock()])),
-            DeckManager=Mock(
-                return_value=Mock(
-                    run=Mock(side_effect=[TransportError(), SystemExit()])
-                )
-            ),
+            DeckManager=Mock(return_value=Mock(run=Mock(side_effect=[TransportError(), SystemExit()]))),
         ),
     ):
         with raises(SystemExit):
