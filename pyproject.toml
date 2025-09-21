@@ -30,7 +30,7 @@ Homepage = "https://github.com/lnqs/knoepfe"
 Repository = "https://github.com/lnqs/knoepfe"
 
 [project.scripts]
-knoepfe = "knoepfe.__main__:main"
+knoepfe = "knoepfe.cli:main"
 
 # Built-in widget registration via entry points
 [project.entry-points."knoepfe.widgets"]
