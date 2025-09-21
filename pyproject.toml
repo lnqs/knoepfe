@@ -59,7 +59,14 @@ dev = ["pytest>=8.4.2", "pytest-asyncio>=0.24.0", "pytest-cov>=5.0.0"]
 packages = ["src/knoepfe"]
 
 [tool.hatch.build.targets.sdist]
-exclude = [".venv/", "plugins/"]
+include = [
+  "src/",
+  "tests/",
+  "README.md",
+  "LICENSE.md",
+  "CHANGELOG.md",
+  "pyproject.toml"
+]
 
 [tool.ruff]
 lint.select = ["B", "D", "F", "I", "T", "Q"]
