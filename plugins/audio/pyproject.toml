@@ -1,6 +1,6 @@
 [project]
 name = "knoepfe-audio-plugin"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Audio control widgets for knoepfe"
 authors = [
   { name = "Simon Hayessen", email = "simon@lnqs.io" },
@@ -36,6 +36,9 @@ MicMute = "knoepfe_audio_plugin.mic_mute:MicMute"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/knoepfe_audio_plugin/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/knoepfe_audio_plugin"]
