@@ -18,11 +18,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
-
 dependencies = ["knoepfe", "pulsectl>=24.11.0", "pulsectl-asyncio>=1.2.2"]
-
-[tool.uv.sources]
-knoepfe = { workspace = true }
 
 [project.urls]
 Homepage = "https://github.com/lnqs/knoepfe"
@@ -33,6 +29,9 @@ Issues = "https://github.com/lnqs/knoepfe/issues"
 [project.entry-points."knoepfe.widgets"]
 MicMute = "knoepfe_audio_plugin.mic_mute:MicMute"
 
+[tool.uv.sources]
+knoepfe = { workspace = true }
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -40,14 +39,34 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 path = "src/knoepfe_audio_plugin/__init__.py"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/knoepfe_audio_plugin"]
-
 [dependency-groups]
 dev = ["pytest>=8.4.2", "pytest-asyncio>=0.24.0", "pytest-cov>=5.0.0"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/knoepfe_audio_plugin"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/",
+  "tests/",
+  "README.md",
+  "LICENSE.md",
+  "CHANGELOG.md",
+  "pyproject.toml",
+]
+
+[tool.ruff]
+line-length = 120
+include = ["src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.pyright]
-include = ["src"]
+include = ["src", "tests"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

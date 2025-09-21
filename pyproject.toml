@@ -21,9 +21,9 @@ dependencies = [
 
 # Optional dependencies for different widget groups
 [project.optional-dependencies]
-obs = []
-audio = []
-all = []
+obs = ["knoepfe-obs-plugin"]
+audio = ["knoepfe-audio-plugin"]
+all = ["knoepfe-audio-plugin", "knoepfe-obs-plugin"]
 
 [project.urls]
 Homepage = "https://github.com/lnqs/knoepfe"
@@ -43,6 +43,8 @@ Timer = "knoepfe.widgets.timer:Timer"
 members = ["plugins/*"]
 
 [tool.uv.sources]
+knoepfe-audio-plugin = { workspace = true }
+knoepfe-obs-plugin = { workspace = true }
 knoepfe-example-plugin = { workspace = true }
 
 [build-system]
@@ -65,7 +67,7 @@ include = [
   "README.md",
   "LICENSE.md",
   "CHANGELOG.md",
-  "pyproject.toml"
+  "pyproject.toml",
 ]
 
 [tool.ruff]
@@ -84,7 +86,7 @@ convention = "google"
 docstring-code-format = true
 
 [tool.pyright]
-include = ["src"]
+include = ["src", "tests"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

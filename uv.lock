@@ -183,6 +183,18 @@ dependencies = [
     { name = "streamdeck" },
 ]
 
+[package.optional-dependencies]
+all = [
+    { name = "knoepfe-audio-plugin" },
+    { name = "knoepfe-obs-plugin" },
+]
+audio = [
+    { name = "knoepfe-audio-plugin" },
+]
+obs = [
+    { name = "knoepfe-obs-plugin" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
@@ -195,6 +207,10 @@ requires-dist = [
     { name = "aiorun", specifier = ">=2025.1.1" },
     { name = "click", specifier = ">=8.2.1" },
     { name = "hidapi", specifier = ">=0.14.0.post4" },
+    { name = "knoepfe-audio-plugin", marker = "extra == 'all'", editable = "plugins/audio" },
+    { name = "knoepfe-audio-plugin", marker = "extra == 'audio'", editable = "plugins/audio" },
+    { name = "knoepfe-obs-plugin", marker = "extra == 'all'", editable = "plugins/obs" },
+    { name = "knoepfe-obs-plugin", marker = "extra == 'obs'", editable = "plugins/obs" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "platformdirs", specifier = ">=4.4.0" },
     { name = "schema", specifier = ">=0.7.7" },
