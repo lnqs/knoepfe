@@ -27,12 +27,31 @@ runs:
 
     - name: Setup project
       shell: bash
-      run: uv sync --extra dev
+      run: uv sync --group dev
       env:
         UV_PROJECT_ENVIRONMENT: .venv
 
-    - name: Run pre-commit
-      uses: pre-commit/action@v3.0.1
+    - name: Run ruff check on main project
+      uses: astral-sh/ruff-action@v3
+      with:
+        args: "check"
+
+    - name: Run ruff format check on main project
+      uses: astral-sh/ruff-action@v3
+      with:
+        args: "format --check"
+
+    - name: Run ruff check on plugins
+      uses: astral-sh/ruff-action@v3
+      with:
+        src: "plugins/"
+        args: "check"
+
+    - name: Run ruff format check on plugins
+      uses: astral-sh/ruff-action@v3
+      with:
+        src: "plugins/"
+        args: "format --check"
 
     - name: Test core package
       shell: bash
@@ -45,3 +64,7 @@ runs:
     - name: Test audio plugin
       shell: bash
       run: cd plugins/audio && uv run pytest tests/
+
+    - name: Test example plugin
+      shell: bash
+      run: cd plugins/example && uv run pytest tests/
