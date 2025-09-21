@@ -17,6 +17,7 @@ dependencies = [
   "click>=8.2.1",
   "aiorun>=2025.1.1",
   "hidapi>=0.14.0.post4",
+  "python-fontconfig>=0.6.1",
 ]
 
 # Optional dependencies for different widget groups

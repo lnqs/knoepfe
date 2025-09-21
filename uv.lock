@@ -179,6 +179,7 @@ dependencies = [
     { name = "hidapi" },
     { name = "pillow" },
     { name = "platformdirs" },
+    { name = "python-fontconfig" },
     { name = "schema" },
     { name = "streamdeck" },
 ]
@@ -213,6 +214,7 @@ requires-dist = [
     { name = "knoepfe-obs-plugin", marker = "extra == 'obs'", editable = "plugins/obs" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "platformdirs", specifier = ">=4.4.0" },
+    { name = "python-fontconfig", specifier = ">=0.6.1" },
     { name = "schema", specifier = ">=0.7.7" },
     { name = "streamdeck", specifier = ">=0.9.5" },
 ]
@@ -528,6 +530,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/5e/f7/c933acc76f5208b3b
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ee/49/1377b49de7d0c1ce41292161ea0f721913fa8722c19fb9c1e3aa0367eecb/pytest_cov-7.0.0-py3-none-any.whl", hash = "sha256:3b8e9558b16cc1479da72058bdecf8073661c7f57f7d3c5f22a1c23507f2d861", size = 22424, upload-time = "2025-09-09T10:57:00.695Z" },
 ]
+
+[[package]]
+name = "python-fontconfig"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/ec/f73ba44bcd04a9dc6c2284991db3acc4f00bef0e40defe860161f357613b/python_fontconfig-0.6.1.tar.gz", hash = "sha256:aa46b82a4b175bd2cf9fe1ab9b29e0de4cab8702041bb504a550de29f5fcf733", size = 110164, upload-time = "2025-07-16T11:44:13.862Z" }
 
 [[package]]
 name = "schema"
