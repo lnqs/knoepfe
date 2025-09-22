@@ -1,6 +1,6 @@
+from knoepfe.key import Key
 from schema import Schema
 
-from knoepfe.key import Key
 from knoepfe_obs_plugin.base import OBSWidget
 from knoepfe_obs_plugin.connector import obs
 
@@ -15,9 +15,13 @@ class CurrentScene(OBSWidget):
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
             if obs.connected:
-                renderer.icon_and_text("panorama", obs.current_scene or "[none]")
+                # panorama icon (e40b) with text below
+                renderer.text("\ue40b", font="Material Icons", size=64, anchor="mt")
+                renderer.text_at((48, 80), obs.current_scene or "[none]", size=16, anchor="mt")
             else:
-                renderer.icon_and_text("panorama", "[none]", color="#202020")
+                # panorama icon (e40b) with text below, grayed out
+                renderer.text("\ue40b", font="Material Icons", size=64, color="#202020", anchor="mt")
+                renderer.text_at((48, 80), "[none]", size=16, color="#202020", anchor="mt")
 
     @classmethod
     def get_config_schema(cls) -> Schema:

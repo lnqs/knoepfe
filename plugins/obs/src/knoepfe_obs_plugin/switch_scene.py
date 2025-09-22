@@ -1,6 +1,6 @@
+from knoepfe.key import Key
 from schema import Schema
 
-from knoepfe.key import Key
 from knoepfe_obs_plugin.base import OBSWidget
 from knoepfe_obs_plugin.connector import obs
 
@@ -20,7 +20,8 @@ class SwitchScene(OBSWidget):
             color = "red"
 
         with key.renderer() as renderer:
-            renderer.icon_and_text("panorama", self.config["scene"], color=color)
+            renderer.text("\ue40b", font="Material Icons", size=64, color=color, anchor="mt")  # panorama (e40b)
+            renderer.text_at((48, 80), self.config["scene"], size=16, color=color, anchor="mt")
 
     async def triggered(self, long_press: bool = False) -> None:
         if obs.connected:

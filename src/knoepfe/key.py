@@ -1,9 +1,7 @@
 from contextlib import contextmanager
-from pathlib import Path
 from typing import Iterator, Literal
 
-from PIL import Image, ImageDraw, ImageFont
-from PIL.ImageFont import FreeTypeFont
+from PIL import Image, ImageDraw
 from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.ImageHelpers import PILHelper
 
@@ -13,18 +11,9 @@ Align = Literal["left", "center", "right"]
 VAlign = Literal["top", "middle", "bottom"]
 
 
-ICONS = dict(
-    line.split(" ")
-    for line in Path(__file__).parent.joinpath("MaterialIcons-Regular.codepoints").read_text().split("\n")
-    if line
-)
-
-
 class Renderer:
     def __init__(self) -> None:
         self.image = Image.new("RGB", (96, 96))
-
-        self.font_manager = FontManager()
 
     def text(
         self, text: str, size: int = 24, color: str | None = None, font: str | None = None, anchor: str | None = None
@@ -33,7 +22,7 @@ class Renderer:
         if anchor is None:
             anchor = "ms"  # middle-baseline (centered)
 
-        return self._render_text("text", text, size, color, font_pattern=font, anchor=anchor, xy=(48, 48))
+        return self._render_text(text, size, color, font_pattern=font, anchor=anchor, xy=(48, 48))
 
     def text_at(
         self,
@@ -45,19 +34,10 @@ class Renderer:
         anchor: str = "la",
     ) -> "Renderer":
         """Draw text at specific position with fontconfig pattern."""
-        return self._render_text("text", text, size, color, font_pattern=font, anchor=anchor, xy=xy)
-
-    def icon(self, text: str, color: str | None = None) -> "Renderer":
-        return self._render_text("icon", text, 86, color)
-
-    def icon_and_text(self, icon: str, text: str, color: str | None = None) -> "Renderer":
-        self._render_text("icon", icon, 86, color, "top")
-        self._render_text("text", text, 16, color, "bottom")
-        return self
+        return self._render_text(text, size, color, font_pattern=font, anchor=anchor, xy=xy)
 
     def _render_text(
         self,
-        type: Literal["text", "icon"],
         text: str,
         size: int,
         color: str | None,
@@ -66,15 +46,9 @@ class Renderer:
         anchor: str | None = None,
         xy: tuple[int, int] | None = None,
     ) -> "Renderer":
-        # Get font
-        if type == "icon":
-            # Icons still use bundled MaterialIcons font
-            font = self._get_font("icon", size)
-            anchor = anchor or "ms"
-        else:
-            # Use fontconfig pattern
-            pattern = font_pattern or "Roboto"
-            font = FontManager.get_font(pattern, size)
+        # Use fontconfig pattern
+        pattern = font_pattern or "Roboto"
+        font = FontManager.get_font(pattern, size)
 
         # Handle legacy valign parameter for backward compatibility
         if xy is None and valign is not None:
@@ -116,11 +90,6 @@ class Renderer:
             y = self.image.height - h - 6
 
         return x, y
-
-    def _get_font(self, type: Literal["text", "icon"], size: int) -> FreeTypeFont:
-        font_file = "Roboto-Regular.ttf" if type == "text" else "MaterialIcons-Regular.ttf"
-        font_path = Path(__file__).parent.joinpath(font_file)
-        return ImageFont.truetype(str(font_path), size)
 
 
 class Key:

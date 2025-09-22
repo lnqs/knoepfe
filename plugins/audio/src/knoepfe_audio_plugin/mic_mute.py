@@ -4,12 +4,11 @@ import logging
 from asyncio import Task, get_event_loop
 from typing import Any
 
+from knoepfe.key import Key
+from knoepfe.widgets.base import Widget
 from pulsectl import PulseEventTypeEnum
 from pulsectl_asyncio import PulseAsync
 from schema import Optional, Schema
-
-from knoepfe.key import Key
-from knoepfe.widgets.base import Widget
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +39,9 @@ class MicMute(Widget):
         source = await self.get_source()
         with key.renderer() as renderer:
             if source.mute:
-                renderer.icon("mic_off")
+                renderer.text("\ue02b", font="Material Icons", size=86)  # mic_off (e02b)
             else:
-                renderer.icon("mic", color="red")
+                renderer.text("\ue029", font="Material Icons", size=86, color="red")  # mic (e029)
 
     async def triggered(self, long_press: bool = False) -> None:
         assert self.pulse

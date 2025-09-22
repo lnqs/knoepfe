@@ -1,9 +1,9 @@
 from asyncio import sleep
 from typing import Any
 
+from knoepfe.key import Key
 from schema import Schema
 
-from knoepfe.key import Key
 from knoepfe_obs_plugin.base import OBSWidget
 from knoepfe_obs_plugin.connector import obs
 
@@ -32,16 +32,17 @@ class Recording(OBSWidget):
         with key.renderer() as renderer:
             if self.show_loading:
                 self.show_loading = False
-                renderer.icon("more_horiz")
+                renderer.text("\ue5d3", font="Material Icons", size=86)  # more_horiz (e5d3)
             elif not obs.connected:
-                renderer.icon("videocam_off", color="#202020")
+                renderer.text("\ue04c", font="Material Icons", size=86, color="#202020")  # videocam_off (e04c)
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
             elif obs.recording:
                 timecode = (await obs.get_recording_timecode() or "").rsplit(".", 1)[0]
-                renderer.icon_and_text("videocam", timecode, color="red")
+                renderer.text("\ue04b", font="Material Icons", size=64, color="red", anchor="mt")  # videocam (e04b)
+                renderer.text_at((48, 80), timecode, size=16, color="red", anchor="mt")
             else:
-                renderer.icon("videocam_off")
+                renderer.text("\ue04c", font="Material Icons", size=86)  # videocam_off (e04c)
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:

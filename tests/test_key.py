@@ -26,20 +26,6 @@ def test_renderer_text() -> None:
         assert draw_text.called
 
 
-def test_renderer_icon() -> None:
-    renderer = Renderer()
-    with patch.object(renderer, "_render_text") as draw_text:
-        renderer.icon("mic")
-        assert draw_text.called
-
-
-def test_renderer_icon_and_text() -> None:
-    renderer = Renderer()
-    with patch.object(renderer, "_render_text") as draw_text:
-        renderer.icon_and_text("mic", "text")
-        assert draw_text.call_count == 2
-
-
 def test_renderer_draw_text() -> None:
     with mock_fontconfig_system():
         renderer = Renderer()
@@ -48,21 +34,21 @@ def test_renderer_draw_text() -> None:
             "knoepfe.key.ImageDraw.Draw",
             return_value=Mock(textlength=Mock(return_value=0)),
         ) as draw:
-            renderer._render_text("text", "Text", size=12, color=None, valign="top")
+            renderer._render_text("Text", size=12, color=None, valign="top")
             assert draw.return_value.text.call_args[0][0] == (48, 0)
 
         with patch(
             "knoepfe.key.ImageDraw.Draw",
             return_value=Mock(textlength=Mock(return_value=0)),
         ) as draw:
-            renderer._render_text("text", "Text", size=12, color=None, valign="middle")
+            renderer._render_text("Text", size=12, color=None, valign="middle")
             assert draw.return_value.text.call_args[0][0] == (48, 42)
 
         with patch(
             "knoepfe.key.ImageDraw.Draw",
             return_value=Mock(textlength=Mock(return_value=0)),
         ) as draw:
-            renderer._render_text("text", "Text", size=12, color=None, valign="bottom")
+            renderer._render_text("Text", size=12, color=None, valign="bottom")
             assert draw.return_value.text.call_args[0][0] == (48, 78)
 
 
@@ -163,7 +149,7 @@ def test_renderer_text_at() -> None:
             renderer.text_at((10, 20), "Positioned", font="monospace", anchor="la")
 
             mock_render_text.assert_called_once_with(
-                "text", "Positioned", 24, None, font_pattern="monospace", anchor="la", xy=(10, 20)
+                "Positioned", 24, None, font_pattern="monospace", anchor="la", xy=(10, 20)
             )
 
 
@@ -178,25 +164,31 @@ def test_renderer_backward_compatibility() -> None:
 
             # Should use default "Roboto" pattern
             mock_render_text.assert_called_once_with(
-                "text", "Legacy Text", 20, "#ffffff", font_pattern=None, anchor="ms", xy=(48, 48)
+                "Legacy Text", 20, "#ffffff", font_pattern=None, anchor="ms", xy=(48, 48)
             )
 
 
-def test_renderer_icon_unchanged() -> None:
-    """Test that icon rendering still uses bundled MaterialIcons font."""
-    with mock_fontconfig_system():
+def test_renderer_unicode_icons() -> None:
+    """Test that Unicode icons work with fontconfig patterns."""
+    with mock_fontconfig_system() as mocks:
+        # Override for Material Icons font
+        mocks["fontconfig"].query.return_value = ["/path/to/materialicons.ttf"]
+
         renderer = Renderer()
 
-        with patch.object(renderer, "_get_font") as mock_get_font:
-            mock_font = Mock()
-            mock_get_font.return_value = mock_font
+        with patch("knoepfe.key.ImageDraw.Draw") as mock_draw:
+            mock_draw_instance = Mock()
+            mock_draw.return_value = mock_draw_instance
 
-            with patch("knoepfe.key.ImageDraw.Draw") as mock_draw:
-                mock_draw_instance = Mock()
-                mock_draw.return_value = mock_draw_instance
+            # Test Unicode icon with Material Icons font
+            renderer.text("🎤", font="Material Icons", size=86)
 
-                renderer.icon("mic")
+            # Should have queried fontconfig for Material Icons
+            mocks["fontconfig"].query.assert_called_with("Material Icons")
+            mocks["truetype"].assert_called_with("/path/to/materialicons.ttf", 86)
 
-                # Should use _get_font for icons, not FontManager
-                mock_get_font.assert_called_with("icon", 86)
-                mock_draw_instance.text.assert_called_once()
+            # Should have drawn the Unicode character
+            mock_draw_instance.text.assert_called_once()
+            call_args = mock_draw_instance.text.call_args
+            # Check the 'text' keyword argument
+            assert call_args[1]["text"] == "🎤"  # Unicode character

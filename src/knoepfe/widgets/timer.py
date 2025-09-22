@@ -32,7 +32,7 @@ class Timer(Widget):
                     color="red",
                 )
             else:
-                renderer.icon("timer")
+                renderer.text("\ue425", font="Material Icons", size=86)  # timer (e425)
 
     async def triggered(self, long_press: bool = False) -> None:
         if not self.start:
