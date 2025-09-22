@@ -1,10 +1,8 @@
 from asyncio import sleep
 from unittest.mock import AsyncMock, Mock, patch
 
-from pytest import raises
-
-from knoepfe.exceptions import SwitchDeckException
 from knoepfe.wakelock import WakeLock
+from knoepfe.widgets.actions import SwitchDeckAction
 from knoepfe.widgets.base import Widget
 
 
@@ -28,10 +26,17 @@ async def test_presses() -> None:
 
 async def test_switch_deck() -> None:
     widget = Widget({"switch_deck": "new_deck"}, {})
-    with raises(SwitchDeckException) as e:
-        widget.long_press_task = Mock()
-        await widget.released()
-    assert e.value.new_deck == "new_deck"
+    widget.long_press_task = Mock()
+    action = await widget.released()
+    assert isinstance(action, SwitchDeckAction)
+    assert action.target_deck == "new_deck"
+
+
+async def test_no_switch_deck() -> None:
+    widget = Widget({}, {})
+    widget.long_press_task = Mock()
+    action = await widget.released()
+    assert action is None
 
 
 async def test_request_update() -> None:

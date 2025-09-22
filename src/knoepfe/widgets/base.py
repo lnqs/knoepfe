@@ -3,9 +3,9 @@ from typing import Any
 
 from schema import Optional, Schema
 
-from knoepfe.exceptions import SwitchDeckException
 from knoepfe.key import Key
 from knoepfe.wakelock import WakeLock
+from knoepfe.widgets.actions import SwitchDeckAction, WidgetAction
 
 
 class Widget:
@@ -36,17 +36,21 @@ class Widget:
 
         self.long_press_task = get_event_loop().create_task(maybe_trigger_longpress())
 
-    async def released(self) -> None:
+    async def released(self) -> WidgetAction | None:
         if self.long_press_task:
             self.long_press_task.cancel()
             self.long_press_task = None
-            await self.triggered(False)
+            action = await self.triggered(False)
+            if action:
+                return action
 
             if "switch_deck" in self.config:
-                raise SwitchDeckException(self.config["switch_deck"])
+                return SwitchDeckAction(self.config["switch_deck"])
 
-    async def triggered(self, long_press: bool = False) -> None:
-        pass
+        return None
+
+    async def triggered(self, long_press: bool = False) -> WidgetAction | None:
+        return None
 
     def request_update(self) -> None:
         self.needs_update = True

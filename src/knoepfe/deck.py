@@ -6,6 +6,7 @@ from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from knoepfe.key import Key
 from knoepfe.wakelock import WakeLock
+from knoepfe.widgets.actions import WidgetAction
 from knoepfe.widgets.base import Widget
 
 logger = logging.getLogger(__name__)
@@ -43,11 +44,13 @@ class Deck:
 
         await asyncio.gather(*[update_widget(widget, index) for index, widget in enumerate(self.widgets)])
 
-    async def handle_key(self, index: int, pressed: bool) -> None:
+    async def handle_key(self, index: int, pressed: bool) -> WidgetAction | None:
         if index < len(self.widgets):
             widget = self.widgets[index]
             if widget:
                 if pressed:
                     await widget.pressed()
+                    return None
                 else:
-                    await widget.released()
+                    return await widget.released()
+        return None

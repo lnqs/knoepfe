@@ -1,13 +1,13 @@
 import logging
 import time
 from asyncio import Event, TimeoutError, sleep, wait_for
-from typing import Any
+from typing import Any, cast
 
 from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from knoepfe.deck import Deck
-from knoepfe.exceptions import SwitchDeckException
 from knoepfe.wakelock import WakeLock
+from knoepfe.widgets.actions import SwitchDeckAction, WidgetActionType
 
 logger = logging.getLogger(__name__)
 
@@ -80,12 +80,14 @@ class DeckManager:
             return
 
         try:
-            await self.active_deck.handle_key(index, pressed)
-        except SwitchDeckException as e:
-            try:
-                await self.switch_deck(e.new_deck)
-            except Exception as e:
-                logger.error(str(e))
+            action = await self.active_deck.handle_key(index, pressed)
+            if action:
+                if action.action_type == WidgetActionType.SWITCH_DECK:
+                    switch_action = cast(SwitchDeckAction, action)
+                    try:
+                        await self.switch_deck(switch_action.target_deck)
+                    except Exception as e:
+                        logger.error(str(e))
         except Exception as e:
             logger.error(str(e))
 
