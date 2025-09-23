@@ -32,17 +32,21 @@ class Recording(OBSWidget):
         with key.renderer() as renderer:
             if self.show_loading:
                 self.show_loading = False
-                renderer.text("\ue5d3", font="Material Icons", size=86)  # more_horiz (e5d3)
+                renderer.text("\ue5d3", font="Material Icons", size=86, anchor="mm")  # more_horiz (e5d3)
             elif not obs.connected:
-                renderer.text("\ue04c", font="Material Icons", size=86, color="#202020")  # videocam_off (e04c)
+                renderer.text(
+                    "\ue04c", font="Material Icons", size=86, color="#202020", anchor="mm"
+                )  # videocam_off (e04c)
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
             elif obs.recording:
                 timecode = (await obs.get_recording_timecode() or "").rsplit(".", 1)[0]
-                renderer.text("\ue04b", font="Material Icons", size=64, color="red", anchor="mt")  # videocam (e04b)
+                renderer.text_at(
+                    (48, 32), "\ue04b", font="Material Icons", size=64, color="red", anchor="mm"
+                )  # videocam (e04b)
                 renderer.text_at((48, 80), timecode, size=16, color="red", anchor="mt")
             else:
-                renderer.text("\ue04c", font="Material Icons", size=86)  # videocam_off (e04c)
+                renderer.text("\ue04c", font="Material Icons", size=86, anchor="mm")  # videocam_off (e04c)
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:

@@ -32,17 +32,21 @@ class Streaming(OBSWidget):
         with key.renderer() as renderer:
             if self.show_loading:
                 self.show_loading = False
-                renderer.text("\ue5d3", font="Material Icons", size=86)  # more_horiz (e5d3)
+                renderer.text("\ue5d3", font="Material Icons", size=86, anchor="mm")  # more_horiz (e5d3)
             elif not obs.connected:
-                renderer.text("\ue0e3", font="Material Icons", size=86, color="#202020")  # stop_screen_share (e0e3)
+                renderer.text(
+                    "\ue0e3", font="Material Icons", size=86, color="#202020", anchor="mm"
+                )  # stop_screen_share (e0e3)
             elif self.show_help:
                 renderer.text("long press\nto toggle", size=16)
             elif obs.streaming:
                 timecode = (await obs.get_streaming_timecode() or "").rsplit(".", 1)[0]
-                renderer.text("\ue0e2", font="Material Icons", size=64, color="red", anchor="mt")  # screen_share (e0e2)
+                renderer.text_at(
+                    (48, 32), "\ue0e2", font="Material Icons", size=64, color="red", anchor="mm"
+                )  # screen_share (e0e2)
                 renderer.text_at((48, 80), timecode, size=16, color="red", anchor="mt")
             else:
-                renderer.text("\ue0e3", font="Material Icons", size=86)  # stop_screen_share (e0e3)
+                renderer.text("\ue0e3", font="Material Icons", size=86, anchor="mm")  # stop_screen_share (e0e3)
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:

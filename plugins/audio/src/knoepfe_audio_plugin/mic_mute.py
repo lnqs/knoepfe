@@ -39,9 +39,9 @@ class MicMute(Widget):
         source = await self.get_source()
         with key.renderer() as renderer:
             if source.mute:
-                renderer.text("\ue02b", font="Material Icons", size=86)  # mic_off (e02b)
+                renderer.text("\ue02b", font="Material Icons", size=86, anchor="mm")  # mic_off (e02b)
             else:
-                renderer.text("\ue029", font="Material Icons", size=86, color="red")  # mic (e029)
+                renderer.text("\ue029", font="Material Icons", size=86, color="red", anchor="mm")  # mic (e029)
 
     async def triggered(self, long_press: bool = False) -> None:
         assert self.pulse

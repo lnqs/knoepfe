@@ -1,8 +1,9 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from knoepfe_obs_plugin.recording import Recording
 from pytest import fixture
 from schema import Schema
+
+from knoepfe_obs_plugin.recording import Recording
 
 
 @fixture
@@ -32,7 +33,9 @@ async def test_recording_update_disconnected(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.icon.assert_called_with("videocam_off", color="#202020")
+    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
+        "\ue04c", font="Material Icons", size=86, color="#202020", anchor="mm"
+    )
 
 
 async def test_recording_update_not_recording(recording_widget, mock_obs):
@@ -42,7 +45,9 @@ async def test_recording_update_not_recording(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.icon.assert_called_with("videocam_off")
+    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
+        "\ue04c", font="Material Icons", size=86, anchor="mm"
+    )
 
 
 async def test_recording_update_recording(recording_widget, mock_obs):
@@ -53,9 +58,10 @@ async def test_recording_update_recording(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.icon_and_text.assert_called_with(
-        "videocam", "00:01:23", color="red"
-    )
+    # Check both text_at calls for the recording state
+    renderer_mock = key.renderer.return_value.__enter__.return_value
+    renderer_mock.text_at.assert_any_call((48, 32), "\ue04b", font="Material Icons", size=64, color="red", anchor="mm")
+    renderer_mock.text_at.assert_any_call((48, 80), "00:01:23", size=16, color="red", anchor="mt")
 
 
 async def test_recording_update_show_help(recording_widget, mock_obs):
@@ -73,7 +79,9 @@ async def test_recording_update_show_loading(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.icon.assert_called_with("more_horiz")
+    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
+        "\ue5d3", font="Material Icons", size=86, anchor="mm"
+    )
     assert not recording_widget.show_loading
 
 

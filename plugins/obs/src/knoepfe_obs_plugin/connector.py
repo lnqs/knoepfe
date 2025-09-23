@@ -46,7 +46,7 @@ class OBS:
 
     @property
     def connected(self) -> bool:
-        return bool(self.ws and self.ws.ws and self.ws.ws.open)  # pyright: ignore
+        return bool(self.ws and self.ws.ws_open)
 
     async def listen(self) -> AsyncIterator[str]:
         while True:
