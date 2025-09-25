@@ -214,7 +214,7 @@ requires-dist = [
     { name = "knoepfe-obs-plugin", marker = "extra == 'obs'", editable = "plugins/obs" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "platformdirs", specifier = ">=4.4.0" },
-    { name = "python-fontconfig", specifier = ">=0.6.1" },
+    { name = "python-fontconfig", specifier = ">=0.6.2.post1" },
     { name = "schema", specifier = ">=0.7.7" },
     { name = "streamdeck", specifier = ">=0.9.5" },
 ]
@@ -533,9 +533,9 @@ wheels = [
 
 [[package]]
 name = "python-fontconfig"
-version = "0.6.1"
+version = "0.6.2.post1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/ec/f73ba44bcd04a9dc6c2284991db3acc4f00bef0e40defe860161f357613b/python_fontconfig-0.6.1.tar.gz", hash = "sha256:aa46b82a4b175bd2cf9fe1ab9b29e0de4cab8702041bb504a550de29f5fcf733", size = 110164, upload-time = "2025-07-16T11:44:13.862Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/59/99db03443f584b6d14bb635ef9f849dae7966792471dee9bf50ae2308f07/python_fontconfig-0.6.2.post1.tar.gz", hash = "sha256:4837290305613710cf6c515db8923284da06e4f48a549d2fe8e2d4276aed3e73", size = 110187, upload-time = "2025-09-25T02:05:13.172Z" }
 
 [[package]]
 name = "schema"
