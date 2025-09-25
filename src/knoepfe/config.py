@@ -12,6 +12,16 @@ from knoepfe.widgets.base import Widget
 
 logger = logging.getLogger(__name__)
 
+
+class ConfigPluginNotFoundError(Exception):
+    """Raised when a required config plugin cannot be found or imported."""
+
+    def __init__(self, plugin_name: str):
+        self.plugin_name = plugin_name
+
+        super().__init__(f"Config plugin '{plugin_name}' not found. This plugin needs to be installed.")
+
+
 DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": list[Widget | None]})
 
 device = Schema(
@@ -94,7 +104,12 @@ def process_config(path: Path | None = None) -> tuple[dict[str, Any], Deck, list
 def create_config(config: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     type_ = config["type"]
     parts = type_.rsplit(".", 1)
-    module = import_module(parts[0])
+
+    try:
+        module = import_module(parts[0])
+    except ModuleNotFoundError:
+        raise ConfigPluginNotFoundError(parts[0]) from None
+
     schema: Schema = getattr(module, parts[-1])
 
     if not isinstance(schema, Schema):

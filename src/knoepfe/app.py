@@ -9,8 +9,9 @@ from StreamDeck.DeviceManager import DeviceManager
 from StreamDeck.Devices.StreamDeck import StreamDeck
 from StreamDeck.Transport.Transport import TransportError
 
-from knoepfe.config import process_config
+from knoepfe.config import ConfigPluginNotFoundError, process_config
 from knoepfe.deckmanager import DeckManager
+from knoepfe.plugin_manager import WidgetNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,8 @@ class Knoepfe:
         try:
             logger.debug("Processing config")
             global_config, active_deck, decks = process_config(config_path)
+        except (ConfigPluginNotFoundError, WidgetNotFoundError) as e:
+            raise e
         except Exception as e:
             raise RuntimeError("Failed to parse configuration") from e
 

@@ -7,6 +7,15 @@ from knoepfe.widgets.base import Widget
 logger = logging.getLogger(__name__)
 
 
+class WidgetNotFoundError(Exception):
+    """Raised when a required widget cannot be found or imported."""
+
+    def __init__(self, widget_name: str):
+        self.widget_name = widget_name
+
+        super().__init__(f"Widget '{widget_name}' not found. Use 'knoepfe list-widgets' to see available widgets.")
+
+
 class PluginManager:
     def __init__(self):
         self._widget_plugins: dict[str, Type[Widget]] = {}
@@ -27,7 +36,7 @@ class PluginManager:
         if name in self._widget_plugins:
             return self._widget_plugins[name]
 
-        raise ValueError(f"Widget '{name}' not found. Available widgets: {list(self._widget_plugins.keys())}")
+        raise WidgetNotFoundError(name)
 
     def list_widgets(self) -> list[str]:
         """List all available widget names."""

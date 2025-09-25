@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from schema import Schema
 
-from knoepfe.plugin_manager import PluginManager, plugin_manager
+from knoepfe.plugin_manager import PluginManager, WidgetNotFoundError, plugin_manager
 from knoepfe.widgets.base import Widget
 
 
@@ -80,11 +80,11 @@ def test_plugin_manager_get_widget_success():
 
 
 def test_plugin_manager_get_widget_not_found():
-    """Test getting a non-existent widget raises ValueError."""
+    """Test getting a non-existent widget raises WidgetNotFoundError."""
     pm = PluginManager()
     pm._widget_plugins = {"ExistingWidget": MockWidget}
 
-    with pytest.raises(ValueError, match="Widget 'NonExistentWidget' not found"):
+    with pytest.raises(WidgetNotFoundError, match="Widget 'NonExistentWidget' not found"):
         pm.get_widget("NonExistentWidget")
 
 
