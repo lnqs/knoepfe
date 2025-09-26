@@ -1,28 +1,15 @@
 import logging
-from importlib import import_module
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any
 
 import platformdirs
 from schema import And, Optional, Schema
 
 from knoepfe.deck import Deck
-from knoepfe.plugin_manager import plugin_manager
 from knoepfe.widgets.base import Widget
 
 logger = logging.getLogger(__name__)
 
-
-class ConfigPluginNotFoundError(Exception):
-    """Raised when a required config plugin cannot be found or imported."""
-
-    def __init__(self, plugin_name: str):
-        self.plugin_name = plugin_name
-
-        super().__init__(f"Config plugin '{plugin_name}' not found. This plugin needs to be installed.")
-
-
-DeckConfig = TypedDict("DeckConfig", {"id": str, "widgets": list[Widget | None]})
 
 device = Schema(
     {
@@ -50,93 +37,73 @@ def get_config_path(path: Path | None = None) -> Path:
     return default_config
 
 
-def exec_config(config: str) -> tuple[dict[str, Any], Deck, list[Deck]]:
+def exec_config(config: str, widget_manager, plugin_manager) -> tuple[dict[str, Any], Deck, list[Deck]]:
     global_config: dict[str, Any] = {}
     decks = []
-    default = None
+    main_deck = None
 
-    def config_(c: dict[str, Any]) -> None:
-        type_, conf = create_config(c)
-        if type_ in global_config:
-            raise RuntimeError(f"Config {type_} already set")
-        global_config[type_] = conf
+    def config_(plugin_name: str, config_data: dict[str, Any]) -> None:
+        # Handle device config specially (built-in)
+        if plugin_name == "device":
+            # Validate device config
+            device.validate(config_data)
+            global_config["knoepfe.config.device"] = config_data
+        else:
+            # Store plugin config for plugin manager
+            plugin_manager.set_plugin_config(plugin_name, config_data)
+            # Also store in global config
+            global_config[plugin_name] = config_data
 
-    def deck(c: DeckConfig) -> Deck:
-        d = create_deck(c)
+    def deck_(deck_name: str, widgets: list[Widget | None]) -> Deck:
+        nonlocal main_deck
+
+        d = Deck(deck_name, widgets)
         decks.append(d)
+
+        # Track the main deck
+        if deck_name == "main":
+            if main_deck:
+                raise RuntimeError("Main deck already defined")
+            main_deck = d
+
         return d
 
-    def default_deck(c: DeckConfig) -> Deck:
-        nonlocal default
-        if default:
-            raise RuntimeError("default deck already set")
-        d = deck(c)
-        default = d
-        return d
-
-    def widget(c: dict[str, Any]) -> Widget:
-        return create_widget(c, global_config)
+    def widget_(widget_name: str, widget_config: dict[str, Any] | None = None) -> Widget:
+        if widget_config is None:
+            widget_config = {}
+        return create_widget(widget_name, widget_config, global_config, widget_manager)
 
     exec(
         config,
         {
             "config": config_,
-            "deck": deck,
-            "default_deck": default_deck,
-            "widget": widget,
+            "deck": deck_,
+            "widget": widget_,
         },
     )
 
-    if not default:
-        raise RuntimeError("No default deck specified")
+    if not main_deck:
+        raise RuntimeError("No 'main' deck specified - a deck named 'main' is required")
 
-    return global_config, default, decks
+    return global_config, main_deck, decks
 
 
-def process_config(path: Path | None = None) -> tuple[dict[str, Any], Deck, list[Deck]]:
+def process_config(path: Path | None, widget_manager, plugin_manager) -> tuple[dict[str, Any], Deck, list[Deck]]:
     path = get_config_path(path)
     with open(path) as f:
         config = f.read()
 
-    return exec_config(config)
+    return exec_config(config, widget_manager, plugin_manager)
 
 
-def create_config(config: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    type_ = config["type"]
-    parts = type_.rsplit(".", 1)
-
-    try:
-        module = import_module(parts[0])
-    except ModuleNotFoundError:
-        raise ConfigPluginNotFoundError(parts[0]) from None
-
-    schema: Schema = getattr(module, parts[-1])
-
-    if not isinstance(schema, Schema):
-        raise RuntimeError(f"{schema} isn't a Schema")
-
-    config = config.copy()
-    del config["type"]
-    schema.validate(config)
-
-    return type_, config
-
-
-def create_deck(config: DeckConfig) -> Deck:
-    return Deck(**config)
-
-
-def create_widget(config: dict[str, Any], global_config: dict[str, Any]) -> Widget:
-    widget_type = config["type"]
-
-    # Use plugin manager to get widget class
-    widget_class = plugin_manager.get_widget(widget_type)
-
-    config = config.copy()
-    del config["type"]
+def create_widget(
+    widget_name: str, widget_config: dict[str, Any], global_config: dict[str, Any], widget_manager
+) -> Widget:
+    # Use widget manager to get widget class
+    widget_class = widget_manager.get_widget(widget_name)
 
     # Validate config against widget schema
     schema = widget_class.get_config_schema()
-    schema.validate(config)
+    schema.validate(widget_config)
 
-    return widget_class(config, global_config)
+    return widget_class(widget_config, global_config)

@@ -9,6 +9,8 @@ from knoepfe.widgets.base import Widget
 
 
 class Timer(Widget):
+    name = "Timer"
+
     def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
         super().__init__(widget_config, global_config)
         self.start: float | None = None

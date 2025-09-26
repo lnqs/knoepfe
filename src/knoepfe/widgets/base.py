@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from asyncio import Event, Task, get_event_loop, sleep
 from typing import Any
 
@@ -8,7 +9,10 @@ from knoepfe.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction, WidgetAction
 
 
-class Widget:
+class Widget(ABC):
+    # Abstract class attribute - subclasses must define this
+    name: str
+
     def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
         self.config = widget_config
         self.global_config = global_config
@@ -20,12 +24,14 @@ class Widget:
         self.long_press_task: Task[None] | None = None
 
     async def activate(self) -> None:  # pragma: no cover
-        pass
+        return
 
     async def deactivate(self) -> None:  # pragma: no cover
-        pass
+        return
 
-    async def update(self, key: Key) -> None:  # pragma: no cover
+    @abstractmethod
+    async def update(self, key: Key) -> None:
+        """Update the widget display on the given key."""
         pass
 
     async def pressed(self) -> None:

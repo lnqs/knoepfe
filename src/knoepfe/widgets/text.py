@@ -5,6 +5,8 @@ from knoepfe.widgets.base import Widget
 
 
 class Text(Widget):
+    name = "Text"
+
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
             renderer.text(self.config["text"])

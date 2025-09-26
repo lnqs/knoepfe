@@ -6,6 +6,8 @@ from knoepfe_obs_plugin.connector import obs
 
 
 class CurrentScene(OBSWidget):
+    name = "OBSCurrentScene"
+
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",

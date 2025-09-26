@@ -18,9 +18,17 @@ Connect and control Elgato Stream Decks from Linux.
 
 ### PyPI
 
-    pip install knoepfe
+```bash
+pip install knoepfe
+```
 
-should do the trick :)
+For additional functionality, install plugins:
+
+```bash
+pip install knoepfe[obs]     # OBS Studio integration
+pip install knoepfe[audio]   # Audio control widgets
+pip install knoepfe[all]     # All available plugins
+```
 
 
 ### Arch Linux AUR
@@ -28,7 +36,9 @@ should do the trick :)
 If you're on Arch Linux you can use the [PKGBUILD in the AUR](https://aur.archlinux.org/packages/knoepfe) to install Knöpfe.
 Provided you're using `yay`
 
-    yay -S knoepfe
+```bash
+yay -S knoepfe
+```
 
 should be enough.
 
@@ -38,11 +48,13 @@ udev rules are required for Knöpfe to be able to communicate with the device.
 
 Create ` /etc/udev/rules.d/99-streamdeck.rules` with following content:
 
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0060", TAG+="uaccess"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", TAG+="uaccess"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", TAG+="uaccess"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0063", TAG+="uaccess"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006c", TAG+="uaccess"
+```
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0060", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0063", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006c", TAG+="uaccess"
+    ```
 
 Then, run `sudo udevadm control --reload-rules` and reconnect the device. You should be ready to go then.
 
@@ -50,21 +62,25 @@ Then, run `sudo udevadm control --reload-rules` and reconnect the device. You sh
 
 If you want to start Knöpfe automatically on user login, consider creating and enabling a systemd unit in `~/.config/systemd/user/knoepfe.service`:
 
-    [Unit]
-    Description=Knoepfe
+```
+[Unit]
+Description=Knoepfe
 
-    [Service]
-    # Set path to where Knoepfe executable was installed to
-    ExecStart=/usr/local/bin/knoepfe
-    Restart=always
+[Service]
+# Set path to where Knoepfe executable was installed to
+ExecStart=/usr/local/bin/knoepfe
+Restart=always
 
-    [Install]
-    WantedBy=default.target
+[Install]
+WantedBy=default.target
+```
 
 And start and enable it by running:
 
-    systemctl --user enable knoepfe
-    systemctl --user start knoepfe
+```bash
+systemctl --user enable knoepfe
+systemctl --user start knoepfe
+```
 
 ## Usage
 
@@ -73,19 +89,24 @@ And start and enable it by running:
 Usually just running `knoepfe` should be enough. It reads the configuration from `~/.config/knoepfe/knoepfe.cfg` (see below for more information) and connects to the stream deck.
 
 Anyway, some command line options are available:
+```
+Usage: knoepfe [OPTIONS] COMMAND [ARGS]...
 
-    knopfe
-    Connect and control Elgato Stream Decks
+Connect and control Elgato Stream Decks.
 
-    Usage:
-      knoepfe [(-v | --verbose)] [--config=<path>]
-      knoepfe (-h | --help)
-      knoepfe --version
+Options:
+-v, --verbose    Print debug information.
+--config PATH    Config file to use.
+--mock-device    Don't connect to a real device. Mainly useful for
+                debugging.
+--no-cython-hid  Disable experimental CythonHIDAPI transport.
+--version        Show the version and exit.
+--help           Show this message and exit.
 
-    Options:
-      -h --help       Show this screen.
-      -v --verbose    Print debug information.
-      --config=<path> Config file to use.
+Commands:
+list-widgets  List all available widgets.
+widget-info   Show detailed information about a widget.
+```
 
 
 ### Configuration
@@ -107,7 +128,9 @@ Simple widget just displaying a text.
 
 Can be instantiated as:
 
-    widget({'type': 'knoepfe.widgets.Text', 'text': 'My great text!'})
+```python
+widget("Text", {"text": "My great text!"})
+```
 
 Does nothing but showing the text specified with `text` on the key.
 
@@ -115,7 +138,9 @@ Does nothing but showing the text specified with `text` on the key.
 
 Widget displaying the current time. Instantiated as:
 
-    widget({'type': 'knoepfe.widgets.Clock', 'format': '%H:%M'})
+```python
+widget("Clock", {'format': '%H:%M'})
+```
 
 `format` expects a [strftime() format code](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) to define the formatting.
 
@@ -125,7 +150,9 @@ Stop watch widget.
 
 Instantiated as:
 
-    widget({'type': 'knoepfe.widgets.Timer'})
+```python
+widget("Timer")
+```
 
 When pressed it counts the seconds until it is pressed again. It then shows the time elapsed between both presses until pressed again to reset.
 
@@ -133,26 +160,32 @@ This widget acquires the wake lock while the time is running, preventing the dev
 
 ### Mic Mute
 
-Mute/unmute PulseAudio source, i.e. microphone.
+Mute/unmute PulseAudio source, i.e. microphone. **Requires the audio plugin** (`pip install knoepfe[audio]`).
 
 Instantiated with:
 
-    widget({'type': 'knoepfe.widgets.MicMute'})
+```python
+widget("MicMute")
+```
 
 Accepts `device` as optional argument with the name of source the operate with. If not set, the default source is used.
 This widget shows if the source is muted and toggles the state on pressing it.
 
 ### OBS Streaming and Recording
 
-Show and toggle OBS streaming/recording.
+Show and toggle OBS streaming/recording. **Requires the OBS plugin** (`pip install knoepfe[obs]`).
 
 These widgets can be instantiated with
 
-    widget({'type': 'knoepfe.widgets.obs.Recording'})
+```python
+widget("OBSRecording")
+```
 
 and
 
-    widget({'type': 'knoepfe.widgets.obs.Streaming'})
+```python
+widget("OBSStreaming")
+```
 
 They connect to OBS (if running, they're quite gray if not) and show if the stream or recording is running. On a long press the state is toggled.
 
@@ -160,15 +193,19 @@ As long as the connection to OBS is established these widgest hold the wake lock
 
 ### OBS Current Scene and Scene Switch
 
-Show and switch active OBS scene.
+Show and switch active OBS scene. **Requires the OBS plugin** (`pip install knoepfe[obs]`).
 
 These widgets are instantiated with
 
-    widget({'type': 'knoepfe.widgets.obs.CurrentScene'})
+```python
+widget("OBSCurrentScene")
+```
 
 and
 
-    widget({'type': 'knoepfe.widgets.obs.SwitchScene', 'scene': 'Scene'})
+```python
+widget("OBSSwitchScene", {'scene': 'Scene'})
+```
 
 The current scene widget just displays the active OBS scene.
 
@@ -182,7 +219,7 @@ Please feel free to open an [issue](https://github.com/lnqs/knoepfe/issues) if y
 
 Pull requests are also very welcome :)
 
-As widgets are loaded by their module path it should also be possible to add new functionality in a plugin-ish way by just creating independent python modules defining their behaviour. But, well, I haven't tested that yet.
+Knoepfe supports a plugin system for extending functionality. Plugins can be installed as separate packages and will be automatically discovered and loaded. See the existing plugins (obs, audio, example) as examples for creating new plugins.
 
 ## Mentions
 

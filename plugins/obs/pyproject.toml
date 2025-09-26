@@ -17,6 +17,9 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
 ]
 dependencies = ["knoepfe", "simpleobsws>=1.4.0"]
 
@@ -25,12 +28,9 @@ Homepage = "https://github.com/lnqs/knoepfe"
 Repository = "https://github.com/lnqs/knoepfe"
 Issues = "https://github.com/lnqs/knoepfe/issues"
 
-# OBS widget registration via entry points
-[project.entry-points."knoepfe.widgets"]
-OBSRecording = "knoepfe_obs_plugin.recording:Recording"
-OBSStreaming = "knoepfe_obs_plugin.streaming:Streaming"
-OBSCurrentScene = "knoepfe_obs_plugin.current_scene:CurrentScene"
-OBSSwitchScene = "knoepfe_obs_plugin.switch_scene:SwitchScene"
+# OBS plugin registration via entry points
+[project.entry-points."knoepfe.plugins"]
+obs = "knoepfe_obs_plugin.plugin:OBSPlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }

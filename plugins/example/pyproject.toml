@@ -17,6 +17,9 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
 ]
 dependencies = ["knoepfe"]
 
@@ -25,9 +28,9 @@ Homepage = "https://github.com/lnqs/knoepfe"
 Repository = "https://github.com/lnqs/knoepfe"
 Issues = "https://github.com/lnqs/knoepfe/issues"
 
-# Example widget registration via entry points
-[project.entry-points."knoepfe.widgets"]
-ExampleWidget = "knoepfe_example_plugin.example_widget:ExampleWidget"
+# Example plugin registration via entry points
+[project.entry-points."knoepfe.plugins"]
+example = "knoepfe_example_plugin.plugin:ExamplePlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }

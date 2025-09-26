@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class MicMute(Widget):
+    name = "MicMute"
+
     def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
         super().__init__(widget_config, global_config)
         self.pulse: None | PulseAsync = None

@@ -6,6 +6,8 @@ from knoepfe_obs_plugin.connector import obs
 
 
 class SwitchScene(OBSWidget):
+    name = "OBSSwitchScene"
+
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",

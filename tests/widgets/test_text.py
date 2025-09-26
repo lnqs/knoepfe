@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from schema import Schema
 
-from knoepfe.widgets import Text
+from knoepfe.widgets.text import Text
 
 
 async def test_text_update() -> None:

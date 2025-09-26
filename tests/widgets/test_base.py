@@ -1,13 +1,23 @@
 from asyncio import sleep
 from unittest.mock import AsyncMock, Mock, patch
 
+from knoepfe.key import Key
 from knoepfe.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction
 from knoepfe.widgets.base import Widget
 
 
+class ConcreteWidget(Widget):
+    """Concrete test widget for testing base functionality."""
+
+    name = "ConcreteWidget"
+
+    async def update(self, key: Key) -> None:
+        pass
+
+
 async def test_presses() -> None:
-    widget = Widget({}, {})
+    widget = ConcreteWidget({}, {})
     with patch.object(widget, "triggered") as triggered:
         await widget.pressed()
         await widget.released()
@@ -25,7 +35,7 @@ async def test_presses() -> None:
 
 
 async def test_switch_deck() -> None:
-    widget = Widget({"switch_deck": "new_deck"}, {})
+    widget = ConcreteWidget({"switch_deck": "new_deck"}, {})
     widget.long_press_task = Mock()
     action = await widget.released()
     assert isinstance(action, SwitchDeckAction)
@@ -33,14 +43,14 @@ async def test_switch_deck() -> None:
 
 
 async def test_no_switch_deck() -> None:
-    widget = Widget({}, {})
+    widget = ConcreteWidget({}, {})
     widget.long_press_task = Mock()
     action = await widget.released()
     assert action is None
 
 
 async def test_request_update() -> None:
-    widget = Widget({}, {})
+    widget = ConcreteWidget({}, {})
     with patch.object(widget, "update_requested_event") as event:
         widget.request_update()
     assert event.set.called
@@ -48,7 +58,7 @@ async def test_request_update() -> None:
 
 
 async def test_periodic_update() -> None:
-    widget = Widget({}, {})
+    widget = ConcreteWidget({}, {})
 
     with patch.object(widget, "request_update") as request_update:
         widget.request_periodic_update(0.0)
@@ -62,7 +72,7 @@ async def test_periodic_update() -> None:
 
 
 async def test_wake_lock() -> None:
-    widget = Widget({}, {})
+    widget = ConcreteWidget({}, {})
     widget.wake_lock = WakeLock(Mock())
 
     widget.acquire_wake_lock()

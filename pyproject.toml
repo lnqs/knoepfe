@@ -9,6 +9,18 @@ authors = [
 requires-python = ">=3.11"
 readme = "README.md"
 license = "GPL-3.0-or-later"
+keywords = ["streamdeck", "elgato"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
+]
 dependencies = [
   "schema>=0.7.7",
   "streamdeck>=0.9.5",
@@ -32,12 +44,6 @@ Repository = "https://github.com/lnqs/knoepfe"
 
 [project.scripts]
 knoepfe = "knoepfe.cli:main"
-
-# Built-in widget registration via entry points
-[project.entry-points."knoepfe.widgets"]
-Clock = "knoepfe.widgets.clock:Clock"
-Text = "knoepfe.widgets.text:Text"
-Timer = "knoepfe.widgets.timer:Timer"
 
 # Workspace configuration for development
 [tool.uv.workspace]

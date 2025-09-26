@@ -2,10 +2,9 @@
 
 from typing import Any
 
-from schema import Optional, Schema
-
 from knoepfe.key import Key
 from knoepfe.widgets.base import Widget
+from schema import Optional, Schema
 
 
 class ExampleWidget(Widget):
@@ -14,6 +13,8 @@ class ExampleWidget(Widget):
     This widget displays a customizable message and changes appearance when clicked.
     It serves as a template for developing custom widgets.
     """
+
+    name = "ExampleWidget"
 
     def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
         """Initialize the ExampleWidget.

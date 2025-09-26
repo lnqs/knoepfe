@@ -9,6 +9,8 @@ from knoepfe_obs_plugin.connector import obs
 
 
 class Streaming(OBSWidget):
+    name = "OBSStreaming"
+
     relevant_events = [
         "ConnectionEstablished",
         "ConnectionLost",
@@ -50,6 +52,9 @@ class Streaming(OBSWidget):
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:
+            if not obs.connected:
+                return
+
             if obs.streaming:
                 await obs.stop_streaming()
             else:

@@ -8,7 +8,8 @@ import click
 from knoepfe import __version__
 from knoepfe.app import Knoepfe
 from knoepfe.logging import configure_logging
-from knoepfe.plugin_manager import plugin_manager
+from knoepfe.plugin_manager import PluginManager
+from knoepfe.widget_manager import WidgetManager
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,15 @@ def main(ctx: click.Context, verbose: bool, config: Path | None, mock_device: bo
 @main.command("list-widgets")
 def list_widgets() -> None:
     """List all available widgets."""
-    widgets = plugin_manager.list_widgets()
+    # Create managers for CLI commands
+    widget_manager = WidgetManager()
+    plugin_manager = PluginManager()
+
+    # Register plugin widgets with widget manager
+    for widget_class in plugin_manager.get_all_widgets():
+        widget_manager.register_widget(widget_class)
+
+    widgets = widget_manager.list_widgets()
     if not widgets:
         logger.info("No widgets available. Install widget packages like 'knoepfe[obs]'")
         return
@@ -57,7 +66,7 @@ def list_widgets() -> None:
     logger.info("Available widgets:")
     for widget_name in sorted(widgets):
         try:
-            widget_class = plugin_manager.get_widget(widget_name)
+            widget_class = widget_manager.get_widget(widget_name)
             doc = widget_class.__doc__ or "No description available"
             logger.info(f"  {widget_name}: {doc}")
         except Exception as e:
@@ -68,8 +77,16 @@ def list_widgets() -> None:
 @click.argument("widget_name")
 def widget_info(widget_name: str) -> None:
     """Show detailed information about a widget."""
+    # Create managers for CLI commands
+    widget_manager = WidgetManager()
+    plugin_manager = PluginManager()
+
+    # Register plugin widgets with widget manager
+    for widget_class in plugin_manager.get_all_widgets():
+        widget_manager.register_widget(widget_class)
+
     try:
-        widget_class = plugin_manager.get_widget(widget_name)
+        widget_class = widget_manager.get_widget(widget_name)
         logger.info(f"Name: {widget_name}")
         logger.info(f"Class: {widget_class.__name__}")
         logger.info(f"Module: {widget_class.__module__}")

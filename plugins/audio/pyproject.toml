@@ -17,6 +17,9 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
 ]
 dependencies = ["knoepfe", "pulsectl>=24.11.0", "pulsectl-asyncio>=1.2.2"]
 
@@ -25,9 +28,9 @@ Homepage = "https://github.com/lnqs/knoepfe"
 Repository = "https://github.com/lnqs/knoepfe"
 Issues = "https://github.com/lnqs/knoepfe/issues"
 
-# Audio widget registration via entry points
-[project.entry-points."knoepfe.widgets"]
-MicMute = "knoepfe_audio_plugin.mic_mute:MicMute"
+# Audio plugin registration via entry points
+[project.entry-points."knoepfe.plugins"]
+audio = "knoepfe_audio_plugin.plugin:AudioPlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }
