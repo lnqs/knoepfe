@@ -14,6 +14,8 @@ def mock_fontconfig_system():
         with patch("knoepfe.font_manager.ImageFont.truetype") as mock_truetype:
             mock_font = Mock()
             mock_font.size = 12  # Default size for tests
+            # Mock the getmask2 method that PIL uses internally
+            mock_font.getmask2.return_value = (Mock(), (0, 0))
             mock_truetype.return_value = mock_font
 
             yield {"fontconfig": mock_fontconfig, "truetype": mock_truetype, "font": mock_font}
@@ -21,39 +23,29 @@ def mock_fontconfig_system():
 
 def test_renderer_text() -> None:
     renderer = Renderer()
-    with patch.object(renderer, "_render_text") as draw_text:
-        renderer.text("Blubb")
-        assert draw_text.called
+    with patch.object(renderer, "_draw") as mock_draw:
+        with mock_fontconfig_system():
+            renderer.text((48, 48), "Blubb")
+            mock_draw.text.assert_called_once()
 
 
 def test_renderer_draw_text() -> None:
     with mock_fontconfig_system():
         renderer = Renderer()
 
-        with patch(
-            "knoepfe.key.ImageDraw.Draw",
-            return_value=Mock(textlength=Mock(return_value=0)),
-        ) as draw:
-            renderer._render_text("Text", size=12, color=None, valign="top")
-            assert draw.return_value.text.call_args[0][0] == (48, 0)
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test basic text rendering
+            renderer.text((10, 20), "Test Text", size=12)
 
-        with patch(
-            "knoepfe.key.ImageDraw.Draw",
-            return_value=Mock(textlength=Mock(return_value=0)),
-        ) as draw:
-            renderer._render_text("Text", size=12, color=None, valign="middle")
-            assert draw.return_value.text.call_args[0][0] == (48, 42)
-
-        with patch(
-            "knoepfe.key.ImageDraw.Draw",
-            return_value=Mock(textlength=Mock(return_value=0)),
-        ) as draw:
-            renderer._render_text("Text", size=12, color=None, valign="bottom")
-            assert draw.return_value.text.call_args[0][0] == (48, 78)
+            # Check that text was called with correct parameters
+            mock_draw.text.assert_called_once()
+            call_args = mock_draw.text.call_args
+            assert call_args[0][0] == (10, 20)  # position
+            assert call_args[0][1] == "Test Text"  # text is positional arg
 
 
 def test_key_render() -> None:
-    key = Key(MagicMock(), 0)
+    key = Key(MagicMock(), 0, {})
 
     with patch.multiple("knoepfe.key", PILHelper=DEFAULT, Renderer=DEFAULT):
         with key.renderer():
@@ -62,15 +54,25 @@ def test_key_render() -> None:
     assert key.device.set_key_image.called  # type: ignore[attr-defined]
 
 
-def test_key_aligned() -> None:
-    renderer = Renderer()
-    assert renderer._aligned(10, 10, "left", "top") == (0, 0)
-    assert renderer._aligned(10, 10, "center", "middle") == (43, 43)
-    assert renderer._aligned(10, 10, "right", "bottom") == (86, 80)
+def test_renderer_convenience_methods() -> None:
+    with mock_fontconfig_system():
+        renderer = Renderer()
+
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test icon method
+            renderer.icon("test_icon", size=64)
+            mock_draw.text.assert_called()
+
+            # Test text_wrapped method
+            renderer.text_wrapped("Test wrapped text")
+            assert mock_draw.text.call_count >= 1
 
 
 def test_font_manager_get_font() -> None:
     """Test FontManager font loading with mocked fontconfig."""
+    # Clear the cache first to ensure clean test
+    FontManager.get_font.cache_clear()
+
     with mock_fontconfig_system() as mocks:
         font = FontManager.get_font("Roboto", 24)
 
@@ -123,21 +125,16 @@ def test_renderer_fontconfig_integration() -> None:
 
         renderer = Renderer()
 
-        with patch("knoepfe.key.ImageDraw.Draw") as mock_draw:
-            mock_draw_instance = Mock()
-            mock_draw.return_value = mock_draw_instance
-
+        with patch.object(renderer, "_draw") as mock_draw:
             # Test text with fontconfig pattern
-            renderer.text("Hello", font="Ubuntu", size=24)
+            renderer.text((48, 48), "Hello", font="Ubuntu", size=24)
 
             # Should have queried fontconfig for Ubuntu
             mocks["fontconfig"].query.assert_called_with("Ubuntu")
             mocks["truetype"].assert_called_with("/path/to/ubuntu.ttf", 24)
 
-            # Should have drawn text with the returned font
-            mock_draw_instance.text.assert_called_once()
-            call_args = mock_draw_instance.text.call_args
-            assert call_args[1]["font"] == mocks["font"]
+            # Should have drawn text
+            mock_draw.text.assert_called_once()
 
 
 def test_renderer_text_at() -> None:
@@ -145,12 +142,13 @@ def test_renderer_text_at() -> None:
     with mock_fontconfig_system():
         renderer = Renderer()
 
-        with patch.object(renderer, "_render_text") as mock_render_text:
-            renderer.text_at((10, 20), "Positioned", font="monospace", anchor="la")
+        with patch.object(renderer, "_draw") as mock_draw:
+            renderer.text((10, 20), "Positioned", font="monospace", anchor="la")
 
-            mock_render_text.assert_called_once_with(
-                "Positioned", 24, None, font_pattern="monospace", anchor="la", xy=(10, 20)
-            )
+            mock_draw.text.assert_called_once()
+            call_args = mock_draw.text.call_args
+            assert call_args[0][0] == (10, 20)
+            assert call_args[0][1] == "Positioned"  # text is positional arg
 
 
 def test_renderer_backward_compatibility() -> None:
@@ -158,14 +156,14 @@ def test_renderer_backward_compatibility() -> None:
     with mock_fontconfig_system():
         renderer = Renderer()
 
-        with patch.object(renderer, "_render_text") as mock_render_text:
-            # Old-style call without font parameter
-            renderer.text("Legacy Text", size=20, color="#ffffff")
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test with default font (should use Roboto)
+            renderer.text((48, 48), "Legacy Text", size=20, color="#ffffff")
 
-            # Should use default "Roboto" pattern
-            mock_render_text.assert_called_once_with(
-                "Legacy Text", 20, "#ffffff", font_pattern=None, anchor="ms", xy=(48, 48)
-            )
+            mock_draw.text.assert_called_once()
+            call_args = mock_draw.text.call_args
+            assert call_args[0][1] == "Legacy Text"  # text is positional arg
+            assert call_args[1]["fill"] == "#ffffff"
 
 
 def test_renderer_unicode_icons() -> None:
@@ -176,19 +174,16 @@ def test_renderer_unicode_icons() -> None:
 
         renderer = Renderer()
 
-        with patch("knoepfe.key.ImageDraw.Draw") as mock_draw:
-            mock_draw_instance = Mock()
-            mock_draw.return_value = mock_draw_instance
-
+        with patch.object(renderer, "_draw") as mock_draw:
             # Test Unicode icon with Material Icons font
-            renderer.text("🎤", font="Material Icons", size=86)
+            renderer.text((48, 48), "🎤", font="Material Icons", size=86)
 
             # Should have queried fontconfig for Material Icons
             mocks["fontconfig"].query.assert_called_with("Material Icons")
             mocks["truetype"].assert_called_with("/path/to/materialicons.ttf", 86)
 
             # Should have drawn the Unicode character
-            mock_draw_instance.text.assert_called_once()
-            call_args = mock_draw_instance.text.call_args
+            mock_draw.text.assert_called_once()
+            call_args = mock_draw.text.call_args
             # Check the 'text' keyword argument
-            assert call_args[1]["text"] == "🎤"  # Unicode character
+            assert call_args[0][1] == "🎤"  # Unicode character

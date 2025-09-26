@@ -3,8 +3,9 @@
 from unittest.mock import Mock
 
 import pytest
-from knoepfe_example_plugin.example_widget import ExampleWidget
 from schema import SchemaError
+
+from knoepfe_example_plugin.example_widget import ExampleWidget
 
 
 class TestExampleWidget:
@@ -63,7 +64,8 @@ class TestExampleWidget:
 
         # Verify renderer was called
         mock_key.renderer.assert_called_once()
-        mock_renderer.text.assert_called_once_with("Example\nClick me!")
+        mock_renderer.clear.assert_called_once()
+        mock_renderer.text_wrapped.assert_called_once_with("Example\nClick me!")
 
     @pytest.mark.asyncio
     async def test_update_with_custom_config(self):
@@ -80,7 +82,8 @@ class TestExampleWidget:
         await widget.update(mock_key)
 
         # Verify renderer was called with custom values
-        mock_renderer.text.assert_called_once_with("Hello\nClick me!")
+        mock_renderer.clear.assert_called_once()
+        mock_renderer.text_wrapped.assert_called_once_with("Hello\nClick me!")
 
     @pytest.mark.asyncio
     async def test_update_after_clicks(self):
@@ -97,7 +100,8 @@ class TestExampleWidget:
         await widget.update(mock_key)
 
         # Verify renderer shows click count
-        mock_renderer.text.assert_called_once_with("Example\nClicked 3x")
+        mock_renderer.clear.assert_called_once()
+        mock_renderer.text_wrapped.assert_called_once_with("Example\nClicked 3x")
 
     @pytest.mark.asyncio
     async def test_on_key_down_increments_counter(self):

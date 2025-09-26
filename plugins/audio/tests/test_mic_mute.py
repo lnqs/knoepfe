@@ -76,9 +76,9 @@ async def test_mic_mute_update_muted(mic_mute_widget, mock_source):
     with patch.object(mic_mute_widget, "get_source", AsyncMock(return_value=mock_source)):
         await mic_mute_widget.update(key)
 
-        key.renderer.return_value.__enter__.return_value.text.assert_called_with(
-            "\ue02b", font="Material Icons", size=86, anchor="mm"
-        )
+        renderer_mock = key.renderer.return_value.__enter__.return_value
+        renderer_mock.clear.assert_called_once()
+        renderer_mock.icon.assert_called_with("\ue02b", size=86)
 
 
 async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
@@ -88,9 +88,9 @@ async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
     with patch.object(mic_mute_widget, "get_source", AsyncMock(return_value=mock_source)):
         await mic_mute_widget.update(key)
 
-        key.renderer.return_value.__enter__.return_value.text.assert_called_with(
-            "\ue029", font="Material Icons", size=86, color="red", anchor="mm"
-        )
+        renderer_mock = key.renderer.return_value.__enter__.return_value
+        renderer_mock.clear.assert_called_once()
+        renderer_mock.icon.assert_called_with("\ue029", size=86, color="red")
 
 
 async def test_mic_mute_triggered(mic_mute_widget, mock_pulse, mock_source):

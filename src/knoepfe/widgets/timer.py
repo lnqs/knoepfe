@@ -24,17 +24,17 @@ class Timer(Widget):
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
+            renderer.clear()
             if self.start and not self.stop:
                 renderer.text(
-                    f"{timedelta(seconds=time.monotonic() - self.start)}".rsplit(".", 1)[0],
+                    (48, 48), f"{timedelta(seconds=time.monotonic() - self.start)}".rsplit(".", 1)[0], anchor="mm"
                 )
             elif self.start and self.stop:
                 renderer.text(
-                    f"{timedelta(seconds=self.stop - self.start)}".rsplit(".", 1)[0],
-                    color="red",
+                    (48, 48), f"{timedelta(seconds=self.stop - self.start)}".rsplit(".", 1)[0], color="red", anchor="mm"
                 )
             else:
-                renderer.text("\ue425", font="Material Icons", size=86, anchor="mm")  # timer (e425)
+                renderer.icon("\ue425", size=86)  # timer (e425)
 
     async def triggered(self, long_press: bool = False) -> None:
         if not self.start:

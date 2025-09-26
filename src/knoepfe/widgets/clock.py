@@ -27,9 +27,8 @@ class Clock(Widget):
             self.last_time = time
 
             with key.renderer() as renderer:
-                renderer.text(
-                    time,
-                )
+                renderer.clear()
+                renderer.text((48, 48), time, anchor="mm")
 
     @classmethod
     def get_config_schema(cls) -> Schema:

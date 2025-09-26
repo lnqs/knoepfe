@@ -63,8 +63,9 @@ class ExampleWidget(Widget):
 
         # Use the key renderer to draw the widget
         with key.renderer() as renderer:
+            renderer.clear()
             # Draw the text
-            renderer.text(display_text)
+            renderer.text_wrapped(display_text)
 
     async def on_key_down(self) -> None:
         """Handle key press events.

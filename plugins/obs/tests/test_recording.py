@@ -33,9 +33,9 @@ async def test_recording_update_disconnected(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
-        "\ue04c", font="Material Icons", size=86, color="#202020", anchor="mm"
-    )
+    renderer_mock = key.renderer.return_value.__enter__.return_value
+    renderer_mock.clear.assert_called_once()
+    renderer_mock.icon.assert_called_with("\ue04c", size=86, color="#202020")
 
 
 async def test_recording_update_not_recording(recording_widget, mock_obs):
@@ -45,9 +45,9 @@ async def test_recording_update_not_recording(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
-        "\ue04c", font="Material Icons", size=86, anchor="mm"
-    )
+    renderer_mock = key.renderer.return_value.__enter__.return_value
+    renderer_mock.clear.assert_called_once()
+    renderer_mock.icon.assert_called_with("\ue04c", size=86)
 
 
 async def test_recording_update_recording(recording_widget, mock_obs):
@@ -58,10 +58,17 @@ async def test_recording_update_recording(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    # Check both text_at calls for the recording state
+    # Check icon_and_text call for the recording state
     renderer_mock = key.renderer.return_value.__enter__.return_value
-    renderer_mock.text_at.assert_any_call((48, 32), "\ue04b", font="Material Icons", size=64, color="red", anchor="mm")
-    renderer_mock.text_at.assert_any_call((48, 80), "00:01:23", size=16, color="red", anchor="mt")
+    renderer_mock.clear.assert_called_once()
+    renderer_mock.icon_and_text.assert_called_with(
+        "\ue04b",  # videocam icon
+        "00:01:23",  # timecode without milliseconds
+        icon_size=64,
+        text_size=16,
+        icon_color="red",
+        text_color="red",
+    )
 
 
 async def test_recording_update_show_help(recording_widget, mock_obs):
@@ -70,7 +77,9 @@ async def test_recording_update_show_help(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.text.assert_called_with("long press\nto toggle", size=16)
+    renderer_mock = key.renderer.return_value.__enter__.return_value
+    renderer_mock.clear.assert_called_once()
+    renderer_mock.text_wrapped.assert_called_with("long press\nto toggle", size=16)
 
 
 async def test_recording_update_show_loading(recording_widget, mock_obs):
@@ -79,9 +88,9 @@ async def test_recording_update_show_loading(recording_widget, mock_obs):
 
     await recording_widget.update(key)
 
-    key.renderer.return_value.__enter__.return_value.text.assert_called_with(
-        "\ue5d3", font="Material Icons", size=86, anchor="mm"
-    )
+    renderer_mock = key.renderer.return_value.__enter__.return_value
+    renderer_mock.clear.assert_called_once()
+    renderer_mock.icon.assert_called_with("\ue5d3", size=86)
     assert not recording_widget.show_loading
 
 

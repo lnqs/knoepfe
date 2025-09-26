@@ -16,14 +16,18 @@ class CurrentScene(OBSWidget):
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
+            renderer.clear()
             if obs.connected:
                 # panorama icon (e40b) with text below
-                renderer.text_at((48, 32), "\ue40b", font="Material Icons", size=64, anchor="mm")
-                renderer.text_at((48, 80), obs.current_scene or "[none]", size=16, anchor="mt")
+                renderer.icon_and_text(
+                    "\ue40b",  # panorama (e40b)
+                    obs.current_scene or "[none]",
+                    icon_size=64,
+                    text_size=16,
+                )
             else:
-                # panorama icon (e40b) with text below, grayed out
-                renderer.text_at((48, 32), "\ue40b", font="Material Icons", size=64, color="#202020", anchor="mm")
-                renderer.text_at((48, 80), "[none]", size=16, color="#202020", anchor="mt")
+                # panorama icon (e40b) only, grayed out (no text when disconnected)
+                renderer.icon("\ue40b", size=64, color="#202020")  # panorama (e40b)
 
     @classmethod
     def get_config_schema(cls) -> Schema:

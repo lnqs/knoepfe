@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from asyncio import Event
+from typing import Any
 
 from StreamDeck.Devices.StreamDeck import StreamDeck
 
@@ -13,9 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class Deck:
-    def __init__(self, id: str, widgets: list[Widget | None]) -> None:
+    def __init__(self, id: str, widgets: list[Widget | None], global_config: dict[str, Any] | None = None) -> None:
         self.id = id
         self.widgets = widgets
+        self.global_config = global_config or {}
 
     async def activate(self, device: StreamDeck, update_requested_event: Event, wake_lock: WakeLock) -> None:
         with device:
@@ -39,7 +41,7 @@ class Deck:
         async def update_widget(w: Widget | None, i: int) -> None:
             if w and (force or w.needs_update):
                 logger.debug(f"Updating widget on key {i}")
-                await w.update(Key(device, i))
+                await w.update(Key(device, i, self.global_config))
                 w.needs_update = False
 
         await asyncio.gather(*[update_widget(widget, index) for index, widget in enumerate(self.widgets)])

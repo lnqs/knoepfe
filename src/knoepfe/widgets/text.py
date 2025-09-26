@@ -9,7 +9,8 @@ class Text(Widget):
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
-            renderer.text(self.config["text"])
+            renderer.clear()
+            renderer.text_wrapped(self.config["text"])
 
     @classmethod
     def get_config_schema(cls) -> Schema:

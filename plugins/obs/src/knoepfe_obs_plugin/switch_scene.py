@@ -15,17 +15,22 @@ class SwitchScene(OBSWidget):
     ]
 
     async def update(self, key: Key) -> None:
-        color = None
+        color = "white"
         if not obs.connected:
             color = "#202020"
         elif obs.current_scene == self.config["scene"]:
             color = "red"
 
         with key.renderer() as renderer:
-            renderer.text_at(
-                (48, 32), "\ue40b", font="Material Icons", size=64, color=color, anchor="mm"
-            )  # panorama (e40b)
-            renderer.text_at((48, 80), self.config["scene"], size=16, color=color, anchor="mt")
+            renderer.clear()
+            renderer.icon_and_text(
+                "\ue40b",  # panorama (e40b)
+                self.config["scene"],
+                icon_size=64,
+                text_size=16,
+                icon_color=color,
+                text_color=color,
+            )
 
     async def triggered(self, long_press: bool = False) -> None:
         if obs.connected:

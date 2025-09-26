@@ -57,7 +57,7 @@ def exec_config(config: str, widget_manager, plugin_manager) -> tuple[dict[str, 
     def deck_(deck_name: str, widgets: list[Widget | None]) -> Deck:
         nonlocal main_deck
 
-        d = Deck(deck_name, widgets)
+        d = Deck(deck_name, widgets, global_config)
         decks.append(d)
 
         # Track the main deck

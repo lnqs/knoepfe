@@ -9,7 +9,7 @@ async def test_text_update() -> None:
     widget = Text({"text": "Text"}, {})
     key = MagicMock()
     await widget.update(key)
-    assert key.renderer.return_value.__enter__.return_value.text.called
+    assert key.renderer.return_value.__enter__.return_value.text_wrapped.called
 
 
 def test_text_schema() -> None:
