@@ -593,15 +593,3 @@ more useful to permit linking proprietary applications with the library. If this
 what you want to do, use the GNU Lesser General Public License instead of this
 License. But first, please read
 &lt;<http://www.gnu.org/philosophy/why-not-lgpl.html>&gt;.
-
-
-Third Party Work
-================
-
-This repository/package includes the font "Roboto Regular" by Christian Robertson that
-is released under the terms of the Apache License, Version 2.0
-(<https://www.apache.org/licenses/LICENSE-2.0>).
-
-Also the font "Material Icons" is included. It is licensed under the terms of the
-Apache License, Version 2.0 (<https://www.apache.org/licenses/LICENSE-2.0>).
-See <https://google.github.io/material-design-icons> for more information.
