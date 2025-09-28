@@ -22,11 +22,10 @@ Controls microphone mute/unmute functionality via PulseAudio.
 
 ```python
 # Use default microphone
-widget({'type': 'MicMute'})
+widget("MicMute")
 
 # Specify specific microphone source
-widget({
-    'type': 'MicMute',
+widget("MicMute", {
     'source': 'alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone'
 })
 ```

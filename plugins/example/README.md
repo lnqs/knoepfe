@@ -24,11 +24,10 @@ A simple interactive widget that demonstrates the basic structure and functional
 
 ```python
 # Basic usage with defaults
-widget({'type': 'ExampleWidget'})
+widget("ExampleWidget")
 
 # Customized configuration
-widget({
-    'type': 'ExampleWidget',
+widget("ExampleWidget", {
     'message': 'Hello World'
 })
 ```

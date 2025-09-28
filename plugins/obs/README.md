@@ -19,7 +19,7 @@ Controls OBS recording functionality.
 
 **Configuration:**
 ```python
-widget({'type': 'OBSRecording'})
+widget("OBSRecording")
 ```
 
 **Features:**
@@ -33,7 +33,7 @@ Controls OBS streaming functionality.
 
 **Configuration:**
 ```python
-widget({'type': 'OBSStreaming'})
+widget("OBSStreaming")
 ```
 
 **Features:**
@@ -47,7 +47,7 @@ Displays the currently active OBS scene.
 
 **Configuration:**
 ```python
-widget({'type': 'OBSCurrentScene'})
+widget("OBSCurrentScene")
 ```
 
 **Features:**
@@ -60,8 +60,7 @@ Switch to a specific OBS scene.
 
 **Configuration:**
 ```python
-widget({
-    'type': 'OBSSwitchScene',
+widget("OBSSwitchScene", {
     'scene': 'Gaming'
 })
 ```
@@ -80,12 +79,13 @@ widget({
 Configure OBS connection in your knoepfe config:
 
 ```python
-config({
-    'knoepfe_obs_plugin.config': {
-        'host': 'localhost',      # OBS WebSocket host
-        'port': 4444,             # OBS WebSocket port
-        'password': 'your-pass'   # OBS WebSocket password (optional)
-    }
+config("obs", {
+    # Host OBS is running. Probably `localhost`.
+    'host': 'localhost',
+    # Port to obs-websocket is listening on. Defaults to 4455.
+    'port': 4455,
+    # Password to use when authenticating with obs-websocket.
+    'password': 'supersecret',
 })
 ```
 
