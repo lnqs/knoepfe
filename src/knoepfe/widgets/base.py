@@ -1,21 +1,25 @@
 from abc import ABC, abstractmethod
 from asyncio import Event, Task, get_event_loop, sleep
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from schema import Optional, Schema
 
 from knoepfe.key import Key
+from knoepfe.plugin_state import PluginState
 from knoepfe.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction, WidgetAction
 
+TPluginState = TypeVar("TPluginState", bound=PluginState)
 
-class Widget(ABC):
-    # Abstract class attribute - subclasses must define this
+
+class Widget(ABC, Generic[TPluginState]):
     name: str
+    description: str | None = None
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: TPluginState) -> None:
         self.config = widget_config
         self.global_config = global_config
+        self.state = state
         self.update_requested_event: Event | None = None
         self.wake_lock: WakeLock | None = None
         self.holds_wait_lock = False

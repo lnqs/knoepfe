@@ -10,8 +10,7 @@ from knoepfe.config import (
     get_config_path,
     process_config,
 )
-from knoepfe.plugin_manager import PluginManager
-from knoepfe.widget_manager import WidgetManager, WidgetNotFoundError
+from knoepfe.plugin_manager import PluginManager, WidgetNotFoundError
 from knoepfe.widgets.base import Widget
 
 # Updated test configs using new syntax
@@ -46,12 +45,11 @@ def test_config_path() -> None:
 
 
 def test_exec_config_success() -> None:
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget") as create_widget_mock:
         create_widget_mock.return_value = Mock()
-        global_config, main_deck, decks = exec_config(test_config, mock_wm, mock_pm)
+        global_config, main_deck, decks = exec_config(test_config, mock_pm)
 
     assert create_widget_mock.called
     assert main_deck is not None
@@ -61,13 +59,12 @@ def test_exec_config_success() -> None:
 
 def test_exec_config_multiple_device_config() -> None:
     # Multiple device configs should be allowed (last one wins)
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget") as create_widget_mock:
         create_widget_mock.return_value = Mock()
         global_config, main_deck, decks = exec_config(
-            test_config_multiple_device_config + '\ndeck("main", [widget("test")])', mock_wm, mock_pm
+            test_config_multiple_device_config + '\ndeck("main", [widget("test")])', mock_pm
         )
 
     # Should have the last device config
@@ -75,21 +72,19 @@ def test_exec_config_multiple_device_config() -> None:
 
 
 def test_exec_config_multiple_main() -> None:
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget"):
         with raises(RuntimeError, match="Main deck already defined"):
-            exec_config(test_config_multiple_main, mock_wm, mock_pm)
+            exec_config(test_config_multiple_main, mock_pm)
 
 
 def test_exec_config_no_main() -> None:
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget"):
         with raises(RuntimeError, match="No 'main' deck specified"):
-            exec_config(test_config_no_main, mock_wm, mock_pm)
+            exec_config(test_config_no_main, mock_pm)
 
 
 def test_process_config() -> None:
@@ -97,7 +92,7 @@ def test_process_config() -> None:
         patch("knoepfe.config.exec_config", return_value=({}, Mock(), [Mock()])) as exec_config_mock,
         patch("builtins.open", mock_open(read_data=test_config)),
     ):
-        process_config(Path("file"), Mock(spec=WidgetManager), Mock(spec=PluginManager))
+        process_config(Path("file"), Mock(spec=PluginManager))
     assert exec_config_mock.called
 
 
@@ -112,19 +107,19 @@ def test_create_widget_success() -> None:
         def get_config_schema(cls) -> Schema:
             return Schema({})
 
-    mock_wm = Mock(spec=WidgetManager)
-    mock_wm.get_widget.return_value = TestWidget
+    mock_pm = Mock(spec=PluginManager)
+    mock_pm.get_widget.return_value = TestWidget
 
-    w = create_widget("TestWidget", {}, {}, mock_wm)
+    w = create_widget("TestWidget", {}, {}, mock_pm)
     assert isinstance(w, TestWidget)
 
 
 def test_create_widget_invalid_type() -> None:
-    mock_wm = Mock(spec=WidgetManager)
-    mock_wm.get_widget.side_effect = WidgetNotFoundError("NonExistentWidget")
+    mock_pm = Mock(spec=PluginManager)
+    mock_pm.get_widget.side_effect = WidgetNotFoundError("NonExistentWidget")
 
     with raises(WidgetNotFoundError):
-        create_widget("NonExistentWidget", {}, {}, mock_wm)
+        create_widget("NonExistentWidget", {}, {}, mock_pm)
 
 
 def test_device_config_validation() -> None:
@@ -135,12 +130,11 @@ config("device", {'brightness': 150})  # Invalid brightness > 100
 deck("main", [widget("test")])
 """
 
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget"):
         with raises(SchemaError):  # Should raise validation error
-            exec_config(device_config, mock_wm, mock_pm)
+            exec_config(device_config, mock_pm)
 
 
 def test_plugin_config_storage() -> None:
@@ -150,15 +144,47 @@ config("obs", {'host': 'localhost', 'port': 4455})
 deck("main", [widget("test")])
 """
 
-    mock_wm = Mock(spec=WidgetManager)
     mock_pm = Mock(spec=PluginManager)
 
     with patch("knoepfe.config.create_widget") as create_widget_mock:
         create_widget_mock.return_value = Mock()
-        global_config, main_deck, decks = exec_config(plugin_config, mock_wm, mock_pm)
+        global_config, main_deck, decks = exec_config(plugin_config, mock_pm)
 
         # Check that plugin config was set
         mock_pm.set_plugin_config.assert_called_with("obs", {"host": "localhost", "port": 4455})
 
         # Check that it's also in global config
         assert global_config["obs"] == {"host": "localhost", "port": 4455}
+
+
+def test_plugin_state_shared_between_widget_instances():
+    """Test that plugin state is shared between widget instances from the same plugin."""
+
+    # Create a mock plugin manager that returns the same plugin instance
+    mock_pm = Mock(spec=PluginManager)
+    shared_plugin = Mock()
+
+    mock_pm.get_plugin_for_widget.return_value = shared_plugin
+
+    # Mock widget class that stores the plugin for verification
+    class TestWidget(Widget):
+        name = "TestWidget"
+
+        def __init__(self, config, global_config, state):
+            super().__init__(config, global_config, state)
+
+        async def update(self, key):
+            pass
+
+    mock_pm.get_widget.return_value = TestWidget
+
+    # Mock the plugin to have a state attribute
+    shared_plugin.state = Mock()
+
+    # Create two widget instances
+    widget1 = create_widget("TestWidget", {}, {}, mock_pm)
+    widget2 = create_widget("TestWidget", {}, {}, mock_pm)
+
+    # Verify both widgets received the same plugin state instance
+    assert widget1.state is widget2.state
+    assert widget1.state is shared_plugin.state

@@ -1,6 +1,7 @@
 from asyncio import sleep
 from unittest.mock import AsyncMock, Mock, patch
 
+from knoepfe.builtin_plugin import BuiltinPlugin
 from knoepfe.key import Key
 from knoepfe.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction
@@ -17,7 +18,7 @@ class ConcreteWidget(Widget):
 
 
 async def test_presses() -> None:
-    widget = ConcreteWidget({}, {})
+    widget = ConcreteWidget({}, {}, BuiltinPlugin({}))
     with patch.object(widget, "triggered") as triggered:
         await widget.pressed()
         await widget.released()
@@ -35,7 +36,7 @@ async def test_presses() -> None:
 
 
 async def test_switch_deck() -> None:
-    widget = ConcreteWidget({"switch_deck": "new_deck"}, {})
+    widget = ConcreteWidget({"switch_deck": "new_deck"}, {}, BuiltinPlugin({}))
     widget.long_press_task = Mock()
     action = await widget.released()
     assert isinstance(action, SwitchDeckAction)
@@ -43,14 +44,14 @@ async def test_switch_deck() -> None:
 
 
 async def test_no_switch_deck() -> None:
-    widget = ConcreteWidget({}, {})
+    widget = ConcreteWidget({}, {}, BuiltinPlugin({}))
     widget.long_press_task = Mock()
     action = await widget.released()
     assert action is None
 
 
 async def test_request_update() -> None:
-    widget = ConcreteWidget({}, {})
+    widget = ConcreteWidget({}, {}, BuiltinPlugin({}))
     with patch.object(widget, "update_requested_event") as event:
         widget.request_update()
     assert event.set.called
@@ -58,7 +59,7 @@ async def test_request_update() -> None:
 
 
 async def test_periodic_update() -> None:
-    widget = ConcreteWidget({}, {})
+    widget = ConcreteWidget({}, {}, BuiltinPlugin({}))
 
     with patch.object(widget, "request_update") as request_update:
         widget.request_periodic_update(0.0)
@@ -72,7 +73,7 @@ async def test_periodic_update() -> None:
 
 
 async def test_wake_lock() -> None:
-    widget = ConcreteWidget({}, {})
+    widget = ConcreteWidget({}, {}, BuiltinPlugin({}))
     widget.wake_lock = WakeLock(Mock())
 
     widget.acquire_wake_lock()

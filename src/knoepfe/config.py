@@ -6,6 +6,7 @@ import platformdirs
 from schema import And, Optional, Schema
 
 from knoepfe.deck import Deck
+from knoepfe.plugin_manager import PluginManager
 from knoepfe.widgets.base import Widget
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def get_config_path(path: Path | None = None) -> Path:
     return default_config
 
 
-def exec_config(config: str, widget_manager, plugin_manager) -> tuple[dict[str, Any], Deck, list[Deck]]:
+def exec_config(config: str, plugin_manager: PluginManager) -> tuple[dict[str, Any], Deck, list[Deck]]:
     global_config: dict[str, Any] = {}
     decks = []
     main_deck = None
@@ -71,7 +72,7 @@ def exec_config(config: str, widget_manager, plugin_manager) -> tuple[dict[str, 
     def widget_(widget_name: str, widget_config: dict[str, Any] | None = None) -> Widget:
         if widget_config is None:
             widget_config = {}
-        return create_widget(widget_name, widget_config, global_config, widget_manager)
+        return create_widget(widget_name, widget_config, global_config, plugin_manager)
 
     exec(
         config,
@@ -88,22 +89,26 @@ def exec_config(config: str, widget_manager, plugin_manager) -> tuple[dict[str, 
     return global_config, main_deck, decks
 
 
-def process_config(path: Path | None, widget_manager, plugin_manager) -> tuple[dict[str, Any], Deck, list[Deck]]:
+def process_config(path: Path | None, plugin_manager: PluginManager) -> tuple[dict[str, Any], Deck, list[Deck]]:
     path = get_config_path(path)
     with open(path) as f:
         config = f.read()
 
-    return exec_config(config, widget_manager, plugin_manager)
+    return exec_config(config, plugin_manager)
 
 
 def create_widget(
-    widget_name: str, widget_config: dict[str, Any], global_config: dict[str, Any], widget_manager
+    widget_name: str, widget_config: dict[str, Any], global_config: dict[str, Any], plugin_manager: PluginManager
 ) -> Widget:
-    # Use widget manager to get widget class
-    widget_class = widget_manager.get_widget(widget_name)
+    # Use plugin manager to get widget class
+    widget_class = plugin_manager.get_widget(widget_name)
+
+    # Get the plugin that provides this widget
+    plugin = plugin_manager.get_plugin_for_widget(widget_name)
 
     # Validate config against widget schema
     schema = widget_class.get_config_schema()
     schema.validate(widget_config)
 
-    return widget_class(widget_config, global_config)
+    # Pass the plugin's state, not the plugin itself
+    return widget_class(widget_config, global_config, plugin.state)

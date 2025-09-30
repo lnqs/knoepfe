@@ -54,9 +54,9 @@ This example demonstrates the essential components of a knoepfe widget:
 ### 1. Widget Class Structure
 
 ```python
-class ExampleWidget(Widget):
-    def __init__(self, widget_config: Dict[str, Any], global_config: Dict[str, Any]) -> None:
-        # Initialize widget with configuration
+class ExampleWidget(Widget[ExamplePluginState]):
+    def __init__(self, widget_config: Dict[str, Any], global_config: Dict[str, Any], plugin_state: ExamplePluginState) -> None:
+        # Initialize widget with configuration and plugin state
         
     async def activate(self) -> None:
         # Called when widget becomes active
@@ -112,13 +112,28 @@ async def update(self, key: Key) -> None:
 
 ### 5. State Management
 
-Maintain widget state in instance variables:
+Widgets can maintain both internal state and shared plugin state:
 
 ```python
-def __init__(self, widget_config, global_config):
-    super().__init__(widget_config, global_config)
-    self._click_count = 0  # Internal state
+def __init__(self, widget_config, global_config, plugin_state):
+    super().__init__(widget_config, global_config, plugin_state)
+    self._click_count = 0  # Internal widget state
+    
+    # Access shared plugin state
+    self.plugin_state.register_widget(f"ExampleWidget-{id(self)}")
+    shared_count = self.plugin_state.increment_counter()
 ```
+
+#### Plugin State vs Widget State
+
+- **Widget State**: Private to each widget instance (e.g., `self._click_count`)
+- **Plugin State**: Shared between all widgets of the same plugin (e.g., `self.plugin_state.shared_counter`)
+
+Plugin state is useful for:
+- Sharing connections (like OBS WebSocket)
+- Coordinating between multiple widget instances
+- Maintaining plugin-wide configuration
+- Tracking global plugin statistics
 
 ### 6. Event Handling
 
@@ -139,9 +154,55 @@ plugins/example/
 ├── src/
 │   └── knoepfe_example_plugin/
 │       ├── __init__.py               # Package initialization
+│       ├── plugin.py                 # Plugin class with state management
+│       ├── plugin_state.py           # Custom plugin state (optional)
 │       └── example_widget.py        # Widget implementation
 └── tests/
     └── test_example_widget.py       # Unit tests (optional)
+```
+
+### Creating Custom Plugin State
+
+For plugins that need to share data between widgets, create a custom plugin state:
+
+```python
+# plugin_state.py
+from knoepfe.plugin_state import PluginState
+
+class ExamplePluginState(PluginState):
+    def __init__(self, plugin_config):
+        super().__init__(plugin_config)
+        self.shared_counter = 0
+        self.widget_instances = []
+    
+    def increment_counter(self):
+        self.shared_counter += 1
+        return self.shared_counter
+```
+
+Then implement the `plugin_state` property in your plugin:
+
+```python
+# plugin.py
+class ExamplePlugin(Plugin):
+    def __init__(self, config):
+        super().__init__(config)
+        self._plugin_state = ExamplePluginState(config)
+    
+    @property
+    def plugin_state(self):
+        return self._plugin_state
+```
+
+For simple plugins that don't need shared state, use `NullPluginState`:
+
+```python
+from knoepfe.plugin_state import NullPluginState
+
+class SimplePlugin(Plugin):
+    @property
+    def plugin_state(self):
+        return NullPluginState()
 ```
 
 ## Key Concepts

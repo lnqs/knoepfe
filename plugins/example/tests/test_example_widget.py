@@ -6,6 +6,7 @@ import pytest
 from schema import SchemaError
 
 from knoepfe_example_plugin.example_widget import ExampleWidget
+from knoepfe_example_plugin.state import ExamplePluginState
 
 
 class TestExampleWidget:
@@ -15,8 +16,9 @@ class TestExampleWidget:
         """Test widget initialization with default configuration."""
         widget_config = {}
         global_config = {}
+        state = ExamplePluginState({})
 
-        widget = ExampleWidget(widget_config, global_config)
+        widget = ExampleWidget(widget_config, global_config, state)
 
         assert widget._click_count == 0
         assert widget.config == widget_config
@@ -26,15 +28,17 @@ class TestExampleWidget:
         """Test widget initialization with custom configuration."""
         widget_config = {"message": "Custom Message"}
         global_config = {}
+        state = ExamplePluginState({})
 
-        widget = ExampleWidget(widget_config, global_config)
+        widget = ExampleWidget(widget_config, global_config, state)
 
         assert widget.config["message"] == "Custom Message"
 
     @pytest.mark.asyncio
     async def test_activate_resets_click_count(self):
         """Test that activate resets the click count."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
         widget._click_count = 5
 
         await widget.activate()
@@ -44,7 +48,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_deactivate(self):
         """Test deactivate method."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
 
         # Should not raise any exceptions
         await widget.deactivate()
@@ -52,7 +57,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_with_defaults(self):
         """Test update method with default configuration."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -71,7 +77,8 @@ class TestExampleWidget:
     async def test_update_with_custom_config(self):
         """Test update method with custom configuration."""
         widget_config = {"message": "Hello"}
-        widget = ExampleWidget(widget_config, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget(widget_config, {}, state)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -88,7 +95,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_after_clicks(self):
         """Test update method after some clicks."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
         widget._click_count = 3
 
         # Mock the key and renderer
@@ -106,7 +114,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_down_increments_counter(self):
         """Test that key down increments click counter."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
         widget.request_update = Mock()  # Mock the request_update method
 
         initial_count = widget._click_count
@@ -119,7 +128,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_up(self):
         """Test key up handler."""
-        widget = ExampleWidget({}, {})
+        state = ExamplePluginState({})
+        widget = ExampleWidget({}, {}, state)
 
         # Should not raise any exceptions
         await widget.on_key_up()

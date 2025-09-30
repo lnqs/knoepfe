@@ -4,14 +4,16 @@ from typing import Any
 from schema import Schema
 
 from knoepfe.key import Key
+from knoepfe.plugin_state import PluginState
 from knoepfe.widgets.base import Widget
 
 
-class Clock(Widget):
+class Clock(Widget[PluginState]):
     name = "Clock"
+    description = "Display current time"
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
-        super().__init__(widget_config, global_config)
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: PluginState) -> None:
+        super().__init__(widget_config, global_config, state)
         self.last_time = ""
 
     async def activate(self) -> None:

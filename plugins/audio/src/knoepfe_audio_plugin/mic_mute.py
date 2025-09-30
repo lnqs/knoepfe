@@ -10,14 +10,17 @@ from pulsectl import PulseEventTypeEnum
 from pulsectl_asyncio import PulseAsync
 from schema import Optional, Schema
 
+from .state import AudioPluginState
+
 logger = logging.getLogger(__name__)
 
 
-class MicMute(Widget):
+class MicMute(Widget[AudioPluginState]):
     name = "MicMute"
+    description = "Toggle microphone mute state"
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
-        super().__init__(widget_config, global_config)
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: AudioPluginState) -> None:
+        super().__init__(widget_config, global_config, state)
         self.pulse: None | PulseAsync = None
         self.event_listener: Task[None] | None = None
 

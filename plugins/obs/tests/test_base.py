@@ -1,7 +1,9 @@
 from unittest.mock import AsyncMock, Mock, patch
 
-from knoepfe_obs_plugin.base import OBSWidget
 from pytest import fixture
+
+from knoepfe_obs_plugin.base import OBSWidget
+from knoepfe_obs_plugin.state import OBSPluginState
 
 
 class MockOBSWidget(OBSWidget):
@@ -17,18 +19,23 @@ class MockOBSWidget(OBSWidget):
 
 
 @fixture
-def obs_widget():
-    return MockOBSWidget({}, {})
+def mock_state():
+    return OBSPluginState({})
 
 
-def test_obs_widget_init():
-    widget = MockOBSWidget({}, {})
+@fixture
+def obs_widget(mock_state):
+    return MockOBSWidget({}, {}, mock_state)
+
+
+def test_obs_widget_init(mock_state):
+    widget = MockOBSWidget({}, {}, mock_state)
     assert widget.relevant_events == ["TestEvent"]
     assert widget.listening_task is None
 
 
 async def test_obs_widget_activate(obs_widget):
-    with patch("knoepfe_obs_plugin.base.obs") as mock_obs:
+    with patch.object(obs_widget.state, "obs") as mock_obs:
         mock_obs.connect = AsyncMock()
 
         with patch("knoepfe_obs_plugin.base.get_event_loop") as mock_loop:
@@ -56,7 +63,7 @@ async def test_obs_widget_deactivate(obs_widget):
 
 async def test_obs_widget_listener_relevant_event(obs_widget):
     with patch.object(obs_widget, "request_update") as mock_request_update:
-        with patch("knoepfe_obs_plugin.base.obs") as mock_obs:
+        with patch.object(obs_widget.state, "obs") as mock_obs:
             # Mock async iterator
             async def mock_listen():
                 yield "TestEvent"
@@ -76,7 +83,7 @@ async def test_obs_widget_listener_connection_events(obs_widget):
     with (
         patch.object(obs_widget, "acquire_wake_lock") as mock_acquire,
         patch.object(obs_widget, "release_wake_lock") as mock_release,
-        patch("knoepfe_obs_plugin.base.obs") as mock_obs,
+        patch.object(obs_widget.state, "obs") as mock_obs,
     ):
         # Test ConnectionEstablished
         async def mock_listen_established():

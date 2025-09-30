@@ -1,8 +1,10 @@
+from typing import Any
+
 from knoepfe.key import Key
 from schema import Schema
 
-from knoepfe_obs_plugin.base import OBSWidget
-from knoepfe_obs_plugin.connector import obs
+from .base import OBSWidget
+from .state import OBSPluginState
 
 
 class CurrentScene(OBSWidget):
@@ -14,14 +16,17 @@ class CurrentScene(OBSWidget):
         "CurrentProgramSceneChanged",
     ]
 
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: OBSPluginState) -> None:
+        super().__init__(widget_config, global_config, state)
+
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
             renderer.clear()
-            if obs.connected:
+            if self.obs.connected:
                 # panorama icon (e40b) with text below
                 renderer.icon_and_text(
                     "\ue40b",  # panorama (e40b)
-                    obs.current_scene or "[none]",
+                    self.obs.current_scene or "[none]",
                     icon_size=64,
                     text_size=16,
                 )

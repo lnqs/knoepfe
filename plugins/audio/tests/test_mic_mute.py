@@ -4,11 +4,17 @@ from pytest import fixture
 from schema import Schema
 
 from knoepfe_audio_plugin.mic_mute import MicMute
+from knoepfe_audio_plugin.state import AudioPluginState
 
 
 @fixture
-def mic_mute_widget():
-    return MicMute({}, {})
+def mock_state():
+    return AudioPluginState({})
+
+
+@fixture
+def mic_mute_widget(mock_state):
+    return MicMute({}, {}, mock_state)
 
 
 @fixture
@@ -29,8 +35,8 @@ def mock_source():
     return source
 
 
-def test_mic_mute_init():
-    widget = MicMute({}, {})
+def test_mic_mute_init(mock_state):
+    widget = MicMute({}, {}, mock_state)
     assert widget.pulse is None
     assert widget.event_listener is None
 

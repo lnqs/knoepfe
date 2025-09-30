@@ -137,6 +137,3 @@ class OBS:
         async with self.event_condition:
             self.last_event = event
             self.event_condition.notify_all()
-
-
-obs = OBS()

@@ -1,8 +1,10 @@
+from typing import Any
+
 from knoepfe.key import Key
 from schema import Schema
 
-from knoepfe_obs_plugin.base import OBSWidget
-from knoepfe_obs_plugin.connector import obs
+from .base import OBSWidget
+from .state import OBSPluginState
 
 
 class SwitchScene(OBSWidget):
@@ -14,11 +16,14 @@ class SwitchScene(OBSWidget):
         "SwitchScenes",
     ]
 
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: OBSPluginState) -> None:
+        super().__init__(widget_config, global_config, state)
+
     async def update(self, key: Key) -> None:
         color = "white"
-        if not obs.connected:
+        if not self.obs.connected:
             color = "#202020"
-        elif obs.current_scene == self.config["scene"]:
+        elif self.obs.current_scene == self.config["scene"]:
             color = "red"
 
         with key.renderer() as renderer:
@@ -33,8 +38,8 @@ class SwitchScene(OBSWidget):
             )
 
     async def triggered(self, long_press: bool = False) -> None:
-        if obs.connected:
-            await obs.set_scene(self.config["scene"])
+        if self.obs.connected:
+            await self.obs.set_scene(self.config["scene"])
 
     @classmethod
     def get_config_schema(cls) -> Schema:

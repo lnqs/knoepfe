@@ -3,18 +3,24 @@ from typing import Any
 
 from knoepfe.widgets.base import Widget
 
-from knoepfe_obs_plugin.connector import obs
+# Import the state directly
+from .state import OBSPluginState
 
 
-class OBSWidget(Widget):
+class OBSWidget(Widget[OBSPluginState]):
     relevant_events: list[str] = []
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
-        super().__init__(widget_config, global_config)
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: OBSPluginState) -> None:
+        super().__init__(widget_config, global_config, state)
         self.listening_task: Task[None] | None = None
 
+    @property
+    def obs(self):
+        """Get the shared OBS connector from state."""
+        return self.state.obs
+
     async def activate(self) -> None:
-        await obs.connect(self.global_config.get("obs", {}))
+        await self.obs.connect(self.global_config.get("obs", {}))
 
         if not self.listening_task:
             self.listening_task = get_event_loop().create_task(self.listener())
@@ -25,7 +31,7 @@ class OBSWidget(Widget):
             self.listening_task = None
 
     async def listener(self) -> None:
-        async for event in obs.listen():
+        async for event in self.obs.listen():
             if event == "ConnectionEstablished":
                 self.acquire_wake_lock()
             elif event == "ConnectionLost":

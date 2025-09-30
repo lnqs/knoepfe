@@ -6,8 +6,10 @@ from knoepfe.key import Key
 from knoepfe.widgets.base import Widget
 from schema import Optional, Schema
 
+from .state import ExamplePluginState
 
-class ExampleWidget(Widget):
+
+class ExampleWidget(Widget[ExamplePluginState]):
     """A minimal example widget that demonstrates the basic structure of a knoepfe widget.
 
     This widget displays a customizable message and changes appearance when clicked.
@@ -16,14 +18,15 @@ class ExampleWidget(Widget):
 
     name = "ExampleWidget"
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: ExamplePluginState) -> None:
         """Initialize the ExampleWidget.
 
         Args:
             widget_config: Widget-specific configuration
             global_config: Global knoepfe configuration
+            state: Example plugin state for sharing data
         """
-        super().__init__(widget_config, global_config)
+        super().__init__(widget_config, global_config, state)
 
         # Internal state to track clicks
         self._click_count = 0
@@ -72,8 +75,14 @@ class ExampleWidget(Widget):
 
         This method is called when the Stream Deck key is pressed down.
         """
-        # Increment click counter
+        # Increment local click counter
         self._click_count += 1
+
+        # Also increment the shared plugin counter
+        total_clicks = self.state.increment_clicks()
+
+        # Log the shared state for demonstration
+        print(f"Widget clicked {self._click_count} times, total across all widgets: {total_clicks}")
 
         # Request an update to show the new state
         self.request_update()

@@ -11,8 +11,7 @@ from StreamDeck.Transport.Transport import TransportError
 
 from knoepfe.config import process_config
 from knoepfe.deckmanager import DeckManager
-from knoepfe.plugin_manager import PluginManager
-from knoepfe.widget_manager import WidgetManager, WidgetNotFoundError
+from knoepfe.plugin_manager import PluginManager, WidgetNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +21,7 @@ class Knoepfe:
 
     def __init__(self) -> None:
         self.device = None
-        self.widget_manager = WidgetManager()
         self.plugin_manager = PluginManager()
-
-        # Register plugin widgets with widget manager
-        for widget_class in self.plugin_manager.get_all_widgets():
-            self.widget_manager.register_widget(widget_class)
 
     async def run(self, config_path: Path | None, mock_device: bool = False) -> None:
         """Run the main application loop.
@@ -38,7 +32,7 @@ class Knoepfe:
         """
         try:
             logger.debug("Processing config")
-            global_config, active_deck, decks = process_config(config_path, self.widget_manager, self.plugin_manager)
+            global_config, active_deck, decks = process_config(config_path, self.plugin_manager)
         except WidgetNotFoundError as e:
             raise e
         except Exception as e:

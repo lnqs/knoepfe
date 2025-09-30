@@ -1,9 +1,8 @@
+import inspect
 import logging
 from dataclasses import dataclass
 from importlib.metadata import entry_points
 from typing import Type
-
-from schema import Schema
 
 from knoepfe.plugin import Plugin
 from knoepfe.widgets.base import Widget
@@ -12,11 +11,23 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class PluginMetadata:
-    """Metadata for a plugin extracted from package information."""
+class PluginInfo:
+    """Information about a loaded plugin."""
 
+    name: str
+    instance: Plugin
     version: str
     description: str
+
+
+@dataclass
+class WidgetInfo:
+    """Information about a discovered widget."""
+
+    name: str
+    description: str | None
+    widget_class: Type[Widget]
+    plugin_name: str
 
 
 class PluginNotFoundError(Exception):
@@ -24,17 +35,24 @@ class PluginNotFoundError(Exception):
 
     def __init__(self, plugin_name: str):
         self.plugin_name = plugin_name
-
         super().__init__(f"Plugin '{plugin_name}' not found.")
 
 
+class WidgetNotFoundError(Exception):
+    """Raised when a required widget cannot be found or imported."""
+
+    def __init__(self, widget_name: str):
+        self.widget_name = widget_name
+        super().__init__(f"Widget '{widget_name}' not found. Use 'knoepfe list-widgets' to see available widgets.")
+
+
 class PluginManager:
-    """Manages plugin lifecycle."""
+    """Manages plugin lifecycle and widget discovery."""
 
     def __init__(self):
-        self.plugins: dict[str, Plugin] = {}
-        self._plugin_configs: dict[str, dict] = {}  # Store plugin configs
-        self._plugin_metadata: dict[str, PluginMetadata] = {}
+        self._plugins: dict[str, PluginInfo] = {}
+        self._widgets: dict[str, WidgetInfo] = {}
+        self._plugin_configs: dict[str, dict] = {}
         self._load_plugins()
 
     def set_plugin_config(self, plugin_name: str, config: dict) -> None:
@@ -43,76 +61,102 @@ class PluginManager:
 
     def _load_plugins(self):
         """Load all registered plugins via entry points."""
-        # Load plugins from entry points
         for ep in entry_points(group="knoepfe.plugins"):
             try:
-                dist_name = ep.dist.name if ep.dist else ep.name
-                logger.info(f"Loading plugin: {ep.name} from {dist_name}")
+                # Plugin name comes from entry point name
+                plugin_name = ep.name
+                dist_name = ep.dist.name if ep.dist else plugin_name
 
+                logger.info(f"Loading plugin '{plugin_name}' from {dist_name}")
+
+                # Load the plugin class
                 plugin_class = ep.load()
 
-                # Get config for this plugin (empty dict if none provided)
-                plugin_config = self._plugin_configs.get(ep.name, {})
+                # Validate that it's actually a Plugin subclass
+                if not (inspect.isclass(plugin_class) and issubclass(plugin_class, Plugin)):
+                    logger.error(f"Entry point '{plugin_name}' does not point to a Plugin subclass: {plugin_class}")
+                    continue
 
                 # Instantiate plugin
-                plugin = plugin_class(plugin_config)
+                plugin_config = self._plugin_configs.get(plugin_name, {})
 
-                # Extract version and description from package metadata
-                plugin_version = ep.dist.version if ep.dist else "unknown"
-                plugin_description = (
-                    ep.dist.metadata.get("Summary", "No description")
-                    if ep.dist and ep.dist.metadata
-                    else "No description"
+                # Create plugin instance first
+                plugin_instance = plugin_class(plugin_config)
+
+                # Validate plugin configuration
+                schema = plugin_instance.config_schema
+                schema.validate(plugin_config)
+
+                # Get widgets from the plugin
+                widget_classes = plugin_instance.widgets
+
+                # Register widgets
+                widget_infos = []
+                for widget_class in widget_classes:
+                    widget_info = WidgetInfo(
+                        name=widget_class.name,
+                        description=widget_class.description,
+                        widget_class=widget_class,
+                        plugin_name=plugin_name,
+                    )
+
+                    if widget_info.name in self._widgets:
+                        logger.warning(f"Widget name '{widget_info.name}' already registered, skipping")
+                        continue
+
+                    self._widgets[widget_info.name] = widget_info
+                    widget_infos.append(widget_info)
+                    logger.debug(f"Registered widget '{widget_info.name}' from plugin '{plugin_name}'")
+
+                widget_names = ", ".join(w.name for w in widget_infos)
+                logger.info(f"Loaded {len(widget_infos)} widgets from plugin '{plugin_name}': {widget_names}")
+
+                # Store plugin info
+                plugin_info = PluginInfo(
+                    name=plugin_name,
+                    instance=plugin_instance,
+                    version=ep.dist.version if ep.dist else "unknown",
+                    description=(
+                        ep.dist.metadata.get("Summary", "No description")
+                        if ep.dist and ep.dist.metadata
+                        else "No description"
+                    ),
                 )
 
-                self.register_plugin(plugin, plugin_version, plugin_description)
-                logger.info(f"Successfully loaded plugin: {plugin.name} v{plugin_version}")
+                self._plugins[plugin_name] = plugin_info
+                logger.info(f"Successfully loaded plugin '{plugin_name}' v{plugin_info.version}")
 
             except Exception:
                 logger.exception(f"Failed to load plugin {ep.name}")
 
-    def register_plugin(self, plugin: Plugin, version: str = "unknown", description: str = "No description") -> None:
-        """Register a plugin and its widgets."""
-        # Validate plugin name uniqueness
-        if plugin.name in self.plugins:
-            raise ValueError(f"Plugin name '{plugin.name}' already in use")
+    def get_plugin_for_widget(self, widget_name: str) -> Plugin:
+        """Get the plugin instance that provides a widget."""
+        if widget_name not in self._widgets:
+            raise WidgetNotFoundError(widget_name)
 
-        # Validate plugin configuration if schema provided
-        if plugin.config_schema:
-            plugin.config_schema.validate(plugin.config)
-
-        self.plugins[plugin.name] = plugin
-        self._plugin_metadata[plugin.name] = PluginMetadata(version=version, description=description)
-
-    def get_all_widgets(self) -> list[Type[Widget]]:
-        """Get all widget classes from all loaded plugins."""
-        widgets = []
-        for plugin in self.plugins.values():
-            widgets.extend(plugin.widgets)
-        return widgets
+        plugin_name = self._widgets[widget_name].plugin_name
+        return self.get_plugin(plugin_name)
 
     def get_plugin(self, name: str) -> Plugin:
-        """Get plugin by name."""
-        if name not in self.plugins:
+        """Get plugin instance by name."""
+        if name not in self._plugins:
             raise PluginNotFoundError(name)
-
-        return self.plugins[name]
-
-    def get_config_schema(self, plugin_name: str) -> Schema | None:
-        """Get config schema by plugin name."""
-        if plugin_name not in self.plugins:
-            raise PluginNotFoundError(plugin_name)
-
-        return self.plugins[plugin_name].config_schema
-
-    def list_plugins(self) -> list[str]:
-        """List all available plugin names."""
-        return list(self.plugins.keys())
+        return self._plugins[name].instance
 
     def shutdown_all(self) -> None:
         """Shutdown all plugins."""
-        for plugin in self.plugins.values():
+        for plugin_info in self._plugins.values():
             try:
-                plugin.shutdown()
+                plugin_info.instance.shutdown()
             except Exception:
-                logger.exception(f"Error shutting down plugin {plugin.name}")
+                logger.exception(f"Error shutting down plugin {plugin_info.name}")
+
+    def get_widget(self, name: str) -> Type[Widget]:
+        """Get widget class by name."""
+        if name not in self._widgets:
+            raise WidgetNotFoundError(name)
+        return self._widgets[name].widget_class
+
+    def list_widgets(self) -> list[str]:
+        """List all available widget names."""
+        return list(self._widgets.keys())

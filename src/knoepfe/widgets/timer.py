@@ -5,14 +5,16 @@ from typing import Any
 from schema import Schema
 
 from knoepfe.key import Key
+from knoepfe.plugin_state import PluginState
 from knoepfe.widgets.base import Widget
 
 
-class Timer(Widget):
+class Timer(Widget[PluginState]):
     name = "Timer"
+    description = "Start/stop timer with elapsed time display"
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any]) -> None:
-        super().__init__(widget_config, global_config)
+    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: PluginState) -> None:
+        super().__init__(widget_config, global_config, state)
         self.start: float | None = None
         self.stop: float | None = None
 

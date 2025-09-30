@@ -45,6 +45,10 @@ Repository = "https://github.com/lnqs/knoepfe"
 [project.scripts]
 knoepfe = "knoepfe.cli:main"
 
+# Plugin entry points
+[project.entry-points."knoepfe.plugins"]
+builtin = "knoepfe.builtin_plugin:BuiltinPlugin"
+
 # Workspace configuration for development
 [tool.uv.workspace]
 members = ["plugins/*"]
