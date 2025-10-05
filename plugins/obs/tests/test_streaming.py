@@ -33,7 +33,11 @@ async def test_streaming_update_disconnected(streaming_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue0e3", size=86, color="#202020")
+        renderer_mock.icon.assert_called_with(
+            "\uf0118",  # nf-md-cast
+            size=86,
+            color="#202020",
+        )
 
 
 async def test_streaming_update_not_streaming(streaming_widget):
@@ -46,7 +50,11 @@ async def test_streaming_update_not_streaming(streaming_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue0e3", size=86, color="white")
+        renderer_mock.icon.assert_called_with(
+            "\uf0118",  # nf-md-cast
+            size=86,
+            color="white",
+        )
 
 
 async def test_streaming_update_streaming(streaming_widget):
@@ -63,7 +71,7 @@ async def test_streaming_update_streaming(streaming_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue0e2",  # streaming icon
+            "\uf0118",  # nf-md-cast
             "00:01:23",  # timecode without milliseconds
             icon_size=64,
             text_size=16,
@@ -96,7 +104,10 @@ async def test_streaming_update_show_loading(streaming_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue5d3", size=86)
+        renderer_mock.icon.assert_called_with(
+            "\uf0772",  # nf-md-loading
+            size=86,
+        )
         assert not streaming_widget.show_loading
 
 
@@ -186,9 +197,9 @@ def test_streaming_config():
     """Test that StreamingConfig validates correctly."""
     # Test with defaults
     config = StreamingConfig()
-    assert config.streaming_icon == "\ue0e2"
-    assert config.stopped_icon == "\ue0e3"
-    assert config.loading_icon == "\ue5d3"
+    assert config.streaming_icon == "\uf0118"  # nf-md-cast
+    assert config.stopped_icon == "\uf0118"  # nf-md-cast
+    assert config.loading_icon == "\uf0772"  # nf-md-loading
     assert config.streaming_color == "red"
     assert config.stopped_color is None
     assert config.color == "white"

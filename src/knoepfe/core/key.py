@@ -19,9 +19,8 @@ class Renderer:
         self._draw = ImageDraw.Draw(self.canvas)
         self.config = config
 
-        # Get default fonts from config
+        # Get default font from config (Nerd Font contains both text and icons)
         self.default_text_font = config.device.default_text_font
-        self.default_icon_font = config.device.default_icon_font
 
     # ========== Primitive Operations ==========
 
@@ -118,10 +117,10 @@ class Renderer:
             size: Icon size
             color: Icon color
             position: Optional (x, y) position, defaults to center
-            font: Font to use for icon (defaults to config default_icon_font)
+            font: Font to use for icon (defaults to config default_text_font)
         """
         if font is None:
-            font = self.default_icon_font
+            font = self.default_text_font
         if position is None:
             position = (48, 48)
         return self.text(position, icon, font=font, size=size, color=color, anchor="mm")
@@ -178,12 +177,12 @@ class Renderer:
             text_size: Size of text
             icon_color: Color of icon
             text_color: Color of text
-            icon_font: Font for icon (defaults to config default_icon_font)
+            icon_font: Font for icon (defaults to config default_text_font)
             text_font: Font for text (defaults to config default_text_font)
             spacing: Pixels between icon and text
         """
         if icon_font is None:
-            icon_font = self.default_icon_font
+            icon_font = self.default_text_font
         if text_font is None:
             text_font = self.default_text_font
 

@@ -11,9 +11,18 @@ from .base import OBSWidget
 class RecordingConfig(WidgetConfig):
     """Configuration for Recording widget."""
 
-    recording_icon: str = Field(default="\ue04b", description="Icon when recording (unicode character or codepoint)")
-    stopped_icon: str = Field(default="\ue04c", description="Icon when stopped (unicode character or codepoint)")
-    loading_icon: str = Field(default="\ue5d3", description="Icon when loading (unicode character or codepoint)")
+    recording_icon: str = Field(
+        default="\uf0567",  # nf-md-video
+        description="Icon when recording (unicode character or codepoint)",
+    )
+    stopped_icon: str = Field(
+        default="\uf0568",  # nf-md-video_off
+        description="Icon when stopped (unicode character or codepoint)",
+    )
+    loading_icon: str = Field(
+        default="\uf0772",  # nf-md-loading
+        description="Icon when loading (unicode character or codepoint)",
+    )
     recording_color: str = Field(default="red", description="Icon/text color when recording")
     stopped_color: str | None = Field(default=None, description="Icon color when stopped (defaults to base color)")
 

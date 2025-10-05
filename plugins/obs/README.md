@@ -33,9 +33,9 @@ widget.OBSRecording(
 ```
 
 **Parameters:**
-- `recording_icon` (optional): Icon when recording. Can be unicode character or codepoint. Default: `'\ue04b'`
-- `stopped_icon` (optional): Icon when stopped. Can be unicode character or codepoint. Default: `'\ue04c'`
-- `loading_icon` (optional): Icon when loading. Can be unicode character or codepoint. Default: `'\ue5d3'`
+- `recording_icon` (optional): Icon when recording. Can be unicode character or codepoint. Default: `'\uf0567'` (nf-md-video)
+- `stopped_icon` (optional): Icon when stopped. Can be unicode character or codepoint. Default: `'\uf0568'` (nf-md-video_off)
+- `loading_icon` (optional): Icon when loading. Can be unicode character or codepoint. Default: `'\uf0772'` (nf-md-loading)
 - `recording_color` (optional): Icon/text color when recording. Default: `'red'`
 - `stopped_color` (optional): Icon color when stopped. Default: `'white'`
 
@@ -65,9 +65,9 @@ widget.OBSStreaming(
 ```
 
 **Parameters:**
-- `streaming_icon` (optional): Icon when streaming. Can be unicode character or codepoint. Default: `'\ue0e2'`
-- `stopped_icon` (optional): Icon when stopped. Can be unicode character or codepoint. Default: `'\ue0e3'`
-- `loading_icon` (optional): Icon when loading. Can be unicode character or codepoint. Default: `'\ue5d3'`
+- `streaming_icon` (optional): Icon when streaming. Can be unicode character or codepoint. Default: `'\uf0118'` (nf-md-cast)
+- `stopped_icon` (optional): Icon when stopped. Can be unicode character or codepoint. Default: `'\uf0118'` (nf-md-cast)
+- `loading_icon` (optional): Icon when loading. Can be unicode character or codepoint. Default: `'\uf0772'` (nf-md-loading)
 - `streaming_color` (optional): Icon/text color when streaming. Default: `'red'`
 - `stopped_color` (optional): Icon color when stopped. Default: `'white'`
 
@@ -94,7 +94,7 @@ widget.OBSCurrentScene(
 ```
 
 **Parameters:**
-- `icon` (optional): Scene icon. Can be unicode character or codepoint. Default: `'\ue40b'`
+- `icon` (optional): Scene icon. Can be unicode character or codepoint. Default: `'\uf01c5'` (nf-md-desktop_tower)
 - `connected_color` (optional): Icon/text color when connected. Default: `'white'`
 
 **Features:**
@@ -122,7 +122,7 @@ widget.OBSSwitchScene(
 
 **Parameters:**
 - `scene` (required): Name of the OBS scene to switch to
-- `icon` (optional): Scene icon. Can be unicode character or codepoint. Default: `'\ue40b'`
+- `icon` (optional): Scene icon. Can be unicode character or codepoint. Default: `'\uf01c5'` (nf-md-desktop_tower)
 - `active_color` (optional): Icon/text color when scene is active. Default: `'red'`
 - `inactive_color` (optional): Icon/text color when scene is inactive. Default: `'white'`
 

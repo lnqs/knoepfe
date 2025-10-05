@@ -13,7 +13,8 @@ class TimerConfig(WidgetConfig):
     """Configuration for Timer widget."""
 
     icon: str = Field(
-        default="\ue425", description="Icon to display when timer is idle (unicode character or codepoint)"
+        default="\uf13ab",  # nf-md-timer
+        description="Icon to display when timer is idle (unicode character or codepoint)",
     )
     running_color: str | None = Field(
         default=None, description="Text color when timer is running (defaults to base color)"

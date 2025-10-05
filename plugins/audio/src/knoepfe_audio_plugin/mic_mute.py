@@ -15,9 +15,13 @@ class MicMuteConfig(WidgetConfig):
     """Configuration for MicMute widget."""
 
     source: str | None = Field(default=None, description="Audio source name to control")
-    muted_icon: str = Field(default="\ue02b", description="Icon to display when muted (unicode character or codepoint)")
+    muted_icon: str = Field(
+        default="\uf036d",  # nf-md-microphone_off
+        description="Icon to display when muted (unicode character or codepoint)",
+    )
     unmuted_icon: str = Field(
-        default="\ue029", description="Icon to display when unmuted (unicode character or codepoint)"
+        default="\uf036c",  # nf-md-microphone
+        description="Icon to display when unmuted (unicode character or codepoint)",
     )
     muted_color: str | None = Field(default=None, description="Icon color when muted (defaults to base color)")
     unmuted_color: str = Field(default="red", description="Icon color when unmuted")

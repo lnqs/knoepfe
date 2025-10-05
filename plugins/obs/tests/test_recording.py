@@ -33,7 +33,11 @@ async def test_recording_update_disconnected(recording_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue04c", size=86, color="#202020")
+        renderer_mock.icon.assert_called_with(
+            "\uf0568",  # nf-md-video_off
+            size=86,
+            color="#202020",
+        )
 
 
 async def test_recording_update_not_recording(recording_widget):
@@ -46,7 +50,11 @@ async def test_recording_update_not_recording(recording_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue04c", size=86, color="white")
+        renderer_mock.icon.assert_called_with(
+            "\uf0568",  # nf-md-video_off
+            size=86,
+            color="white",
+        )
 
 
 async def test_recording_update_recording(recording_widget):
@@ -63,7 +71,7 @@ async def test_recording_update_recording(recording_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue04b",  # videocam icon
+            "\uf0567",  # nf-md-video
             "00:01:23",  # timecode without milliseconds
             icon_size=64,
             text_size=16,
@@ -96,7 +104,10 @@ async def test_recording_update_show_loading(recording_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue5d3", size=86)
+        renderer_mock.icon.assert_called_with(
+            "\uf0772",  # nf-md-loading
+            size=86,
+        )
         assert not recording_widget.show_loading
 
 
@@ -104,9 +115,9 @@ def test_recording_config():
     """Test that RecordingConfig validates correctly."""
     # Test with defaults
     config = RecordingConfig()
-    assert config.recording_icon == "\ue04b"
-    assert config.stopped_icon == "\ue04c"
-    assert config.loading_icon == "\ue5d3"
+    assert config.recording_icon == "\uf0567"  # nf-md-video
+    assert config.stopped_icon == "\uf0568"  # nf-md-video_off
+    assert config.loading_icon == "\uf0772"  # nf-md-loading
     assert config.recording_color == "red"
     assert config.stopped_color is None
     assert config.color == "white"

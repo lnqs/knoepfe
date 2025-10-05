@@ -39,7 +39,7 @@ async def test_current_scene_update_connected_with_scene(current_scene_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue40b",
+            "\uf01c5",  # nf-md-desktop_tower
             "Gaming",
             icon_size=64,
             text_size=16,
@@ -60,7 +60,7 @@ async def test_current_scene_update_connected_no_scene(current_scene_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue40b",
+            "\uf01c5",  # nf-md-desktop_tower
             "[none]",
             icon_size=64,
             text_size=16,
@@ -79,7 +79,11 @@ async def test_current_scene_update_disconnected(current_scene_widget):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue40b", size=64, color="#202020")
+        renderer_mock.icon.assert_called_with(
+            "\uf01c5",  # nf-md-desktop_tower
+            size=64,
+            color="#202020",
+        )
 
 
 async def test_current_scene_update_with_custom_config(mock_context):
@@ -110,7 +114,7 @@ def test_current_scene_config():
     """Test that CurrentSceneConfig validates correctly."""
     # Test with defaults
     config = CurrentSceneConfig()
-    assert config.icon == "\ue40b"
+    assert config.icon == "\uf01c5"  # nf-md-desktop_tower
     assert config.connected_color is None
     assert config.color == "white"
 

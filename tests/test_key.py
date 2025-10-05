@@ -189,11 +189,11 @@ def test_renderer_unicode_icons() -> None:
         renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
-            # Test Unicode icon with Material Icons font
-            renderer.text((48, 48), "🎤", font="Material Icons", size=86)
+            # Test Unicode icon with Nerd Font
+            renderer.text((48, 48), "🎤", font="RobotoMono Nerd Font", size=86)
 
-            # Should have queried fontconfig for Material Icons
-            mocks["fontconfig"].query.assert_called_with("Material Icons")
+            # Should have queried fontconfig for RobotoMono Nerd Font
+            mocks["fontconfig"].query.assert_called_with("RobotoMono Nerd Font")
             mocks["truetype"].assert_called_with("/path/to/materialicons.ttf", 86)
 
             # Should have drawn the Unicode character

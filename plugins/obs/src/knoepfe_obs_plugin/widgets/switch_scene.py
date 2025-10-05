@@ -10,7 +10,10 @@ class SwitchSceneConfig(WidgetConfig):
     """Configuration for SwitchScene widget."""
 
     scene: str = Field(..., description="Scene name to switch to")
-    icon: str = Field(default="\ue40b", description="Scene icon (unicode character or codepoint)")
+    icon: str = Field(
+        default="\uf01c5",  # nf-md-desktop_tower
+        description="Scene icon (unicode character or codepoint)",
+    )
     active_color: str = Field(default="red", description="Icon/text color when scene is active")
     inactive_color: str | None = Field(
         default=None, description="Icon/text color when scene is inactive (defaults to base color)"

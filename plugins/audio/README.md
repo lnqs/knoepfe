@@ -69,8 +69,8 @@ widget.MicMute(
 **Parameters:**
 
 - `source` (optional): PulseAudio source name for this specific widget. If not specified, falls back to the plugin's `default_source`, or the system default source.
-- `muted_icon` (optional): Icon to display when muted. Can be a unicode character (e.g., `'🔇'`) or codepoint (e.g., `'\ue02b'`). Default: `'\ue02b'`
-- `unmuted_icon` (optional): Icon to display when unmuted. Can be a unicode character (e.g., `'🎤'`) or codepoint (e.g., `'\ue029'`). Default: `'\ue029'`
+- `muted_icon` (optional): Icon to display when muted. Can be a unicode character (e.g., `'🔇'`) or codepoint (e.g., `'\uf036d'`). Default: `'\uf036d'` (nf-md-microphone_off)
+- `unmuted_icon` (optional): Icon to display when unmuted. Can be a unicode character (e.g., `'🎤'`) or codepoint (e.g., `'\uf036c'`). Default: `'\uf036c'` (nf-md-microphone)
 - `muted_color` (optional): Icon color when muted. Default: `'white'`
 - `unmuted_color` (optional): Icon color when unmuted. Default: `'red'`
 

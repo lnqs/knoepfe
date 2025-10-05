@@ -13,8 +13,7 @@ class DeviceConfig(BaseConfig):
     brightness: int = Field(default=100, ge=0, le=100, description="Display brightness percentage")
     sleep_timeout: float | None = Field(default=10.0, gt=0, description="Seconds until sleep, None to disable")
     device_poll_frequency: int = Field(default=5, ge=1, le=1000, description="Hardware polling rate in Hz")
-    default_text_font: str = Field(default="Roboto", description="Default font for text rendering")
-    default_icon_font: str = Field(default="Material Icons", description="Default font for icon rendering")
+    default_text_font: str = Field(default="RobotoMono Nerd Font", description="Default font for text rendering")
 
 
 class WidgetSpec(BaseConfig):

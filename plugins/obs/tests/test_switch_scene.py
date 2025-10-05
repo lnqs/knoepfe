@@ -40,7 +40,7 @@ async def test_switch_scene_update_disconnected(switch_scene_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue40b",
+            "\uf01c5",  # nf-md-desktop_tower
             "Gaming",
             icon_size=64,
             text_size=16,
@@ -61,7 +61,7 @@ async def test_switch_scene_update_active(switch_scene_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue40b",
+            "\uf01c5",  # nf-md-desktop_tower
             "Gaming",
             icon_size=64,
             text_size=16,
@@ -82,7 +82,7 @@ async def test_switch_scene_update_inactive(switch_scene_widget):
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
         renderer_mock.icon_and_text.assert_called_with(
-            "\ue40b",
+            "\uf01c5",  # nf-md-desktop_tower
             "Gaming",
             icon_size=64,
             text_size=16,
@@ -158,7 +158,7 @@ def test_switch_scene_config():
     # Test with required scene parameter
     config = SwitchSceneConfig(scene="Gaming")
     assert config.scene == "Gaming"
-    assert config.icon == "\ue40b"
+    assert config.icon == "\uf01c5"  # nf-md-desktop_tower
     assert config.active_color == "red"
     assert config.inactive_color is None
     assert config.color == "white"

@@ -81,7 +81,11 @@ async def test_mic_mute_update_muted(mic_mute_widget, mock_source):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue02b", size=86, color="white")
+        renderer_mock.icon.assert_called_with(
+            "\uf036d",  # nf-md-microphone_off
+            size=86,
+            color="white",
+        )
 
 
 async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
@@ -94,7 +98,11 @@ async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
 
         renderer_mock = key.renderer.return_value.__enter__.return_value
         renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with("\ue029", size=86, color="red")
+        renderer_mock.icon.assert_called_with(
+            "\uf036c",  # nf-md-microphone
+            size=86,
+            color="red",
+        )
 
 
 async def test_mic_mute_update_no_source(mic_mute_widget):
@@ -145,8 +153,8 @@ def test_mic_mute_config():
     # Test with defaults
     config = MicMuteConfig()
     assert config.source is None
-    assert config.muted_icon == "\ue02b"
-    assert config.unmuted_icon == "\ue029"
+    assert config.muted_icon == "\uf036d"  # nf-md-microphone_off
+    assert config.unmuted_icon == "\uf036c"  # nf-md-microphone
     assert config.muted_color is None  # Defaults to base color
     assert config.color == "white"  # Base color
     assert config.unmuted_color == "red"

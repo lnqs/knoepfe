@@ -9,7 +9,10 @@ from .base import OBSWidget
 class CurrentSceneConfig(WidgetConfig):
     """Configuration for CurrentScene widget."""
 
-    icon: str = Field(default="\ue40b", description="Scene icon (unicode character or codepoint)")
+    icon: str = Field(
+        default="\uf01c5",  # nf-md-desktop_tower
+        description="Scene icon (unicode character or codepoint)",
+    )
     connected_color: str | None = Field(
         default=None, description="Icon/text color when connected (defaults to base color)"
     )
