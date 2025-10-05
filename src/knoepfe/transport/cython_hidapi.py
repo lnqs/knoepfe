@@ -209,8 +209,12 @@ class CythonHIDAPI(Transport):
                         raise TransportError(f"Failed to write out report ({result})")
                     return result
 
-        def read(self, length: int) -> bytes:
-            """Performs a non-blocking read of a HID In report."""
+        def read(self, length: int) -> bytes | None:  # type: ignore[override]
+            """Performs a non-blocking read of a HID In report.
+
+            Returns None when no data is available (matching LibUSBHIDAPI behavior).
+            The base class signature is incorrect - it should allow None returns.
+            """
             with self._mutex:
                 if self._hid_device is None:
                     raise TransportError("Device not open")
@@ -218,7 +222,7 @@ class CythonHIDAPI(Transport):
                 with _handle_hid_errors("read in report"):
                     result = self._hid_device.read(length)
                     if not result:
-                        return b""
+                        return None  # Return None to match LibUSBHIDAPI behavior
                     return bytes(result[:length])
 
     @staticmethod

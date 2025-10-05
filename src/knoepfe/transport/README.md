@@ -80,16 +80,26 @@ An alternative transport implementation for StreamDeck devices using the cython-
 
 ## Usage
 
+The transport patches are automatically applied when knoepfe starts. You can control this behavior:
+
+```python
+from knoepfe.transport import apply_transport_patches
+
+# Apply all patches including CythonHIDAPI replacement (default)
+apply_transport_patches(enable_cython_hid=True)
+
+# Apply only bug fixes, disable CythonHIDAPI
+apply_transport_patches(enable_cython_hid=False)
+```
+
+Or use CythonHIDAPI directly:
+
 ```python
 from knoepfe.transport import CythonHIDAPI
 
 # Use as a drop-in replacement for LibUSBHIDAPI
 transport = CythonHIDAPI()
 devices = transport.enumerate(vendor_id, product_id)
-
-# Or use with StreamDeck library by monkey-patching
-import StreamDeck.Transport.LibUSBHIDAPI
-StreamDeck.Transport.LibUSBHIDAPI.LibUSBHIDAPI = CythonHIDAPI
 ```
 
 ## Requirements

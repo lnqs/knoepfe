@@ -6,5 +6,6 @@ management compared to the default ctypes implementation.
 """
 
 from .cython_hidapi import CythonHIDAPI
+from .patches import apply_transport_patches
 
-__all__ = ["CythonHIDAPI"]
+__all__ = ["CythonHIDAPI", "apply_transport_patches"]

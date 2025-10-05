@@ -9,6 +9,7 @@ import click
 from . import __version__
 from .core.app import Knoepfe
 from .plugins import PluginManager
+from .transport import apply_transport_patches
 from .utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -23,13 +24,8 @@ logger = logging.getLogger(__name__)
 @click.pass_context
 def main(ctx: click.Context, verbose: bool, config: Path | None, mock_device: bool, no_cython_hid: bool) -> None:
     """Connect and control Elgato Stream Decks."""
-    # Apply CythonHIDAPI transport monkey patch if not disabled
-    if not no_cython_hid:
-        import StreamDeck.Transport.LibUSBHIDAPI as LibUSBHIDAPI_module
-
-        from knoepfe.transport import CythonHIDAPI
-
-        LibUSBHIDAPI_module.LibUSBHIDAPI = CythonHIDAPI
+    # Apply transport patches and optionally enable CythonHIDAPI
+    apply_transport_patches(enable_cython_hid=not no_cython_hid)
 
     # Configure logging based on verbose flag
     configure_logging(verbose=verbose)
