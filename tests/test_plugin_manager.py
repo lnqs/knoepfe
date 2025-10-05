@@ -3,73 +3,64 @@
 from unittest.mock import Mock, patch
 
 import pytest
-from schema import Schema
+from pydantic import Field
 
-from knoepfe.plugin import Plugin
-from knoepfe.plugin_manager import PluginManager, PluginNotFoundError
+from knoepfe.config.plugin import EmptyPluginConfig, PluginConfig
+from knoepfe.config.widget import EmptyConfig
+from knoepfe.plugins.context import PluginContext
+from knoepfe.plugins.manager import PluginManager
+from knoepfe.plugins.plugin import Plugin
 from knoepfe.widgets.base import Widget
 
 
-class MockWidget(Widget):
+class MockWidgetConfig(EmptyConfig):
+    """Config for mock widget."""
+
+    pass
+
+
+class MockWidget(Widget[MockWidgetConfig, PluginContext]):
     name = "MockWidget"
+    description = "A mock widget for testing"
 
-    @classmethod
-    def get_config_schema(cls) -> Schema:
-        return Schema({"test": str})
+    async def update(self, key):
+        pass
 
 
-class MockWidgetNoSchema(Widget):
+class MockWidgetNoSchema(Widget[EmptyConfig, PluginContext]):
     name = "MockWidgetNoSchema"
 
+    async def update(self, key):
+        pass
 
-class MockPlugin(Plugin):
-    name = "MockPlugin"
 
-    def __init__(self, config: dict):
-        super().__init__(config)
+class MockPluginConfig(PluginConfig):
+    """Config for mock plugin."""
 
-    @property
-    def widgets(self) -> list[type[Widget]]:
+    test_config: str = Field(default="default", description="Test configuration")
+
+
+class MockPlugin(Plugin[MockPluginConfig, PluginContext]):
+    @classmethod
+    def widgets(cls) -> list[type[Widget]]:
         return [MockWidget, MockWidgetNoSchema]
 
-    @property
-    def config_schema(self) -> Schema:
-        return Schema({"test_config": str})
 
-
-class MockPlugin1(Plugin):
-    name = "Plugin1"
-
-    def __init__(self, config: dict):
-        super().__init__(config)
-
-    @property
-    def widgets(self) -> list[type[Widget]]:
+class MockPlugin1(Plugin[EmptyPluginConfig, PluginContext]):
+    @classmethod
+    def widgets(cls) -> list[type[Widget]]:
         return []
 
-    @property
-    def config_schema(self) -> Schema:
-        return Schema({})
 
-
-class MockPlugin2(Plugin):
-    name = "Plugin2"
-
-    def __init__(self, config: dict):
-        super().__init__(config)
-
-    @property
-    def widgets(self) -> list[type[Widget]]:
+class MockPlugin2(Plugin[EmptyPluginConfig, PluginContext]):
+    @classmethod
+    def widgets(cls) -> list[type[Widget]]:
         return []
-
-    @property
-    def config_schema(self) -> Schema:
-        return Schema({})
 
 
 def test_plugin_manager_init():
     """Test PluginManager initialization."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock plugin entry points
         mock_ep1 = Mock()
         mock_ep1.name = "test"
@@ -83,12 +74,8 @@ def test_plugin_manager_init():
 
         mock_entry_points.return_value = [mock_ep1]
 
-        # Set plugin config to satisfy schema requirements
-        pm = PluginManager()
-        pm.set_plugin_config("test", {"test_config": "value"})
-
-        # Reload plugins to pick up the config
-        pm._load_plugins()
+        # Create plugin manager with config
+        pm = PluginManager({"test": {"test_config": "value"}})
 
         # Check that plugin is registered (name comes from entry point, not class)
         assert "test" in pm._plugins
@@ -100,7 +87,7 @@ def test_plugin_manager_init():
 
 def test_plugin_manager_load_plugins_with_error():
     """Test PluginManager handles loading errors gracefully."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock entry point that fails to load
         mock_ep = Mock()
         mock_ep.name = "failing_plugin"
@@ -108,7 +95,7 @@ def test_plugin_manager_load_plugins_with_error():
 
         mock_entry_points.return_value = [mock_ep]
 
-        with patch("knoepfe.plugin_manager.logger") as mock_logger:
+        with patch("knoepfe.plugins.manager.logger") as mock_logger:
             pm = PluginManager()
 
             # Should not have registered the failing plugin
@@ -116,9 +103,9 @@ def test_plugin_manager_load_plugins_with_error():
             mock_logger.exception.assert_called_once()
 
 
-def test_plugin_manager_get_plugin():
-    """Test getting a plugin successfully."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+def test_plugin_manager_get_context():
+    """Test getting plugin context successfully."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
@@ -130,25 +117,23 @@ def test_plugin_manager_get_plugin():
         mock_ep.dist = mock_dist
         mock_entry_points.return_value = [mock_ep]
 
-        pm = PluginManager()
-        pm.set_plugin_config("test_plugin", {"test_config": "value"})
-        pm._load_plugins()
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
-        retrieved_plugin = pm.get_plugin("test_plugin")
-        assert isinstance(retrieved_plugin, MockPlugin)
+        retrieved_context = pm.plugins["test_plugin"].context
+        assert isinstance(retrieved_context, PluginContext)
 
 
 def test_plugin_manager_get_nonexistent_plugin():
-    """Test getting a non-existent plugin raises PluginNotFoundError."""
+    """Test getting a non-existent plugin raises KeyError."""
     pm = PluginManager()
 
-    with pytest.raises(PluginNotFoundError):
-        pm.get_plugin("NonExistentPlugin")
+    with pytest.raises(KeyError):
+        pm.plugins["NonExistentPlugin"]
 
 
 def test_plugin_manager_list_plugins():
     """Test listing all available plugins."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock two plugin entry points
         mock_ep1 = Mock()
         mock_ep1.name = "plugin1"
@@ -176,18 +161,16 @@ def test_plugin_manager_list_plugins():
         assert "plugin2" in pm._plugins
 
 
-def test_plugin_manager_set_plugin_config():
-    """Test setting plugin configuration."""
-    pm = PluginManager()
+def test_plugin_manager_with_plugin_config():
+    """Test plugin manager accepts configuration in constructor."""
     config = {"test_key": "test_value"}
-
-    pm.set_plugin_config("test_plugin", config)
+    pm = PluginManager({"test_plugin": config})
     assert pm._plugin_configs["test_plugin"] == config
 
 
 def test_plugin_manager_register_plugin():
     """Test that plugins are registered via entry points."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
@@ -199,21 +182,22 @@ def test_plugin_manager_register_plugin():
         mock_ep.dist = mock_dist
         mock_entry_points.return_value = [mock_ep]
 
-        pm = PluginManager()
-        pm.set_plugin_config("test_plugin", {"test_config": "value"})
-        pm._load_plugins()
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
-        assert "test_plugin" in pm._plugins
-        assert isinstance(pm.get_plugin("test_plugin"), MockPlugin)
+        assert "test_plugin" in pm.plugins
+        # Verify plugin info contains the plugin class
+        assert pm.plugins["test_plugin"].plugin_class == MockPlugin
+        # Verify context was created
+        assert isinstance(pm.plugins["test_plugin"].context, PluginContext)
 
         # Check that plugin widgets are available from plugin manager
-        assert "MockWidget" in pm._widgets
-        assert "MockWidgetNoSchema" in pm._widgets
+        assert "MockWidget" in pm.widgets
+        assert "MockWidgetNoSchema" in pm.widgets
 
 
 def test_plugin_manager_register_duplicate_plugin():
     """Test that duplicate plugin names in entry points are handled."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock two entry points with the same name (shouldn't happen in practice)
         mock_ep1 = Mock()
         mock_ep1.name = "test_plugin"
@@ -235,9 +219,7 @@ def test_plugin_manager_register_duplicate_plugin():
 
         mock_entry_points.return_value = [mock_ep1, mock_ep2]
 
-        pm = PluginManager()
-        pm.set_plugin_config("test_plugin", {"test_config": "value"})
-        pm._load_plugins()
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
         # Second plugin should overwrite the first
         assert "test_plugin" in pm._plugins
@@ -246,8 +228,8 @@ def test_plugin_manager_register_duplicate_plugin():
 
 def test_plugin_manager_register_plugin_with_duplicate_widget():
     """Test that PluginManager warns about duplicate widget names."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
-        with patch("knoepfe.plugin_manager.logger") as mock_logger:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        with patch("knoepfe.plugins.manager.logger") as mock_logger:
             # Mock two plugins with the same widget names
             mock_ep1 = Mock()
             mock_ep1.name = "plugin1"
@@ -269,10 +251,7 @@ def test_plugin_manager_register_plugin_with_duplicate_widget():
 
             mock_entry_points.return_value = [mock_ep1, mock_ep2]
 
-            pm = PluginManager()
-            pm.set_plugin_config("plugin1", {"test_config": "value"})
-            pm.set_plugin_config("plugin2", {"test_config": "value"})
-            pm._load_plugins()
+            pm = PluginManager({"plugin1": {"test_config": "value"}, "plugin2": {"test_config": "value"}})
 
             # Both plugins should be registered
             assert "plugin1" in pm._plugins
@@ -282,40 +261,9 @@ def test_plugin_manager_register_plugin_with_duplicate_widget():
             assert mock_logger.warning.called
 
 
-def test_plugin_manager_get_config_schema():
-    """Test getting config schema by plugin name."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
-        # Mock plugin entry point
-        mock_ep = Mock()
-        mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
-        mock_dist = Mock()
-        mock_dist.name = "test-package"
-        mock_dist.version = "1.0.0"
-        mock_dist.metadata = {"Summary": "Test plugin"}
-        mock_ep.dist = mock_dist
-        mock_entry_points.return_value = [mock_ep]
-
-        pm = PluginManager()
-        pm.set_plugin_config("test_plugin", {"test_config": "value"})
-        pm._load_plugins()
-
-        plugin = pm.get_plugin("test_plugin")
-        schema = plugin.config_schema
-        assert isinstance(schema, Schema)
-
-
-def test_plugin_manager_get_config_schema_nonexistent():
-    """Test getting config schema for non-existent plugin raises error."""
-    pm = PluginManager()
-
-    with pytest.raises(PluginNotFoundError):
-        pm.get_plugin("NonExistentPlugin")
-
-
 def test_plugin_manager_shutdown_all():
     """Test shutting down all plugins."""
-    with patch("knoepfe.plugin_manager.entry_points") as mock_entry_points:
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
@@ -327,13 +275,122 @@ def test_plugin_manager_shutdown_all():
         mock_ep.dist = mock_dist
         mock_entry_points.return_value = [mock_ep]
 
-        pm = PluginManager()
-        pm.set_plugin_config("test_plugin", {"test_config": "value"})
-        pm._load_plugins()
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
-        # Get the plugin instance and mock its shutdown method
-        plugin = pm.get_plugin("test_plugin")
-        plugin.shutdown = Mock()
+        # Get the plugin context and mock its shutdown method
+        context = pm.plugins["test_plugin"].context
+        context.shutdown = Mock()
 
         pm.shutdown_all()
-        plugin.shutdown.assert_called_once()
+        context.shutdown.assert_called_once()
+
+
+def test_plugin_manager_disabled_plugin():
+    """Test that disabled plugins are not loaded."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        with patch("knoepfe.plugins.manager.logger") as mock_logger:
+            # Mock plugin entry point
+            mock_ep = Mock()
+            mock_ep.name = "test_plugin"
+            mock_ep.load.return_value = MockPlugin
+            mock_dist = Mock()
+            mock_dist.name = "test-package"
+            mock_dist.version = "1.0.0"
+            mock_dist.metadata = {"Summary": "Test plugin"}
+            mock_ep.dist = mock_dist
+            mock_entry_points.return_value = [mock_ep]
+
+            # Create plugin manager with disabled plugin
+            pm = PluginManager({"test_plugin": {"enabled": False}})
+
+            # Plugin should not be registered
+            assert "test_plugin" not in pm._plugins
+
+            # Widgets from disabled plugin should not be available
+            assert "MockWidget" not in pm._widgets
+            assert "MockWidgetNoSchema" not in pm._widgets
+
+            # Should have logged that plugin was skipped
+            mock_logger.info.assert_called_with("Plugin 'test_plugin' is disabled in config, skipping")
+
+
+def test_plugin_manager_enabled_plugin_explicit():
+    """Test that explicitly enabled plugins are loaded."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPlugin
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.0.0"
+        mock_dist.metadata = {"Summary": "Test plugin"}
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        # Create plugin manager with explicitly enabled plugin
+        pm = PluginManager({"test_plugin": {"enabled": True, "test_config": "value"}})
+
+        # Plugin should be registered
+        assert "test_plugin" in pm._plugins
+
+        # Widgets should be available
+        assert "MockWidget" in pm._widgets
+        assert "MockWidgetNoSchema" in pm._widgets
+
+
+def test_plugin_manager_enabled_by_default():
+    """Test that plugins are enabled by default when enabled field is not specified."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPlugin
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.0.0"
+        mock_dist.metadata = {"Summary": "Test plugin"}
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        # Create plugin manager without specifying enabled field
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
+
+        # Plugin should be registered (enabled by default)
+        assert "test_plugin" in pm._plugins
+
+        # Widgets should be available
+        assert "MockWidget" in pm._widgets
+        assert "MockWidgetNoSchema" in pm._widgets
+
+
+def test_plugin_manager_mixed_enabled_disabled():
+    """Test loading multiple plugins with different enabled states."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock two plugin entry points
+        mock_ep1 = Mock()
+        mock_ep1.name = "enabled_plugin"
+        mock_ep1.load.return_value = MockPlugin1
+        mock_dist1 = Mock()
+        mock_dist1.name = "enabled-package"
+        mock_dist1.version = "1.0.0"
+        mock_dist1.metadata = {"Summary": "Enabled plugin"}
+        mock_ep1.dist = mock_dist1
+
+        mock_ep2 = Mock()
+        mock_ep2.name = "disabled_plugin"
+        mock_ep2.load.return_value = MockPlugin2
+        mock_dist2 = Mock()
+        mock_dist2.name = "disabled-package"
+        mock_dist2.version = "1.0.0"
+        mock_dist2.metadata = {"Summary": "Disabled plugin"}
+        mock_ep2.dist = mock_dist2
+
+        mock_entry_points.return_value = [mock_ep1, mock_ep2]
+
+        # Create plugin manager with one enabled and one disabled
+        pm = PluginManager({"enabled_plugin": {"enabled": True}, "disabled_plugin": {"enabled": False}})
+
+        # Only enabled plugin should be registered
+        assert "enabled_plugin" in pm._plugins
+        assert "disabled_plugin" not in pm._plugins

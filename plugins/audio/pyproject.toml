@@ -30,7 +30,7 @@ Issues = "https://github.com/lnqs/knoepfe/issues"
 
 # Audio plugin registration via entry points
 [project.entry-points."knoepfe.plugins"]
-audio = "knoepfe_audio_plugin.plugin:AudioPlugin"
+audio = "knoepfe_audio_plugin:AudioPlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }

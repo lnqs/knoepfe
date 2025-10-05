@@ -1,14 +1,23 @@
-"""Audio plugin for knoepfe.
+"""Audio plugin for knoepfe."""
 
-This __init__ file ensures all widget modules are imported,
-making them discoverable by the PluginManager.
-"""
+from typing import Type
 
-# Import all widget modules to ensure they're loaded
-from . import mic_mute
+from knoepfe.plugins import Plugin
+from knoepfe.widgets import Widget
 
-# The plugin itself
-from .plugin import AudioPlugin
+from .config import AudioPluginConfig
+from .context import AudioPluginContext
+from .mic_mute import MicMute
 
 __version__ = "0.1.0"
-__all__ = ["AudioPlugin"]
+
+
+class AudioPlugin(Plugin[AudioPluginConfig, AudioPluginContext]):
+    """Audio control plugin for knoepfe."""
+
+    description = "Audio control widgets for knoepfe"
+
+    @classmethod
+    def widgets(cls) -> list[Type[Widget]]:
+        """Widgets provided by this plugin."""
+        return [MicMute]

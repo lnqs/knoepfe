@@ -30,7 +30,7 @@ Issues = "https://github.com/lnqs/knoepfe/issues"
 
 # OBS plugin registration via entry points
 [project.entry-points."knoepfe.plugins"]
-obs = "knoepfe_obs_plugin.plugin:OBSPlugin"
+obs = "knoepfe_obs_plugin:OBSPlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }

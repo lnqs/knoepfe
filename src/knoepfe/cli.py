@@ -1,14 +1,15 @@
 """CLI commands and main entry point for knoepfe."""
 
+import json
 import logging
 from pathlib import Path
 
 import click
 
-from knoepfe import __version__
-from knoepfe.app import Knoepfe
-from knoepfe.logging import configure_logging
-from knoepfe.plugin_manager import PluginManager
+from . import __version__
+from .core.app import Knoepfe
+from .plugins import PluginManager
+from .utils.logging import configure_logging
 
 logger = logging.getLogger(__name__)
 
@@ -46,52 +47,111 @@ def main(ctx: click.Context, verbose: bool, config: Path | None, mock_device: bo
         knoepfe.run_sync(config, mock_device)
 
 
-@main.command("list-widgets")
-def list_widgets() -> None:
+@main.group()
+def widgets() -> None:
+    """Manage and inspect widgets."""
+    pass
+
+
+@widgets.command("list")
+def widgets_list() -> None:
     """List all available widgets."""
-    # Create managers for CLI commands
-    # Create plugin manager for CLI commands
     plugin_manager = PluginManager()
 
-    widgets = plugin_manager.list_widgets()
-    if not widgets:
-        logger.info("No widgets available. Install widget packages like 'knoepfe[obs]'")
+    if not plugin_manager.widgets:
+        click.echo("No widgets available. Install widget packages like 'knoepfe[obs]'")
         return
 
-    logger.info("Available widgets:")
-    for widget_name in sorted(widgets):
+    click.echo("Available widgets:")
+    for widget_info in sorted(plugin_manager.widgets.values(), key=lambda w: w.name):
         try:
-            widget_class = plugin_manager.get_widget(widget_name)
-            doc = widget_class.__doc__ or "No description available"
-            logger.info(f"  {widget_name}: {doc}")
+            doc = widget_info.description or widget_info.widget_class.__doc__ or "No description"
+            click.echo(f"  {widget_info.name}: {doc}")
         except Exception as e:
-            logger.error(f"  {widget_name}: Error getting info - {e}")
+            click.echo(f"  {widget_info.name}: Error getting info - {e}", err=True)
 
 
-@main.command("widget-info")
+@widgets.command("info")
 @click.argument("widget_name")
-def widget_info(widget_name: str) -> None:
+def widgets_info(widget_name: str) -> None:
     """Show detailed information about a widget."""
-    # Create managers for CLI commands
     plugin_manager = PluginManager()
 
-    try:
-        widget_class = plugin_manager.get_widget(widget_name)
-        logger.info(f"Name: {widget_name}")
-        logger.info(f"Class: {widget_class.__name__}")
-        logger.info(f"Module: {widget_class.__module__}")
-        logger.info(f"Description: {widget_class.__doc__ or 'No description available'}")
+    if widget_name not in plugin_manager.widgets:
+        click.echo(f"Error: Widget '{widget_name}' not found", err=True)
+        click.echo("Try 'knoepfe widgets list' to see available widgets")
+        return
 
-        # Get configuration schema if available
-        if hasattr(widget_class, "get_config_schema"):
-            try:
-                schema = widget_class.get_config_schema()
-                logger.info("\nConfiguration Schema:")
-                logger.info(f"  {schema}")
-            except Exception as e:
-                logger.error(f"Configuration schema error: {e}")
-        else:
-            logger.info("No configuration schema available")
-    except ValueError as e:
-        logger.error(f"Error: {e}")
-        logger.info("Try 'knoepfe list-widgets' to see available widgets")
+    widget = plugin_manager.widgets[widget_name]
+    click.echo(f"Name: {widget.name}")
+    click.echo(f"Class: {widget.widget_class.__name__}")
+    click.echo(f"Module: {widget.widget_class.__module__}")
+    click.echo(f"Description: {widget.description or widget.widget_class.__doc__ or 'No description available'}")
+    click.echo(f"Plugin: {widget.plugin_info.name} v{widget.plugin_info.version}")
+
+    # Get configuration schema from the widget's config type
+    try:
+        schema = widget.config_type.model_json_schema()
+        click.echo("\nConfiguration Schema:")
+        click.echo(json.dumps(schema, indent=2))
+    except Exception as e:
+        click.echo(f"Error getting configuration schema: {e}", err=True)
+
+
+@main.group()
+def plugins() -> None:
+    """Manage and inspect plugins."""
+    pass
+
+
+@plugins.command("list")
+def plugins_list() -> None:
+    """List all available plugins."""
+    plugin_manager = PluginManager()
+
+    # Filter out builtin plugin
+    plugins = {name: info for name, info in plugin_manager.plugins.items() if name != "builtin"}
+
+    if not plugins:
+        click.echo("No plugins available.")
+        return
+
+    click.echo("Available plugins:")
+    for plugin_info in sorted(plugins.values(), key=lambda p: p.name):
+        widget_count = len(plugin_info.widgets)
+        click.echo(f"  {plugin_info.name} v{plugin_info.version}: {plugin_info.description} ({widget_count} widgets)")
+
+
+@plugins.command("info")
+@click.argument("plugin_name")
+def plugins_info(plugin_name: str) -> None:
+    """Show detailed information about a plugin."""
+    plugin_manager = PluginManager()
+
+    if plugin_name not in plugin_manager.plugins:
+        click.echo(f"Error: Plugin '{plugin_name}' not found", err=True)
+        click.echo("Try 'knoepfe plugins list' to see available plugins")
+        return
+
+    plugin = plugin_manager.plugins[plugin_name]
+    click.echo(f"Name: {plugin.name}")
+    click.echo(f"Version: {plugin.version}")
+    click.echo(f"Description: {plugin.description}")
+    click.echo(f"Class: {plugin.plugin_class.__name__}")
+    click.echo(f"Module: {plugin.plugin_class.__module__}")
+
+    click.echo(f"\nWidgets ({len(plugin.widgets)}):")
+    if plugin.widgets:
+        for widget in sorted(plugin.widgets, key=lambda w: w.name):
+            desc = widget.description or "No description"
+            click.echo(f"  {widget.name}: {desc}")
+    else:
+        click.echo("  No widgets provided")
+
+    # Show configuration schema
+    try:
+        schema = plugin.config.model_json_schema()
+        click.echo("\nConfiguration Schema:")
+        click.echo(json.dumps(schema, indent=2))
+    except Exception as e:
+        click.echo(f"Error getting configuration schema: {e}", err=True)

@@ -1,15 +1,20 @@
 """Example Widget - A minimal widget demonstrating knoepfe plugin development."""
 
-from typing import Any
+from knoepfe.config.widget import WidgetConfig
+from knoepfe.core.key import Key
+from knoepfe.widgets import Widget
+from pydantic import Field
 
-from knoepfe.key import Key
-from knoepfe.widgets.base import Widget
-from schema import Optional, Schema
-
-from .state import ExamplePluginState
+from .context import ExamplePluginContext
 
 
-class ExampleWidget(Widget[ExamplePluginState]):
+class ExampleWidgetConfig(WidgetConfig):
+    """Configuration for ExampleWidget."""
+
+    message: str = Field(default="Example", description="Message to display")
+
+
+class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePluginContext]):
     """A minimal example widget that demonstrates the basic structure of a knoepfe widget.
 
     This widget displays a customizable message and changes appearance when clicked.
@@ -17,16 +22,16 @@ class ExampleWidget(Widget[ExamplePluginState]):
     """
 
     name = "ExampleWidget"
+    description = "Interactive example widget with click counter"
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: ExamplePluginState) -> None:
+    def __init__(self, config: ExampleWidgetConfig, context: ExamplePluginContext) -> None:
         """Initialize the ExampleWidget.
 
         Args:
-            widget_config: Widget-specific configuration
-            global_config: Global knoepfe configuration
-            state: Example plugin state for sharing data
+            config: Widget-specific configuration
+            context: Example plugin context for sharing data
         """
-        super().__init__(widget_config, global_config, state)
+        super().__init__(config, context)
 
         # Internal state to track clicks
         self._click_count = 0
@@ -55,8 +60,8 @@ class ExampleWidget(Widget[ExamplePluginState]):
         Args:
             key: The Stream Deck key to render to
         """
-        # Get the message from config, with a default
-        message = self.config.get("message", "Example")
+        # Get the message from config
+        message = self.config.message
 
         # Create display text based on click count
         if self._click_count == 0:
@@ -79,9 +84,9 @@ class ExampleWidget(Widget[ExamplePluginState]):
         self._click_count += 1
 
         # Also increment the shared plugin counter
-        total_clicks = self.state.increment_clicks()
+        total_clicks = self.context.increment_clicks()
 
-        # Log the shared state for demonstration
+        # Log the shared context for demonstration
         print(f"Widget clicked {self._click_count} times, total across all widgets: {total_clicks}")
 
         # Request an update to show the new state
@@ -95,17 +100,3 @@ class ExampleWidget(Widget[ExamplePluginState]):
         # Optional: Handle key release if needed
         # For this example, we don't need to do anything on key up
         pass
-
-    @classmethod
-    def get_config_schema(cls) -> Schema:
-        """Define the configuration schema for this widget.
-
-        Returns:
-            Schema object defining valid configuration parameters
-        """
-        schema = Schema(
-            {
-                Optional("message", default="Example"): str,
-            }
-        )
-        return cls.add_defaults(schema)

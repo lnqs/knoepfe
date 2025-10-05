@@ -1,83 +1,56 @@
-# pyright: standard
+"""Microphone mute control widget for PulseAudio."""
 
 import logging
-from asyncio import Task, get_event_loop
-from typing import Any
 
-from knoepfe.key import Key
-from knoepfe.widgets.base import Widget
-from pulsectl import PulseEventTypeEnum
-from pulsectl_asyncio import PulseAsync
-from schema import Optional, Schema
+from knoepfe.config.widget import WidgetConfig
+from knoepfe.core.key import Key
+from pydantic import Field
 
-from .state import AudioPluginState
+from .base import AudioWidget
 
 logger = logging.getLogger(__name__)
 
 
-class MicMute(Widget[AudioPluginState]):
+class MicMuteConfig(WidgetConfig):
+    """Configuration for MicMute widget."""
+
+    source: str | None = Field(default=None, description="Audio source name to control")
+    muted_icon: str = Field(default="\ue02b", description="Icon to display when muted (unicode character or codepoint)")
+    unmuted_icon: str = Field(
+        default="\ue029", description="Icon to display when unmuted (unicode character or codepoint)"
+    )
+    muted_color: str | None = Field(default=None, description="Icon color when muted (defaults to base color)")
+    unmuted_color: str = Field(default="red", description="Icon color when unmuted")
+
+
+class MicMute(AudioWidget[MicMuteConfig]):
+    """Toggle microphone mute status.
+
+    Displays a microphone icon (configurable color when unmuted, configurable color when muted)
+    and toggles mute state on button press. Updates automatically when mute state changes.
+    """
+
     name = "MicMute"
-    description = "Toggle microphone mute state"
-
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: AudioPluginState) -> None:
-        super().__init__(widget_config, global_config, state)
-        self.pulse: None | PulseAsync = None
-        self.event_listener: Task[None] | None = None
-
-    async def activate(self) -> None:
-        if not self.pulse:
-            self.pulse = PulseAsync("MicMuteControl")
-            await self.pulse.connect()
-        if not self.event_listener:
-            loop = get_event_loop()
-            self.event_listener = loop.create_task(self.listen())
-
-    async def deactivate(self) -> None:
-        if self.event_listener:
-            self.event_listener.cancel()
-            self.event_listener = None
-        if self.pulse:
-            self.pulse.disconnect()
-            self.pulse = None
+    description = "Toggle microphone mute status"
+    relevant_events = ["SourceChanged"]
 
     async def update(self, key: Key) -> None:
+        """Update the key display based on current mute state."""
         source = await self.get_source()
+        if not source:
+            return
+
         with key.renderer() as renderer:
             renderer.clear()
             if source.mute:
-                renderer.icon("\ue02b", size=86)  # mic_off (e02b)
+                renderer.icon(self.config.muted_icon, size=86, color=self.config.muted_color or self.config.color)
             else:
-                renderer.icon("\ue029", size=86, color="red")  # mic (e029)
+                renderer.icon(self.config.unmuted_icon, size=86, color=self.config.unmuted_color)
 
     async def triggered(self, long_press: bool = False) -> None:
-        assert self.pulse
-
+        """Toggle microphone mute state."""
         source = await self.get_source()
-        await self.pulse.source_mute(source.index, mute=not source.mute)
-
-    async def get_source(self) -> Any:
-        assert self.pulse
-
-        source = self.config.get("source")
         if not source:
-            server_info = await self.pulse.server_info()
-            source = server_info.default_source_name  # pyright: ignore[reportAttributeAccessIssue]
+            return
 
-        sources = await self.pulse.source_list()
-        for s in sources:
-            if s.name == source:
-                return s
-
-        logger.error(f"Source {source} not found")
-
-    async def listen(self) -> None:
-        assert self.pulse
-
-        async for event in self.pulse.subscribe_events("source"):
-            if event.t == PulseEventTypeEnum.change:  # pyright: ignore[reportAttributeAccessIssue]
-                self.request_update()
-
-    @classmethod
-    def get_config_schema(cls) -> Schema:
-        schema = Schema({Optional("source"): str})
-        return cls.add_defaults(schema)
+        await self.pulse.source_mute(source.index, mute=not source.mute)

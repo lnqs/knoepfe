@@ -30,7 +30,7 @@ Issues = "https://github.com/lnqs/knoepfe/issues"
 
 # Example plugin registration via entry points
 [project.entry-points."knoepfe.plugins"]
-example = "knoepfe_example_plugin.plugin:ExamplePlugin"
+example = "knoepfe_example_plugin:ExamplePlugin"
 
 [tool.uv.sources]
 knoepfe = { workspace = true }

@@ -3,21 +3,14 @@ from asyncio import Condition, Task, get_event_loop, sleep
 from typing import Any, AsyncIterator, Awaitable, Callable, cast
 
 import simpleobsws
-from schema import Optional, Schema
+
+from .config import OBSPluginConfig
 
 logger = logging.getLogger(__name__)
 
-config = Schema(
-    {
-        Optional("host"): str,
-        Optional("port"): int,
-        Optional("password"): str,
-    }
-)
-
 
 class OBS:
-    def __init__(self) -> None:
+    def __init__(self, config: OBSPluginConfig) -> None:
         self.ws = simpleobsws.WebSocketClient()
         self.ws.register_event_callback(self._handle_event)
         self.connection_watcher: Task[None] | None = None
@@ -31,15 +24,13 @@ class OBS:
         self.last_event: Any = None
         self.event_condition = Condition()
 
-    async def connect(self, config: dict[str, Any]) -> None:
+        self.ws.url = f"ws://{config.host}:{config.port}"
+        if config.password:
+            self.ws.password = config.password
+
+    async def connect(self) -> None:
         if self.connection_watcher:
             return
-
-        host = config.get("host", "localhost")
-        port = config.get("port", 4444)
-        password = cast(str, config.get("password"))
-        self.ws.url = f"ws://{host}:{port}"
-        self.ws.password = password
 
         loop = get_event_loop()
         self.connection_watcher = loop.create_task(self._watch_connection())

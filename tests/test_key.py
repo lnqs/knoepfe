@@ -1,17 +1,31 @@
 from contextlib import contextmanager
 from unittest.mock import DEFAULT, MagicMock, Mock, patch
 
-from knoepfe.font_manager import FontManager
-from knoepfe.key import Key, Renderer
+from knoepfe.config.models import DeckConfig, GlobalConfig
+from knoepfe.core.key import Key, Renderer
+from knoepfe.rendering.font_manager import FontManager
+
+
+def make_global_config(**overrides) -> GlobalConfig:
+    """Helper to create GlobalConfig for tests."""
+    from knoepfe.config.models import DeviceConfig
+
+    config_dict = {
+        "device": DeviceConfig().model_dump(),
+        "plugins": {},
+        "decks": {"main": DeckConfig(name="main", widgets=[])},
+    }
+    config_dict.update(overrides)
+    return GlobalConfig(**config_dict)
 
 
 @contextmanager
 def mock_fontconfig_system():
     """Context manager to mock the fontconfig system with common setup."""
-    with patch("knoepfe.font_manager.fontconfig") as mock_fontconfig:
+    with patch("knoepfe.rendering.font_manager.fontconfig") as mock_fontconfig:
         mock_fontconfig.query.return_value = ["/path/to/font.ttf"]
 
-        with patch("knoepfe.font_manager.ImageFont.truetype") as mock_truetype:
+        with patch("knoepfe.rendering.font_manager.ImageFont.truetype") as mock_truetype:
             mock_font = Mock()
             mock_font.size = 12  # Default size for tests
             # Mock the getmask2 method that PIL uses internally
@@ -22,7 +36,7 @@ def mock_fontconfig_system():
 
 
 def test_renderer_text() -> None:
-    renderer = Renderer()
+    renderer = Renderer(make_global_config())
     with patch.object(renderer, "_draw") as mock_draw:
         with mock_fontconfig_system():
             renderer.text((48, 48), "Blubb")
@@ -31,7 +45,7 @@ def test_renderer_text() -> None:
 
 def test_renderer_draw_text() -> None:
     with mock_fontconfig_system():
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test basic text rendering
@@ -45,9 +59,9 @@ def test_renderer_draw_text() -> None:
 
 
 def test_key_render() -> None:
-    key = Key(MagicMock(), 0, {})
+    key = Key(MagicMock(), 0, make_global_config())
 
-    with patch.multiple("knoepfe.key", PILHelper=DEFAULT, Renderer=DEFAULT):
+    with patch.multiple("knoepfe.core.key", PILHelper=DEFAULT, Renderer=DEFAULT):
         with key.renderer():
             pass
 
@@ -56,7 +70,7 @@ def test_key_render() -> None:
 
 def test_renderer_convenience_methods() -> None:
     with mock_fontconfig_system():
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test icon method
@@ -123,7 +137,7 @@ def test_renderer_fontconfig_integration() -> None:
         # Override for Ubuntu font
         mocks["fontconfig"].query.return_value = ["/path/to/ubuntu.ttf"]
 
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test text with fontconfig pattern
@@ -140,7 +154,7 @@ def test_renderer_fontconfig_integration() -> None:
 def test_renderer_text_at() -> None:
     """Test Renderer text_at method."""
     with mock_fontconfig_system():
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             renderer.text((10, 20), "Positioned", font="monospace", anchor="la")
@@ -154,7 +168,7 @@ def test_renderer_text_at() -> None:
 def test_renderer_backward_compatibility() -> None:
     """Test that existing code without font parameter still works."""
     with mock_fontconfig_system():
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test with default font (should use Roboto)
@@ -172,7 +186,7 @@ def test_renderer_unicode_icons() -> None:
         # Override for Material Icons font
         mocks["fontconfig"].query.return_value = ["/path/to/materialicons.ttf"]
 
-        renderer = Renderer()
+        renderer = Renderer(make_global_config())
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test Unicode icon with Material Icons font

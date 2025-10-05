@@ -3,10 +3,11 @@
 from unittest.mock import Mock
 
 import pytest
-from schema import SchemaError
+from pydantic import ValidationError
 
-from knoepfe_example_plugin.example_widget import ExampleWidget
-from knoepfe_example_plugin.state import ExamplePluginState
+from knoepfe_example_plugin.config import ExamplePluginConfig
+from knoepfe_example_plugin.context import ExamplePluginContext
+from knoepfe_example_plugin.example_widget import ExampleWidget, ExampleWidgetConfig
 
 
 class TestExampleWidget:
@@ -14,31 +15,28 @@ class TestExampleWidget:
 
     def test_init_with_defaults(self):
         """Test widget initialization with default configuration."""
-        widget_config = {}
-        global_config = {}
-        state = ExamplePluginState({})
+        widget_config = ExampleWidgetConfig()
+        context = ExamplePluginContext(ExamplePluginConfig())
 
-        widget = ExampleWidget(widget_config, global_config, state)
+        widget = ExampleWidget(widget_config, context)
 
         assert widget._click_count == 0
-        assert widget.config == widget_config
-        assert widget.global_config == global_config
+        assert widget.config.message == "Example"  # Default value
 
     def test_init_with_custom_config(self):
         """Test widget initialization with custom configuration."""
-        widget_config = {"message": "Custom Message"}
-        global_config = {}
-        state = ExamplePluginState({})
+        widget_config = ExampleWidgetConfig(message="Custom Message")
+        context = ExamplePluginContext(ExamplePluginConfig())
 
-        widget = ExampleWidget(widget_config, global_config, state)
+        widget = ExampleWidget(widget_config, context)
 
-        assert widget.config["message"] == "Custom Message"
+        assert widget.config.message == "Custom Message"
 
     @pytest.mark.asyncio
     async def test_activate_resets_click_count(self):
         """Test that activate resets the click count."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
         widget._click_count = 5
 
         await widget.activate()
@@ -48,8 +46,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_deactivate(self):
         """Test deactivate method."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
 
         # Should not raise any exceptions
         await widget.deactivate()
@@ -57,8 +55,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_with_defaults(self):
         """Test update method with default configuration."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -76,9 +74,9 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_with_custom_config(self):
         """Test update method with custom configuration."""
-        widget_config = {"message": "Hello"}
-        state = ExamplePluginState({})
-        widget = ExampleWidget(widget_config, {}, state)
+        widget_config = ExampleWidgetConfig(message="Hello")
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(widget_config, context)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -95,8 +93,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_after_clicks(self):
         """Test update method after some clicks."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
         widget._click_count = 3
 
         # Mock the key and renderer
@@ -114,8 +112,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_down_increments_counter(self):
         """Test that key down increments click counter."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
         widget.request_update = Mock()  # Mock the request_update method
 
         initial_count = widget._click_count
@@ -128,34 +126,24 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_up(self):
         """Test key up handler."""
-        state = ExamplePluginState({})
-        widget = ExampleWidget({}, {}, state)
+        context = ExamplePluginContext(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), context)
 
         # Should not raise any exceptions
         await widget.on_key_up()
 
-    def test_get_config_schema(self):
-        """Test configuration schema."""
-        schema = ExampleWidget.get_config_schema()
-
-        # Test that schema validates correct configurations
-        valid_config = {"message": "Test Message"}
-        validated = schema.validate(valid_config)
-        assert validated["message"] == "Test Message"
+    def test_widget_config_validation(self):
+        """Test configuration validation with Pydantic."""
+        # Test that config validates correct configurations
+        valid_config = ExampleWidgetConfig(message="Test Message")
+        assert valid_config.message == "Test Message"
 
         # Test defaults
-        minimal_config = {}
-        validated = schema.validate(minimal_config)
-        assert validated["message"] == "Example"
+        minimal_config = ExampleWidgetConfig()
+        assert minimal_config.message == "Example"
 
-    def test_config_schema_validation_error(self):
+    def test_config_validation_error(self):
         """Test that invalid configuration raises validation error."""
-        schema = ExampleWidget.get_config_schema()
-
         # Invalid configuration (wrong type)
-        invalid_config = {
-            "message": 123,  # Should be string
-        }
-
-        with pytest.raises(SchemaError):  # Schema validation error
-            schema.validate(invalid_config)
+        with pytest.raises(ValidationError):
+            ExampleWidgetConfig(message=123)  # Should be string

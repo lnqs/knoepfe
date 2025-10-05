@@ -22,7 +22,6 @@ classifiers = [
   "Topic :: System :: Hardware",
 ]
 dependencies = [
-  "schema>=0.7.7",
   "streamdeck>=0.9.5",
   "Pillow>=10.4.0",
   "platformdirs>=4.4.0",
@@ -30,6 +29,7 @@ dependencies = [
   "aiorun>=2025.1.1",
   "hidapi>=0.14.0.post4",
   "python-fontconfig>=0.6.2.post1",
+  "pydantic>=2.11.9",
 ]
 
 # Optional dependencies for different widget groups
@@ -47,7 +47,7 @@ knoepfe = "knoepfe.cli:main"
 
 # Plugin entry points
 [project.entry-points."knoepfe.plugins"]
-builtin = "knoepfe.builtin_plugin:BuiltinPlugin"
+builtin = "knoepfe.plugins.builtin:BuiltinPlugin"
 
 # Workspace configuration for development
 [tool.uv.workspace]

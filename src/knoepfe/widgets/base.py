@@ -1,31 +1,59 @@
 from abc import ABC, abstractmethod
 from asyncio import Event, Task, get_event_loop, sleep
-from typing import Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from schema import Optional, Schema
+from ..config.widget import WidgetConfig
+from ..core.key import Key
+from ..utils.type_utils import extract_generic_arg
+from ..utils.wakelock import WakeLock
+from .actions import SwitchDeckAction, WidgetAction
 
-from knoepfe.key import Key
-from knoepfe.plugin_state import PluginState
-from knoepfe.wakelock import WakeLock
-from knoepfe.widgets.actions import SwitchDeckAction, WidgetAction
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
 
-TPluginState = TypeVar("TPluginState", bound=PluginState)
+TPluginContext = TypeVar("TPluginContext", bound="PluginContext")
+TConfig = TypeVar("TConfig", bound=WidgetConfig)
 
 
-class Widget(ABC, Generic[TPluginState]):
+class Widget(ABC, Generic[TConfig, TPluginContext]):
+    """Base widget class with strongly typed configuration.
+
+    Widgets should specify their config type as the first generic parameter
+    and their plugin context type as the second generic parameter.
+    """
+
     name: str
     description: str | None = None
 
-    def __init__(self, widget_config: dict[str, Any], global_config: dict[str, Any], state: TPluginState) -> None:
-        self.config = widget_config
-        self.global_config = global_config
-        self.state = state
+    def __init__(self, config: TConfig, context: TPluginContext) -> None:
+        """Initialize widget with typed configuration.
+
+        Args:
+            config: Validated widget configuration
+            context: Plugin context container
+        """
+        self.config = config
+        self.context = context
+
+        # Runtime state
         self.update_requested_event: Event | None = None
         self.wake_lock: WakeLock | None = None
         self.holds_wait_lock = False
         self.needs_update = False
         self.periodic_update_task: Task[None] | None = None
         self.long_press_task: Task[None] | None = None
+
+    @classmethod
+    def get_config_type(cls) -> type:
+        """Extract the config type from the generic parameter.
+
+        Returns:
+            The WidgetConfig subclass specified as the first type parameter
+
+        Raises:
+            TypeError: If the widget doesn't specify a valid WidgetConfig type
+        """
+        return extract_generic_arg(cls, WidgetConfig, 0)
 
     async def activate(self) -> None:  # pragma: no cover
         return
@@ -54,8 +82,8 @@ class Widget(ABC, Generic[TPluginState]):
             if action:
                 return action
 
-            if "switch_deck" in self.config:
-                return SwitchDeckAction(self.config["switch_deck"])
+            if self.config.switch_deck:
+                return SwitchDeckAction(self.config.switch_deck)
 
         return None
 
@@ -91,12 +119,3 @@ class Widget(ABC, Generic[TPluginState]):
         if self.wake_lock and self.holds_wait_lock:
             self.wake_lock.release()
             self.holds_wait_lock = False
-
-    @classmethod
-    def get_config_schema(cls) -> Schema:
-        return cls.add_defaults(Schema({}))
-
-    @classmethod
-    def add_defaults(cls, schema: Schema) -> Schema:
-        schema.schema.update({Optional("switch_deck"): str})
-        return schema
