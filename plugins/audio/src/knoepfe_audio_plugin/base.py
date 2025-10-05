@@ -1,6 +1,5 @@
 """Base class for audio widgets with shared PulseAudio connection."""
 
-from asyncio import Task, get_event_loop
 from typing import Any, Generic, TypeVar
 
 from knoepfe.config.widget import WidgetConfig
@@ -9,6 +8,9 @@ from knoepfe.widgets import Widget
 from .context import AudioPluginContext
 
 TConfig = TypeVar("TConfig", bound=WidgetConfig)
+
+# Task name constants
+TASK_EVENT_LISTENER = "event_listener"
 
 
 class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
@@ -19,10 +21,6 @@ class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
 
     relevant_events: list[str] = []
 
-    def __init__(self, config: TConfig, context: AudioPluginContext) -> None:
-        super().__init__(config, context)
-        self.listening_task: Task[None] | None = None
-
     @property
     def pulse(self):
         """Get the shared PulseAudio connector from context."""
@@ -31,15 +29,7 @@ class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
     async def activate(self) -> None:
         """Connect to PulseAudio and start event listener."""
         await self.pulse.connect()
-
-        if not self.listening_task:
-            self.listening_task = get_event_loop().create_task(self.listener())
-
-    async def deactivate(self) -> None:
-        """Stop event listener. Connection is shared and managed by connector."""
-        if self.listening_task:
-            self.listening_task.cancel()
-            self.listening_task = None
+        self.tasks.start_task(TASK_EVENT_LISTENER, self.listener())
 
     async def listener(self) -> None:
         """Listen for PulseAudio events and request updates when relevant."""

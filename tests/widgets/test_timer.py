@@ -127,20 +127,33 @@ async def test_timer_start_stop_reset_cycle(context) -> None:
 
 
 async def test_timer_deactivate_cleanup(context) -> None:
-    """Test that deactivate properly cleans up timer state."""
+    """Test that deactivate preserves timer state for running timers."""
     widget = Timer(TimerConfig(), context)
-    widget.stop_periodic_update = MagicMock()
     widget.release_wake_lock = MagicMock()
 
-    # Set timer to running state
+    # Test 1: Timer is running - state should be preserved, wake lock kept
     widget.start = 100.0
+    widget.stop = None
 
     await widget.deactivate()
 
-    widget.stop_periodic_update.assert_called_once()
-    widget.release_wake_lock.assert_called_once()
-    assert widget.start is None
+    # Timer state should be preserved for running timers
+    assert widget.start == 100.0
     assert widget.stop is None
+    # Wake lock should NOT be released for running timer
+    widget.release_wake_lock.assert_not_called()
+
+    # Test 2: Timer is stopped - wake lock should be released
+    widget.start = 100.0
+    widget.stop = 150.0
+
+    await widget.deactivate()
+
+    # Timer state should still be preserved
+    assert widget.start == 100.0
+    assert widget.stop == 150.0
+    # Wake lock should be released for stopped timer
+    widget.release_wake_lock.assert_called_once()
 
 
 def test_timer_config_defaults() -> None:

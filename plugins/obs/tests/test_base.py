@@ -5,7 +5,7 @@ from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
 from knoepfe_obs_plugin.context import OBSPluginContext
-from knoepfe_obs_plugin.widgets.base import OBSWidget
+from knoepfe_obs_plugin.widgets.base import TASK_EVENT_LISTENER, OBSWidget
 
 
 class MockWidgetConfig(WidgetConfig):
@@ -33,53 +33,52 @@ def mock_context():
 
 @fixture
 def obs_widget(mock_context):
-    return MockOBSWidget(MockWidgetConfig(), mock_context)
+    widget = MockOBSWidget(MockWidgetConfig(), mock_context)
+
+    # Mock the TaskManager to avoid pytest warnings about unawaited tasks
+    def mock_start_task(name, coro):
+        # Close the coroutine to prevent "never awaited" warnings
+        coro.close()
+        return Mock()
+
+    widget.tasks = Mock()
+    widget.tasks.start_task = Mock(side_effect=mock_start_task)
+    widget.tasks.stop_task = Mock()
+    widget.tasks.is_running = Mock(return_value=False)
+    widget.tasks.cleanup = AsyncMock()
+    return widget
 
 
 def test_obs_widget_init(mock_context):
     widget = MockOBSWidget(MockWidgetConfig(), mock_context)
     assert widget.relevant_events == ["TestEvent"]
-    assert widget.listening_task is None
+    assert widget.tasks is not None
 
 
 async def test_obs_widget_activate(obs_widget):
     with patch.object(obs_widget.context, "obs") as mock_obs:
         mock_obs.connect = AsyncMock()
 
-        # Mock listen to return an empty async iterator to prevent unawaited coroutine warning
-        async def mock_listen():
-            return
-            yield  # Make it an async generator
+        await obs_widget.activate()
 
-        mock_obs.listen.return_value = mock_listen()
-
-        with patch("knoepfe_obs_plugin.widgets.base.get_event_loop") as mock_loop:
-            mock_task = Mock()
-            mock_loop.return_value.create_task.return_value = mock_task
-
-            await obs_widget.activate()
-
-            # OBS connect is called without arguments (config is in OBS __init__)
-            mock_obs.connect.assert_called_once_with()
-            mock_loop.return_value.create_task.assert_called_once()
-            assert obs_widget.listening_task == mock_task
-
-            # Clean up the task to prevent warnings
-            if obs_widget.listening_task:
-                obs_widget.listening_task.cancel()
-                obs_widget.listening_task = None
+        # OBS connect is called without arguments (config is in OBS __init__)
+        mock_obs.connect.assert_called_once_with()
+        obs_widget.tasks.start_task.assert_called_once()
+        # Verify the task name is correct
+        call_args = obs_widget.tasks.start_task.call_args
+        assert call_args[0][0] == TASK_EVENT_LISTENER
 
 
 async def test_obs_widget_deactivate(obs_widget):
-    # Set up widget with active listening task
-    mock_task = Mock()
-    mock_task.cancel = Mock()
-    obs_widget.listening_task = mock_task
+    """Test widget deactivation - tasks are cleaned up by Deck automatically."""
+    # Simulate that a task is running
+    obs_widget.tasks.is_running.return_value = True
 
+    # Deactivate should not stop tasks (Deck handles cleanup)
     await obs_widget.deactivate()
 
-    mock_task.cancel.assert_called_once()
-    assert obs_widget.listening_task is None
+    # Verify stop_task was NOT called (cleanup is handled by Deck)
+    obs_widget.tasks.stop_task.assert_not_called()
 
 
 async def test_obs_widget_listener_relevant_event(obs_widget):

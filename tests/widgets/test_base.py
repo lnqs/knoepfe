@@ -7,7 +7,7 @@ from knoepfe.core.key import Key
 from knoepfe.plugins.context import PluginContext
 from knoepfe.utils.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction
-from knoepfe.widgets.base import Widget
+from knoepfe.widgets.base import TASK_LONG_PRESS, Widget
 
 
 class ConcreteWidget(Widget[EmptyConfig, PluginContext]):
@@ -43,7 +43,12 @@ async def test_switch_deck() -> None:
     config = EmptyPluginConfig()
     context = PluginContext(config)
     widget = ConcreteWidget(EmptyConfig(switch_deck="new_deck"), context)
-    widget.long_press_task = Mock()
+
+    # Simulate long press task running
+    async def dummy_task():
+        pass
+
+    widget.tasks.start_task(TASK_LONG_PRESS, dummy_task())
     action = await widget.released()
     assert isinstance(action, SwitchDeckAction)
     assert action.target_deck == "new_deck"
@@ -53,7 +58,12 @@ async def test_no_switch_deck() -> None:
     config = EmptyPluginConfig()
     context = PluginContext(config)
     widget = ConcreteWidget(EmptyConfig(), context)
-    widget.long_press_task = Mock()
+
+    # Simulate long press task running
+    async def dummy_task():
+        pass
+
+    widget.tasks.start_task(TASK_LONG_PRESS, dummy_task())
     action = await widget.released()
     assert action is None
 

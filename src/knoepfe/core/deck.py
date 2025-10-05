@@ -32,6 +32,11 @@ class Deck:
         await self.update(device, True)
 
     async def deactivate(self, device: StreamDeck) -> None:
+        # Cleanup tasks for all widgets before deactivating
+        for widget in self.widgets:
+            if widget:
+                widget.tasks.cleanup()
+
         await asyncio.gather(*[w.deactivate() for w in self.widgets if w])
 
     async def update(self, device: StreamDeck, force: bool = False) -> None:

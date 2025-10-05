@@ -11,5 +11,5 @@ class OBSPluginContext(PluginContext):
 
     def __init__(self, config: OBSPluginConfig):
         super().__init__(config)
-        self.obs = OBS(config)
+        self.obs = OBS(config, self.tasks)
         self.disconnected_color = config.disconnected_color

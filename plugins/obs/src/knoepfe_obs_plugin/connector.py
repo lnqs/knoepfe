@@ -1,20 +1,24 @@
 import logging
-from asyncio import Condition, Task, get_event_loop, sleep
+from asyncio import Condition, sleep
 from typing import Any, AsyncIterator, Awaitable, Callable, cast
 
 import simpleobsws
+from knoepfe.utils.task_manager import TaskManager
 
 from .config import OBSPluginConfig
 
 logger = logging.getLogger(__name__)
 
+# Task name constants
+TASK_CONNECTION_WATCHER = "connection_watcher"
+TASK_STATUS_WATCHER = "status_watcher"
+
 
 class OBS:
-    def __init__(self, config: OBSPluginConfig) -> None:
+    def __init__(self, config: OBSPluginConfig, tasks: TaskManager) -> None:
         self.ws = simpleobsws.WebSocketClient()
         self.ws.register_event_callback(self._handle_event)
-        self.connection_watcher: Task[None] | None = None
-        self.status_watcher: Task[None] | None = None
+        self.tasks = tasks
         self.streaming = False
         self.recording = False
         self.streaming_timecode = None
@@ -29,11 +33,10 @@ class OBS:
             self.ws.password = config.password
 
     async def connect(self) -> None:
-        if self.connection_watcher:
+        if self.tasks.is_running(TASK_CONNECTION_WATCHER):
             return
 
-        loop = get_event_loop()
-        self.connection_watcher = loop.create_task(self._watch_connection())
+        self.tasks.start_task(TASK_CONNECTION_WATCHER, self._watch_connection())
 
     @property
     def connected(self) -> bool:

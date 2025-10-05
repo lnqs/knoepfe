@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from asyncio import Event, Task, get_event_loop, sleep
+from asyncio import Event, sleep
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ..config.widget import WidgetConfig
 from ..core.key import Key
+from ..utils.task_manager import TaskManager
 from ..utils.type_utils import extract_generic_arg
 from ..utils.wakelock import WakeLock
 from .actions import SwitchDeckAction, WidgetAction
@@ -12,7 +13,11 @@ if TYPE_CHECKING:
     from ..plugins.context import PluginContext
 
 TPluginContext = TypeVar("TPluginContext", bound="PluginContext")
-TConfig = TypeVar("TConfig", bound=WidgetConfig)
+TConfig = TypeVar("TConfig", bound="WidgetConfig")
+
+# Task name constants
+TASK_PERIODIC_UPDATE = "periodic_update"
+TASK_LONG_PRESS = "long_press"
 
 
 class Widget(ABC, Generic[TConfig, TPluginContext]):
@@ -40,8 +45,9 @@ class Widget(ABC, Generic[TConfig, TPluginContext]):
         self.wake_lock: WakeLock | None = None
         self.holds_wait_lock = False
         self.needs_update = False
-        self.periodic_update_task: Task[None] | None = None
-        self.long_press_task: Task[None] | None = None
+
+        # Task management
+        self.tasks = TaskManager()
 
     @classmethod
     def get_config_type(cls) -> type:
@@ -56,9 +62,11 @@ class Widget(ABC, Generic[TConfig, TPluginContext]):
         return extract_generic_arg(cls, WidgetConfig, 0)
 
     async def activate(self) -> None:  # pragma: no cover
+        """Called when widget becomes active on the deck."""
         return
 
     async def deactivate(self) -> None:  # pragma: no cover
+        """Called when widget is deactivated (e.g., deck switch)."""
         return
 
     @abstractmethod
@@ -67,17 +75,18 @@ class Widget(ABC, Generic[TConfig, TPluginContext]):
         pass
 
     async def pressed(self) -> None:
+        """Called when key is pressed."""
+
         async def maybe_trigger_longpress() -> None:
             await sleep(1.0)
-            self.long_press_task = None
             await self.triggered(True)
 
-        self.long_press_task = get_event_loop().create_task(maybe_trigger_longpress())
+        self.tasks.start_task("long_press", maybe_trigger_longpress())
 
     async def released(self) -> WidgetAction | None:
-        if self.long_press_task:
-            self.long_press_task.cancel()
-            self.long_press_task = None
+        """Called when key is released."""
+        if self.tasks.is_running("long_press"):
+            self.tasks.stop_task("long_press")
             action = await self.triggered(False)
             if action:
                 return action
@@ -91,24 +100,39 @@ class Widget(ABC, Generic[TConfig, TPluginContext]):
         return None
 
     def request_update(self) -> None:
+        """Request an update for this widget.
+
+        Sets the needs_update flag and signals the shared update event.
+        This will cause the DeckManager to update this widget on the next cycle.
+        """
         self.needs_update = True
         if self.update_requested_event:
             self.update_requested_event.set()
 
     def request_periodic_update(self, interval: float) -> None:
-        if not self.periodic_update_task:
-            loop = get_event_loop()
-            self.periodic_update_task = loop.create_task(self.periodic_update_loop(interval))
+        """Request periodic updates at the specified interval.
+
+        This is a convenience method that creates a background task to call
+        request_update() at regular intervals. The task will be automatically
+        cleaned up when the widget is deactivated.
+
+        Args:
+            interval: Time in seconds between updates
+        """
+
+        async def periodic_loop() -> None:
+            while True:
+                await sleep(interval)
+                self.request_update()
+
+        self.tasks.start_task("periodic_update", periodic_loop())
 
     def stop_periodic_update(self) -> None:
-        if self.periodic_update_task:
-            self.periodic_update_task.cancel()
-            self.periodic_update_task = None
+        """Stop periodic updates.
 
-    async def periodic_update_loop(self, interval: float) -> None:
-        while True:
-            await sleep(interval)
-            self.request_update()
+        This is a convenience method that stops the periodic update task.
+        """
+        self.tasks.stop_task("periodic_update")
 
     def acquire_wake_lock(self) -> None:
         if self.wake_lock and not self.holds_wait_lock:

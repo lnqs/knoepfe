@@ -1,13 +1,17 @@
 """PulseAudio connector for managing shared connection across audio widgets."""
 
 import logging
-from asyncio import Condition, Task, get_event_loop
+from asyncio import Condition
 from typing import Any, AsyncIterator
 
+from knoepfe.utils.task_manager import TaskManager
 from pulsectl import PulseEventTypeEnum
 from pulsectl_asyncio import PulseAsync
 
 logger = logging.getLogger(__name__)
+
+# Task name constants
+TASK_EVENT_WATCHER = "pulse_event_watcher"
 
 
 class PulseAudioConnector:
@@ -18,17 +22,21 @@ class PulseAudioConnector:
     provides a clean interface for audio operations.
 
     Attributes:
+        tasks: TaskManager for managing background tasks.
         pulse: The PulseAsync connection instance.
-        event_watcher: Background task that monitors PulseAudio events.
         connected: Whether currently connected to PulseAudio.
         last_event: The most recent PulseAudio event received.
         event_condition: Condition variable for event notification.
     """
 
-    def __init__(self) -> None:
-        """Initialize the PulseAudio connector."""
+    def __init__(self, tasks: TaskManager) -> None:
+        """Initialize the PulseAudio connector.
+
+        Args:
+            tasks: TaskManager from plugin context for managing background tasks.
+        """
+        self.tasks = tasks
         self.pulse: PulseAsync | None = None
-        self.event_watcher: Task[None] | None = None
         self._connected = False
 
         self.last_event: Any = None
@@ -40,7 +48,7 @@ class PulseAudioConnector:
         This method is idempotent - calling it multiple times will only
         create one connection. Starts the event watcher task.
         """
-        if self.event_watcher:
+        if self.tasks.is_running(TASK_EVENT_WATCHER):
             return
 
         if not self.pulse:
@@ -56,14 +64,11 @@ class PulseAudioConnector:
                 self.pulse = None
                 return
 
-        loop = get_event_loop()
-        self.event_watcher = loop.create_task(self._watch_events())
+        self.tasks.start_task(TASK_EVENT_WATCHER, self._watch_events())
 
     async def disconnect(self) -> None:
         """Disconnect from PulseAudio and clean up resources."""
-        if self.event_watcher:
-            self.event_watcher.cancel()
-            self.event_watcher = None
+        self.tasks.stop_task(TASK_EVENT_WATCHER)
 
         if self.pulse:
             self.pulse.disconnect()

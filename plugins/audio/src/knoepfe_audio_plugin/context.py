@@ -28,7 +28,7 @@ class AudioPluginContext(PluginContext):
 
         # Plugin-specific state
         self.default_source = config.default_source
-        self.pulse = PulseAudioConnector()
+        self.pulse = PulseAudioConnector(self.tasks)
         self.mute_states: dict[str, bool] = {}
 
     def sync_mute_state(self, source: str, muted: bool) -> None:

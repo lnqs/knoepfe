@@ -30,11 +30,18 @@ class Timer(Widget[TimerConfig, PluginContext]):
         self.start: float | None = None
         self.stop: float | None = None
 
+    async def activate(self) -> None:
+        """Restart periodic update if timer is running."""
+        if self.start and not self.stop:
+            # Timer is running, restart periodic update
+            self.request_periodic_update(1.0)
+
     async def deactivate(self) -> None:
-        self.stop_periodic_update()
-        self.start = None
-        self.stop = None
-        self.release_wake_lock()
+        """Periodic update is stopped automatically by Deck cleanup."""
+        # Keep timer state (start/stop) so it persists across deck switches
+        # Only release wake lock if timer is not running
+        if not (self.start and not self.stop):
+            self.release_wake_lock()
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:

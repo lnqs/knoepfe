@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from pytest import fixture
 
+from knoepfe_audio_plugin.base import TASK_EVENT_LISTENER
 from knoepfe_audio_plugin.config import AudioPluginConfig
 from knoepfe_audio_plugin.context import AudioPluginContext
 from knoepfe_audio_plugin.mic_mute import MicMute, MicMuteConfig
@@ -14,7 +15,20 @@ def mock_context():
 
 @fixture
 def mic_mute_widget(mock_context):
-    return MicMute(MicMuteConfig(), mock_context)
+    widget = MicMute(MicMuteConfig(), mock_context)
+
+    # Mock the TaskManager to avoid pytest warnings about unawaited tasks
+    def mock_start_task(name, coro):
+        # Close the coroutine to prevent "never awaited" warnings
+        coro.close()
+        return Mock()
+
+    widget.tasks = Mock()
+    widget.tasks.start_task = Mock(side_effect=mock_start_task)
+    widget.tasks.stop_task = Mock()
+    widget.tasks.is_running = Mock(return_value=False)
+    widget.tasks.cleanup = AsyncMock()
+    return widget
 
 
 @fixture
@@ -29,40 +43,32 @@ def mock_source():
 def test_mic_mute_init(mock_context):
     """Test MicMute widget initialization."""
     widget = MicMute(MicMuteConfig(), mock_context)
-    assert widget.listening_task is None
     assert widget.pulse == mock_context.pulse
+    assert widget.tasks is not None
 
 
 async def test_mic_mute_activate(mic_mute_widget):
     """Test widget activation connects to PulseAudio and starts listener."""
     with patch.object(mic_mute_widget.context.pulse, "connect", AsyncMock()) as mock_connect:
-        with patch("knoepfe_audio_plugin.base.get_event_loop") as mock_loop:
-            mock_task = Mock()
-            mock_loop.return_value.create_task.return_value = mock_task
+        await mic_mute_widget.activate()
 
-            await mic_mute_widget.activate()
-
-            mock_connect.assert_called_once()
-            mock_loop.return_value.create_task.assert_called_once()
-            assert mic_mute_widget.listening_task == mock_task
-
-            # Clean up the task to prevent warnings
-            if mic_mute_widget.listening_task:
-                mic_mute_widget.listening_task.cancel()
-                mic_mute_widget.listening_task = None
+        mock_connect.assert_called_once()
+        mic_mute_widget.tasks.start_task.assert_called_once()
+        # Verify the task name is correct
+        call_args = mic_mute_widget.tasks.start_task.call_args
+        assert call_args[0][0] == TASK_EVENT_LISTENER
 
 
 async def test_mic_mute_deactivate(mic_mute_widget):
-    """Test widget deactivation stops listener."""
-    mock_event_listener = Mock()
-    mock_event_listener.cancel = Mock()
+    """Test widget deactivation - tasks are cleaned up by Deck automatically."""
+    # Simulate that a task is running
+    mic_mute_widget.tasks.is_running.return_value = True
 
-    mic_mute_widget.listening_task = mock_event_listener
-
+    # Deactivate should not stop tasks (Deck handles cleanup)
     await mic_mute_widget.deactivate()
 
-    mock_event_listener.cancel.assert_called_once()
-    assert mic_mute_widget.listening_task is None
+    # Verify stop_task was NOT called (cleanup is handled by Deck)
+    mic_mute_widget.tasks.stop_task.assert_not_called()
 
 
 async def test_mic_mute_update_muted(mic_mute_widget, mock_source):

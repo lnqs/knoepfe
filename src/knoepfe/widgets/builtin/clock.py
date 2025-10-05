@@ -26,7 +26,6 @@ class Clock(Widget[ClockConfig, PluginContext]):
         self.request_periodic_update(1.0)
 
     async def deactivate(self) -> None:
-        self.stop_periodic_update()
         self.last_time = ""
 
     async def update(self, key: Key) -> None:

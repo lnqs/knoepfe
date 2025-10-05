@@ -94,15 +94,14 @@ async def test_clock_activate_starts_periodic_update(context) -> None:
     widget.request_periodic_update.assert_called_once_with(1.0)
 
 
-async def test_clock_deactivate_stops_periodic_update(context) -> None:
-    """Test that deactivate stops periodic updates and resets state."""
+async def test_clock_deactivate_resets_state(context) -> None:
+    """Test that deactivate resets state."""
     widget = Clock(ClockConfig(), context)
-    widget.stop_periodic_update = MagicMock()
     widget.last_time = "12:34"
 
     await widget.deactivate()
 
-    widget.stop_periodic_update.assert_called_once()
+    # Tasks are cleaned up automatically by Deck, not by widget
     assert widget.last_time == ""
 
 
