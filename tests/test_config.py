@@ -16,7 +16,9 @@ device(brightness=80, sleep_timeout=30.0)
 plugin.obs(host='localhost', port=4455)
 
 deck.main([
-    widget.Clock(format='%H:%M'),
+    widget.Clock(segments=[
+        {'format': '%H:%M', 'x': 0, 'y': 0, 'width': 96, 'height': 96}
+    ]),
     widget.Text(text='Hello'),
 ])
 """
@@ -39,7 +41,9 @@ def test_load_config_validation_error():
     config_content = """
 device(brightness=150)  # Invalid: > 100
 
-deck.main([widget.Clock()])
+deck.main([widget.Clock(segments=[
+    {'format': '%H:%M', 'x': 0, 'y': 0, 'width': 96, 'height': 96}
+])])
 """
 
     mock_file = mock_open(read_data=config_content)
@@ -51,7 +55,9 @@ deck.main([widget.Clock()])
 def test_load_config_no_main_deck():
     """Test that missing main deck raises ConfigError."""
     config_content = """
-deck.other([widget.Clock()])
+deck.other([widget.Clock(segments=[
+    {'format': '%H:%M', 'x': 0, 'y': 0, 'width': 96, 'height': 96}
+])])
 """
 
     mock_file = mock_open(read_data=config_content)
