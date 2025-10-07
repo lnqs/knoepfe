@@ -28,7 +28,7 @@ async def test_timer_idle_with_defaults(context) -> None:
     renderer = key.renderer.return_value.__enter__.return_value
     renderer.clear.assert_called_once()
     renderer.icon.assert_called_once_with(
-        "\uf13ab",  # nf-md-timer
+        "󱎫",  # nf-md-timer
         size=86,
         color="white",
     )
@@ -163,7 +163,7 @@ async def test_timer_deactivate_cleanup(context) -> None:
 def test_timer_config_defaults() -> None:
     """Test TimerConfig default values."""
     config = TimerConfig()
-    assert config.icon == "\uf13ab"  # nf-md-timer
+    assert config.icon == "󱎫"  # nf-md-timer
     assert config.font is None
     assert config.color == "white"  # Base color
     assert config.running_color is None  # Defaults to base color

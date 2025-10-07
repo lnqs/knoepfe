@@ -10,7 +10,7 @@ class CurrentSceneConfig(WidgetConfig):
     """Configuration for CurrentScene widget."""
 
     icon: str = Field(
-        default="\uf01c5",  # nf-md-desktop_tower
+        default="󰏜",  # nf-md-panorama
         description="Scene icon (unicode character or codepoint)",
     )
     connected_color: str | None = Field(

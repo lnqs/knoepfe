@@ -11,7 +11,7 @@ class FontManager:
 
     @classmethod
     @lru_cache()
-    def get_font(cls, pattern: str = "Roboto", size: int = 24) -> ImageFont.FreeTypeFont:
+    def get_font(cls, pattern: str | None, size: int = 24) -> ImageFont.FreeTypeFont:
         """Get a font from a fontconfig pattern string.
 
         Examples:

@@ -11,7 +11,7 @@ class SwitchSceneConfig(WidgetConfig):
 
     scene: str = Field(..., description="Scene name to switch to")
     icon: str = Field(
-        default="\uf01c5",  # nf-md-desktop_tower
+        default="󰏜",  # nf-md-panorama
         description="Scene icon (unicode character or codepoint)",
     )
     active_color: str = Field(default="red", description="Icon/text color when scene is active")

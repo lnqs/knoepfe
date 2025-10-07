@@ -100,6 +100,44 @@ class Renderer:
         bbox = self._draw.textbbox((0, 0), text, font=font)
         return int(bbox[2] - bbox[0]), int(bbox[3] - bbox[1])
 
+    def _text_centered_visual(
+        self,
+        text: str,
+        font: ImageFont.FreeTypeFont,
+        center: tuple[int, int],
+        color: str = "white",
+    ) -> "Renderer":
+        """Draw text centered based on visual glyph bounds.
+
+        This helper ensures text is truly centered by calculating the actual glyph
+        bounds, which is important for monospace fonts where glyphs may not be
+        centered within their character cell.
+
+        Args:
+            text: Text to draw
+            font: PIL ImageFont instance (must be loaded)
+            center: (x, y) coordinates for the visual center
+            color: Text color
+        """
+        # Get bounding box to measure actual glyph dimensions
+        # Use anchor='lt' (left-top) at origin to get true glyph bounds
+        bbox = self._draw.textbbox((0, 0), text, font=font, anchor="lt")
+        glyph_width = bbox[2] - bbox[0]
+        glyph_height = bbox[3] - bbox[1]
+
+        # Calculate position to center the glyph visually
+        # Account for glyph offset from anchor point
+        glyph_left_offset = bbox[0]
+        glyph_top_offset = bbox[1]
+
+        # Adjust position so glyph center aligns with target center
+        adjusted_x = center[0] - glyph_left_offset - glyph_width / 2
+        adjusted_y = center[1] - glyph_top_offset - glyph_height / 2
+
+        # Draw with 'lt' anchor at calculated position
+        self._draw.text((adjusted_x, adjusted_y), text, font=font, fill=color, anchor="lt")
+        return self
+
     # ========== Convenience Methods ==========
 
     def icon(
@@ -112,18 +150,30 @@ class Renderer:
     ) -> "Renderer":
         """Render an icon (Unicode character) centered or at position.
 
+        This method ensures the icon is visually centered by calculating the actual
+        glyph bounds, which is important for monospace fonts where glyphs may not
+        be centered within their character cell.
+
         Args:
             icon: Unicode character (e.g., "\ue029" or "🎤")
             size: Icon size
             color: Icon color
-            position: Optional (x, y) position, defaults to center
+            position: Optional (x, y) position, defaults to center (48, 48)
             font: Font to use for icon (defaults to config default_text_font)
         """
         if font is None:
             font = self.default_text_font
         if position is None:
             position = (48, 48)
-        return self.text(position, icon, font=font, size=size, color=color, anchor="mm")
+
+        # Load font if it's a string pattern
+        if isinstance(font, str):
+            font_obj = FontManager.get_font(font, size)
+        else:
+            font_obj = font
+
+        # Use visual centering helper for accurate positioning
+        return self._text_centered_visual(icon, font_obj, position, color)
 
     def image_centered(
         self, image_path: Union[str, Path, Image.Image], size: Union[int, tuple[int, int]] = 72, padding: int = 12

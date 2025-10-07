@@ -13,7 +13,7 @@ class TimerConfig(WidgetConfig):
     """Configuration for Timer widget."""
 
     icon: str = Field(
-        default="\uf13ab",  # nf-md-timer
+        default="󱎫",  # nf-md-timer
         description="Icon to display when timer is idle (unicode character or codepoint)",
     )
     running_color: str | None = Field(

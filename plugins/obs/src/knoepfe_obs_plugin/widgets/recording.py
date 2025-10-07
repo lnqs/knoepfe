@@ -12,15 +12,15 @@ class RecordingConfig(WidgetConfig):
     """Configuration for Recording widget."""
 
     recording_icon: str = Field(
-        default="\uf0567",  # nf-md-video
+        default="󰕧",  # nf-md-video
         description="Icon when recording (unicode character or codepoint)",
     )
     stopped_icon: str = Field(
-        default="\uf0568",  # nf-md-video_off
+        default="󰕨",  # nf-md-video_off
         description="Icon when stopped (unicode character or codepoint)",
     )
     loading_icon: str = Field(
-        default="\uf0772",  # nf-md-loading
+        default="󰔟",  # nf-md-timer_sand
         description="Icon when loading (unicode character or codepoint)",
     )
     recording_color: str = Field(default="red", description="Icon/text color when recording")

@@ -12,15 +12,15 @@ class StreamingConfig(WidgetConfig):
     """Configuration for Streaming widget."""
 
     streaming_icon: str = Field(
-        default="\uf0118",  # nf-md-cast
+        default="󰄘",  # nf-md-cast
         description="Icon when streaming (unicode character or codepoint)",
     )
     stopped_icon: str = Field(
-        default="\uf0118",  # nf-md-cast
+        default="󰄘",  # nf-md-cast
         description="Icon when stopped (unicode character or codepoint)",
     )
     loading_icon: str = Field(
-        default="\uf0772",  # nf-md-loading
+        default="󰔟",  # nf-md-timer_sand
         description="Icon when loading (unicode character or codepoint)",
     )
     streaming_color: str = Field(default="red", description="Icon/text color when streaming")
