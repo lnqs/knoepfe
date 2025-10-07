@@ -80,6 +80,16 @@ def test_global_config_device_defaults():
     assert config.device.brightness == 100
     assert config.device.sleep_timeout == 10.0
     assert config.device.device_poll_frequency == 5
+    assert config.device.serial_number is None
+
+
+def test_device_config_with_serial_number():
+    """Test that device config accepts serial number."""
+    config = GlobalConfig(
+        device=DeviceConfig(serial_number="ABC123"),
+        decks={"main": DeckConfig(name="main", widgets=[])},
+    )
+    assert config.device.serial_number == "ABC123"
 
 
 def test_global_config_validation():

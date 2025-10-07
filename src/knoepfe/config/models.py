@@ -14,6 +14,9 @@ class DeviceConfig(BaseConfig):
     sleep_timeout: float | None = Field(default=10.0, gt=0, description="Seconds until sleep, None to disable")
     device_poll_frequency: int = Field(default=5, ge=1, le=1000, description="Hardware polling rate in Hz")
     default_text_font: str = Field(default="RobotoMono Nerd Font:bold", description="Default font for text rendering")
+    serial_number: str | None = Field(
+        default=None, description="Device serial number to connect to, None for first available"
+    )
 
 
 class WidgetSpec(BaseConfig):

@@ -40,7 +40,7 @@ class Knoepfe:
         decks = create_decks(config, self.plugin_manager)
 
         while True:
-            device = await self.connect_device(mock_device)
+            device = await self.connect_device(config, mock_device)
 
             try:
                 deck_manager = DeckManager(decks, config, device)
@@ -49,29 +49,58 @@ class Knoepfe:
                 logger.debug("Transport error, trying to reconnect")
                 continue
 
-    async def connect_device(self, mock_device: bool = False) -> StreamDeck:
+    async def connect_device(self, config, mock_device: bool = False) -> StreamDeck:
         """Connect to a Stream Deck device.
 
         Args:
+            config: Global configuration containing device settings
             mock_device: If True, use a mock device instead of real hardware
 
         Returns:
             Connected StreamDeck device
         """
+        target_serial = config.device.serial_number
+
         if mock_device:
             logger.info("Using mock device with dummy transport")
             device_manager = DeviceManager(transport="dummy")
             devices = device_manager.enumerate()
             device = devices[0]  # Use the first dummy device
         else:
-            logger.info("Searching for devices")
+            if target_serial:
+                logger.info(f"Searching for device with serial number: {target_serial}")
+            else:
+                logger.info("Searching for devices")
             device = None
 
             while True:
                 devices = DeviceManager().enumerate()
-                if len(devices):
-                    device = devices[0]
-                    break
+
+                if target_serial:
+                    # Filter devices by serial number
+                    for d in devices:
+                        try:
+                            d.open()
+                            serial = d.get_serial_number()
+                            d.close()
+                            if serial == target_serial:
+                                device = d
+                                break
+                        except Exception as e:
+                            logger.debug(f"Error checking device serial: {e}")
+                            continue
+
+                    if device:
+                        break
+
+                    if len(devices) > 0:
+                        logger.debug(f"Found {len(devices)} device(s), but none match serial {target_serial}")
+                else:
+                    # Use first available device (default behavior)
+                    if len(devices):
+                        device = devices[0]
+                        break
+
                 await sleep(1.0)
 
         device.open()
