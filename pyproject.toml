@@ -47,7 +47,7 @@ knoepfe = "knoepfe.cli:main"
 
 # Plugin entry points
 [project.entry-points."knoepfe.plugins"]
-builtin = "knoepfe.plugins.builtin:BuiltinPlugin"
+builtin = "knoepfe.plugins.builtin:BuiltinPluginDescriptor"
 
 # Workspace configuration for development
 [tool.uv.workspace]

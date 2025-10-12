@@ -1,4 +1,4 @@
-"""Built-in widgets plugin."""
+"""Built-in widgets plugin descriptor."""
 
 from typing import Type
 
@@ -7,12 +7,12 @@ from ..widgets.base import Widget
 from ..widgets.builtin.clock import Clock
 from ..widgets.builtin.text import Text
 from ..widgets.builtin.timer import Timer
-from .context import PluginContext
+from .descriptor import PluginDescriptor
 from .plugin import Plugin
 
 
-class BuiltinPlugin(Plugin[EmptyPluginConfig, PluginContext]):
-    """Plugin providing built-in widgets."""
+class BuiltinPluginDescriptor(PluginDescriptor[EmptyPluginConfig, Plugin]):
+    """Plugin descriptor providing built-in widgets."""
 
     @classmethod
     def widgets(cls) -> list[Type[Widget]]:

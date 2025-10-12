@@ -3,20 +3,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from knoepfe.config.plugin import EmptyPluginConfig
-from knoepfe.plugins.context import PluginContext
+from knoepfe.plugins.plugin import Plugin
 from knoepfe.widgets.builtin.clock import Clock, ClockConfig, ClockSegment
 
 
 @pytest.fixture
-def context():
-    """Create a plugin context for testing."""
+def plugin():
+    """Create a plugin instance for testing."""
     config = EmptyPluginConfig()
-    return PluginContext(config)
+    return Plugin(config)
 
 
-async def test_clock_update_with_defaults(context) -> None:
+async def test_clock_update_with_defaults(plugin) -> None:
     """Test that Clock widget updates with default configuration."""
-    widget = Clock(ClockConfig(), context)
+    widget = Clock(ClockConfig(), plugin)
 
     # Mock key and renderer
     key = MagicMock()
@@ -35,7 +35,7 @@ async def test_clock_update_with_defaults(context) -> None:
     assert call_args[1]["color"] == "white"
 
 
-async def test_clock_update_with_custom_segments(context) -> None:
+async def test_clock_update_with_custom_segments(plugin) -> None:
     """Test that Clock widget uses custom segments."""
     config = ClockConfig(
         font="Roboto",
@@ -46,7 +46,7 @@ async def test_clock_update_with_custom_segments(context) -> None:
             ClockSegment(format="%S", x=0, y=48, width=72, height=24, font="Roboto:style=Thin"),
         ],
     )
-    widget = Clock(config, context)
+    widget = Clock(config, plugin)
 
     # Mock key and renderer
     key = MagicMock()
@@ -76,9 +76,9 @@ async def test_clock_update_with_custom_segments(context) -> None:
     assert third_call[1]["color"] == "#fefefe"
 
 
-async def test_clock_update_only_when_time_changes(context) -> None:
+async def test_clock_update_only_when_time_changes(plugin) -> None:
     """Test that Clock widget only updates when time changes."""
-    widget = Clock(ClockConfig(), context)
+    widget = Clock(ClockConfig(), plugin)
 
     # Mock key and renderer
     key = MagicMock()
@@ -111,9 +111,9 @@ async def test_clock_update_only_when_time_changes(context) -> None:
         assert renderer.text.call_count == 1
 
 
-async def test_clock_activate_starts_periodic_update(context) -> None:
+async def test_clock_activate_starts_periodic_update(plugin) -> None:
     """Test that activate starts periodic updates."""
-    widget = Clock(ClockConfig(interval=2.0), context)
+    widget = Clock(ClockConfig(interval=2.0), plugin)
     widget.request_periodic_update = MagicMock()
 
     await widget.activate()
@@ -121,9 +121,9 @@ async def test_clock_activate_starts_periodic_update(context) -> None:
     widget.request_periodic_update.assert_called_once_with(2.0)
 
 
-async def test_clock_deactivate_resets_state(context) -> None:
+async def test_clock_deactivate_resets_state(plugin) -> None:
     """Test that deactivate resets state."""
-    widget = Clock(ClockConfig(), context)
+    widget = Clock(ClockConfig(), plugin)
     widget.last_time = "12:34"
 
     await widget.deactivate()

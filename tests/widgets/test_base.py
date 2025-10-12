@@ -4,13 +4,13 @@ from unittest.mock import AsyncMock, Mock, patch
 from knoepfe.config.plugin import EmptyPluginConfig
 from knoepfe.config.widget import EmptyConfig
 from knoepfe.core.key import Key
-from knoepfe.plugins.context import PluginContext
+from knoepfe.plugins.plugin import Plugin
 from knoepfe.utils.wakelock import WakeLock
 from knoepfe.widgets.actions import SwitchDeckAction
 from knoepfe.widgets.base import TASK_LONG_PRESS, Widget
 
 
-class ConcreteWidget(Widget[EmptyConfig, PluginContext]):
+class ConcreteWidget(Widget[EmptyConfig, Plugin]):
     """Concrete test widget for testing base functionality."""
 
     name = "ConcreteWidget"
@@ -21,8 +21,8 @@ class ConcreteWidget(Widget[EmptyConfig, PluginContext]):
 
 async def test_presses() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(), plugin)
     with patch.object(widget, "triggered") as triggered:
         await widget.pressed()
         await widget.released()
@@ -41,8 +41,8 @@ async def test_presses() -> None:
 
 async def test_switch_deck() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(switch_deck="new_deck"), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(switch_deck="new_deck"), plugin)
 
     # Simulate long press task running
     async def dummy_task():
@@ -56,8 +56,8 @@ async def test_switch_deck() -> None:
 
 async def test_no_switch_deck() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(), plugin)
 
     # Simulate long press task running
     async def dummy_task():
@@ -70,8 +70,8 @@ async def test_no_switch_deck() -> None:
 
 async def test_request_update() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(), plugin)
     with patch.object(widget, "update_requested_event") as event:
         widget.request_update()
     assert event.set.called
@@ -80,8 +80,8 @@ async def test_request_update() -> None:
 
 async def test_periodic_update() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(), plugin)
 
     with patch.object(widget, "request_update") as request_update:
         widget.request_periodic_update(0.0)
@@ -96,8 +96,8 @@ async def test_periodic_update() -> None:
 
 async def test_wake_lock() -> None:
     config = EmptyPluginConfig()
-    context = PluginContext(config)
-    widget = ConcreteWidget(EmptyConfig(), context)
+    plugin = Plugin(config)
+    widget = ConcreteWidget(EmptyConfig(), plugin)
     widget.wake_lock = WakeLock(Mock())
 
     widget.acquire_wake_lock()

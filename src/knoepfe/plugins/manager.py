@@ -7,7 +7,7 @@ from typing import Type
 from ..config.plugin import PluginConfig
 from ..config.widget import WidgetConfig
 from ..widgets.base import Widget
-from .context import PluginContext
+from .descriptor import PluginDescriptor
 from .plugin import Plugin
 
 logger = logging.getLogger(__name__)
@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class PluginInfo:
-    """Information about a loaded plugin."""
+    """Information about a loaded plugin descriptor and its instance."""
 
     name: str
-    plugin_class: Type[Plugin]
+    descriptor_class: Type[PluginDescriptor]
     config: PluginConfig
-    context: PluginContext
+    plugin: Plugin
     version: str
     description: str | None
     widgets: list["WidgetInfo"] = field(default_factory=list)
@@ -41,10 +41,10 @@ class PluginManager:
     """Manages plugin lifecycle and widget discovery.
 
     The PluginManager is responsible for:
-    - Loading plugin classes from entry points
-    - Instantiating plugin configs and contexts based on plugin type parameters
-    - Registering widgets provided by plugins
-    - Providing access to plugin context for widgets
+    - Loading plugin descriptor classes from entry points
+    - Instantiating plugin configs and plugin instances based on descriptor type parameters
+    - Registering widgets provided by plugin descriptors
+    - Providing access to plugin instances for widgets
     """
 
     def __init__(self, plugin_configs: dict[str, dict] | None = None):
@@ -59,7 +59,7 @@ class PluginManager:
         self._load_plugins()
 
     def _load_plugins(self):
-        """Load all registered plugins via entry points."""
+        """Load all registered plugin descriptors via entry points."""
         for ep in entry_points(group="knoepfe.plugins"):
             try:
                 plugin_name = ep.name
@@ -67,39 +67,43 @@ class PluginManager:
 
                 logger.debug(f"Loading plugin '{plugin_name}' from {dist_name}")
 
-                # Load the plugin class (not instantiated!)
-                plugin_class = ep.load()
+                # Load the plugin descriptor class (not instantiated!)
+                descriptor_class = ep.load()
 
-                # Validate that it's actually a Plugin subclass
-                if not (inspect.isclass(plugin_class) and issubclass(plugin_class, Plugin)):
-                    logger.error(f"Entry point '{plugin_name}' does not point to a Plugin subclass: {plugin_class}")
+                # Validate that it's actually a PluginDescriptor subclass
+                if not (inspect.isclass(descriptor_class) and issubclass(descriptor_class, PluginDescriptor)):
+                    logger.error(
+                        f"Entry point '{plugin_name}' does not point to a PluginDescriptor subclass: {descriptor_class}"
+                    )
                     continue
 
                 # Load the plugin with its metadata
                 version = ep.dist.version if ep.dist else "unknown"
-                # Get description from plugin class attribute
-                description = getattr(plugin_class, "description", None)
+                # Get description from descriptor class attribute
+                description = getattr(descriptor_class, "description", None)
 
-                self._load_plugin(plugin_name, plugin_class, version, description)
+                self._load_plugin(plugin_name, descriptor_class, version, description)
 
             except Exception:
                 logger.exception(f"Failed to load plugin {ep.name}")
 
-    def _load_plugin(self, plugin_name: str, plugin_class: Type[Plugin], version: str, description: str | None):
-        """Load and register a plugin class.
+    def _load_plugin(
+        self, plugin_name: str, descriptor_class: Type[PluginDescriptor], version: str, description: str | None
+    ):
+        """Load and register a plugin descriptor.
 
         Args:
             plugin_name: Name of the plugin
-            plugin_class: The plugin class to load
+            descriptor_class: The plugin descriptor class to load
             version: Plugin version string
-            description: Plugin description from class attribute
+            description: Plugin description from descriptor class attribute
         """
         # Get plugin config dict from stored configs
         plugin_config_dict = self._plugin_configs.get(plugin_name, {})
 
-        # Extract config and context types from the plugin class
-        config_type = plugin_class.get_config_type()
-        context_type = plugin_class.get_context_type()
+        # Extract config and plugin types from the descriptor class
+        config_type = descriptor_class.get_config_type()
+        plugin_type = descriptor_class.get_plugin_type()
 
         # Instantiate config (validates automatically via Pydantic)
         plugin_config = config_type(**plugin_config_dict)
@@ -109,15 +113,15 @@ class PluginManager:
             logger.info(f"Plugin '{plugin_name}' is disabled in config, skipping")
             return
 
-        # Instantiate context with the config
-        plugin_context = context_type(plugin_config)
+        # Instantiate plugin with the config
+        plugin_instance = plugin_type(plugin_config)
 
         # Create plugin info first (widgets will be added later)
         plugin_info = PluginInfo(
             name=plugin_name,
-            plugin_class=plugin_class,
+            descriptor_class=descriptor_class,
             config=plugin_config,
-            context=plugin_context,
+            plugin=plugin_instance,
             version=version,
             description=description,
         )
@@ -125,8 +129,8 @@ class PluginManager:
         # Store plugin info
         self._plugins[plugin_name] = plugin_info
 
-        # Get widgets from the plugin class (classmethod, no instance needed)
-        widget_classes = plugin_class.widgets()
+        # Get widgets from the descriptor class (classmethod, no instance needed)
+        widget_classes = descriptor_class.widgets()
 
         # Register widgets with reference to plugin info
         # This also populates plugin_info.widgets
@@ -194,9 +198,9 @@ class PluginManager:
         return self._plugins
 
     def shutdown_all(self) -> None:
-        """Shutdown all plugins by calling shutdown on their contexts."""
+        """Shutdown all plugins by calling shutdown on their plugin instances."""
         for plugin_info in self._plugins.values():
             try:
-                plugin_info.context.shutdown()
+                plugin_info.plugin.shutdown()
             except Exception:
                 logger.exception(f"Error shutting down plugin {plugin_info.name}")

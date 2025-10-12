@@ -4,23 +4,23 @@ import pytest
 from pydantic import ValidationError
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
-from knoepfe_obs_plugin.context import OBSPluginContext
+from knoepfe_obs_plugin.plugin import OBSPlugin
 from knoepfe_obs_plugin.widgets.switch_scene import SwitchScene, SwitchSceneConfig
 
 
 @pytest.fixture
-def mock_context():
-    return OBSPluginContext(OBSPluginConfig())
+def mock_plugin():
+    return OBSPlugin(OBSPluginConfig())
 
 
 @pytest.fixture
-def switch_scene_widget(mock_context):
-    return SwitchScene(SwitchSceneConfig(scene="Gaming"), mock_context)
+def switch_scene_widget(mock_plugin):
+    return SwitchScene(SwitchSceneConfig(scene="Gaming"), mock_plugin)
 
 
-def test_switch_scene_init(mock_context):
+def test_switch_scene_init(mock_plugin):
     """Test SwitchScene widget initialization."""
-    widget = SwitchScene(SwitchSceneConfig(scene="Gaming"), mock_context)
+    widget = SwitchScene(SwitchSceneConfig(scene="Gaming"), mock_plugin)
     assert widget.config.scene == "Gaming"
     assert widget.relevant_events == [
         "ConnectionEstablished",
@@ -31,7 +31,7 @@ def test_switch_scene_init(mock_context):
 
 async def test_switch_scene_update_disconnected(switch_scene_widget):
     """Test update when disconnected."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
         key = MagicMock()
 
@@ -51,7 +51,7 @@ async def test_switch_scene_update_disconnected(switch_scene_widget):
 
 async def test_switch_scene_update_active(switch_scene_widget):
     """Test update when the configured scene is active."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Gaming"
         key = MagicMock()
@@ -72,7 +72,7 @@ async def test_switch_scene_update_active(switch_scene_widget):
 
 async def test_switch_scene_update_inactive(switch_scene_widget):
     """Test update when a different scene is active."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
         key = MagicMock()
@@ -93,7 +93,7 @@ async def test_switch_scene_update_inactive(switch_scene_widget):
 
 async def test_switch_scene_triggered_connected(switch_scene_widget):
     """Test triggered when connected switches to the scene."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.set_scene = AsyncMock()
 
@@ -104,7 +104,7 @@ async def test_switch_scene_triggered_connected(switch_scene_widget):
 
 async def test_switch_scene_triggered_disconnected(switch_scene_widget):
     """Test triggered when disconnected does nothing."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
         mock_obs.set_scene = AsyncMock()
 
@@ -115,7 +115,7 @@ async def test_switch_scene_triggered_disconnected(switch_scene_widget):
 
 async def test_switch_scene_triggered_long_press(switch_scene_widget):
     """Test triggered with long press (should behave the same as short press)."""
-    with patch.object(switch_scene_widget.context, "obs") as mock_obs:
+    with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.set_scene = AsyncMock()
 
@@ -124,7 +124,7 @@ async def test_switch_scene_triggered_long_press(switch_scene_widget):
         mock_obs.set_scene.assert_called_once_with("Gaming")
 
 
-async def test_switch_scene_update_with_custom_config(mock_context):
+async def test_switch_scene_update_with_custom_config(mock_plugin):
     """Test update with custom configuration."""
     config = SwitchSceneConfig(
         scene="Chatting",
@@ -132,9 +132,9 @@ async def test_switch_scene_update_with_custom_config(mock_context):
         active_color="green",
         inactive_color="gray",
     )
-    widget = SwitchScene(config, mock_context)
+    widget = SwitchScene(config, mock_plugin)
 
-    with patch.object(widget.context, "obs") as mock_obs:
+    with patch.object(widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
         key = MagicMock()
@@ -179,4 +179,4 @@ def test_switch_scene_config():
 def test_switch_scene_config_requires_scene():
     """Test that SwitchSceneConfig requires scene parameter."""
     with pytest.raises(ValidationError):
-        SwitchSceneConfig()
+        SwitchSceneConfig()  # type: ignore[call-arg]

@@ -3,23 +3,23 @@ from unittest.mock import MagicMock, patch
 from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
-from knoepfe_obs_plugin.context import OBSPluginContext
+from knoepfe_obs_plugin.plugin import OBSPlugin
 from knoepfe_obs_plugin.widgets.current_scene import CurrentScene, CurrentSceneConfig
 
 
 @fixture
-def mock_context():
-    return OBSPluginContext(OBSPluginConfig())
+def mock_plugin():
+    return OBSPlugin(OBSPluginConfig())
 
 
 @fixture
-def current_scene_widget(mock_context):
-    return CurrentScene(CurrentSceneConfig(), mock_context)
+def current_scene_widget(mock_plugin):
+    return CurrentScene(CurrentSceneConfig(), mock_plugin)
 
 
-def test_current_scene_init(mock_context):
+def test_current_scene_init(mock_plugin):
     """Test CurrentScene widget initialization."""
-    widget = CurrentScene(CurrentSceneConfig(), mock_context)
+    widget = CurrentScene(CurrentSceneConfig(), mock_plugin)
     assert widget.relevant_events == [
         "ConnectionEstablished",
         "ConnectionLost",
@@ -29,7 +29,7 @@ def test_current_scene_init(mock_context):
 
 async def test_current_scene_update_connected_with_scene(current_scene_widget):
     """Test update when connected with a current scene."""
-    with patch.object(current_scene_widget.context, "obs") as mock_obs:
+    with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Gaming"
         key = MagicMock()
@@ -50,7 +50,7 @@ async def test_current_scene_update_connected_with_scene(current_scene_widget):
 
 async def test_current_scene_update_connected_no_scene(current_scene_widget):
     """Test update when connected but no scene is set."""
-    with patch.object(current_scene_widget.context, "obs") as mock_obs:
+    with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = None
         key = MagicMock()
@@ -71,7 +71,7 @@ async def test_current_scene_update_connected_no_scene(current_scene_widget):
 
 async def test_current_scene_update_disconnected(current_scene_widget):
     """Test update when disconnected."""
-    with patch.object(current_scene_widget.context, "obs") as mock_obs:
+    with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
         key = MagicMock()
 
@@ -86,12 +86,12 @@ async def test_current_scene_update_disconnected(current_scene_widget):
         )
 
 
-async def test_current_scene_update_with_custom_config(mock_context):
+async def test_current_scene_update_with_custom_config(mock_plugin):
     """Test update with custom configuration."""
     config = CurrentSceneConfig(icon="🎬", connected_color="cyan")
-    widget = CurrentScene(config, mock_context)
+    widget = CurrentScene(config, mock_plugin)
 
-    with patch.object(widget.context, "obs") as mock_obs:
+    with patch.object(widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
         key = MagicMock()

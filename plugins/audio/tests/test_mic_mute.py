@@ -4,18 +4,18 @@ from pytest import fixture
 
 from knoepfe_audio_plugin.base import TASK_EVENT_LISTENER
 from knoepfe_audio_plugin.config import AudioPluginConfig
-from knoepfe_audio_plugin.context import AudioPluginContext
 from knoepfe_audio_plugin.mic_mute import MicMute, MicMuteConfig
+from knoepfe_audio_plugin.plugin import AudioPlugin
 
 
 @fixture
-def mock_context():
-    return AudioPluginContext(AudioPluginConfig())
+def mock_plugin():
+    return AudioPlugin(AudioPluginConfig())
 
 
 @fixture
-def mic_mute_widget(mock_context):
-    widget = MicMute(MicMuteConfig(), mock_context)
+def mic_mute_widget(mock_plugin):
+    widget = MicMute(MicMuteConfig(), mock_plugin)
 
     # Mock the TaskManager to avoid pytest warnings about unawaited tasks
     def mock_start_task(name, coro):
@@ -40,18 +40,17 @@ def mock_source():
     return source
 
 
-def test_mic_mute_init(mock_context):
+def test_mic_mute_init(mock_plugin):
     """Test MicMute widget initialization."""
-    widget = MicMute(MicMuteConfig(), mock_context)
-    assert widget.pulse == mock_context.pulse
+    widget = MicMute(MicMuteConfig(), mock_plugin)
+    assert widget.pulse == mock_plugin.pulse
     assert widget.tasks is not None
 
 
 async def test_mic_mute_activate(mic_mute_widget):
     """Test widget activation starts listener.
 
-    Note: PulseAudio connection is now managed by the plugin context lifecycle hooks,
-    not by individual widget activation.
+    Note: PulseAudio connection is managed by the plugin lifecycle hooks, not by individual widget activation.
     """
     await mic_mute_widget.activate()
 
@@ -180,7 +179,7 @@ def test_mic_mute_config():
 
 async def test_get_source_widget_config(mic_mute_widget):
     """Test get_source uses widget config source when specified."""
-    widget = MicMute(MicMuteConfig(source="widget_source"), mic_mute_widget.context)
+    widget = MicMute(MicMuteConfig(source="widget_source"), mic_mute_widget.plugin)
     mock_source = Mock()
 
     with patch.object(widget.pulse, "get_source", AsyncMock(return_value=mock_source)) as mock_get:
@@ -192,7 +191,7 @@ async def test_get_source_widget_config(mic_mute_widget):
 
 async def test_get_source_plugin_config(mic_mute_widget):
     """Test get_source falls back to plugin config default_source."""
-    mic_mute_widget.context.default_source = "plugin_source"
+    mic_mute_widget.plugin.default_source = "plugin_source"
     mock_source = Mock()
 
     with patch.object(mic_mute_widget.pulse, "get_source", AsyncMock(return_value=mock_source)) as mock_get:

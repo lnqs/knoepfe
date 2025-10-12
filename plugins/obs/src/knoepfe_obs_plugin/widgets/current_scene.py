@@ -2,7 +2,7 @@ from knoepfe.config.widget import WidgetConfig
 from knoepfe.core.key import Key
 from pydantic import Field
 
-from ..context import OBSPluginContext
+from ..plugin import OBSPlugin
 from .base import OBSWidget
 
 
@@ -28,21 +28,21 @@ class CurrentScene(OBSWidget[CurrentSceneConfig]):
         "CurrentProgramSceneChanged",
     ]
 
-    def __init__(self, config: CurrentSceneConfig, context: OBSPluginContext) -> None:
-        super().__init__(config, context)
+    def __init__(self, config: CurrentSceneConfig, plugin: OBSPlugin) -> None:
+        super().__init__(config, plugin)
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:
             renderer.clear()
-            if self.context.obs.connected:
+            if self.plugin.obs.connected:
                 color = self.config.connected_color or self.config.color
                 renderer.icon_and_text(
                     self.config.icon,
-                    self.context.obs.current_scene or "[none]",
+                    self.plugin.obs.current_scene or "[none]",
                     icon_size=64,
                     text_size=16,
                     icon_color=color,
                     text_color=color,
                 )
             else:
-                renderer.icon(self.config.icon, size=64, color=self.context.disconnected_color)
+                renderer.icon(self.config.icon, size=64, color=self.plugin.disconnected_color)

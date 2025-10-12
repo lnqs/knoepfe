@@ -1,9 +1,9 @@
-"""Context container for OBS plugin."""
+"""OBS plugin instance for knoepfe."""
 
 import logging
 from typing import TYPE_CHECKING
 
-from knoepfe.plugins import PluginContext
+from knoepfe.plugins import Plugin
 
 from .config import OBSPluginConfig
 from .connector import OBS
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class OBSPluginContext(PluginContext):
-    """Context container for OBS plugin widgets.
+class OBSPlugin(Plugin):
+    """OBS plugin instance for knoepfe.
 
     Provides shared state and resources for all OBS widgets, including
     a single OBS WebSocket connection that is shared across all widgets.

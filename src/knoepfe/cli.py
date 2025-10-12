@@ -133,8 +133,8 @@ def plugins_info(plugin_name: str) -> None:
     click.echo(f"Name: {plugin.name}")
     click.echo(f"Version: {plugin.version}")
     click.echo(f"Description: {plugin.description}")
-    click.echo(f"Class: {plugin.plugin_class.__name__}")
-    click.echo(f"Module: {plugin.plugin_class.__module__}")
+    click.echo(f"Class: {plugin.descriptor_class.__name__}")
+    click.echo(f"Module: {plugin.descriptor_class.__module__}")
 
     click.echo(f"\nWidgets ({len(plugin.widgets)}):")
     if plugin.widgets:

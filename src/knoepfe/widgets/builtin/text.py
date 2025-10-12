@@ -2,7 +2,7 @@ from pydantic import Field
 
 from ...config.widget import WidgetConfig
 from ...core.key import Key
-from ...plugins.context import PluginContext
+from ...plugins.plugin import Plugin
 from ..base import Widget
 
 
@@ -12,12 +12,12 @@ class TextConfig(WidgetConfig):
     text: str = Field(..., description="Text to display")
 
 
-class Text(Widget[TextConfig, PluginContext]):
+class Text(Widget[TextConfig, Plugin]):
     name = "Text"
     description = "Display static text"
 
-    def __init__(self, config: TextConfig, context: PluginContext) -> None:
-        super().__init__(config, context)
+    def __init__(self, config: TextConfig, plugin: Plugin) -> None:
+        super().__init__(config, plugin)
 
     async def update(self, key: Key) -> None:
         with key.renderer() as renderer:

@@ -4,7 +4,7 @@ from knoepfe.config.widget import WidgetConfig
 from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
-from knoepfe_obs_plugin.context import OBSPluginContext
+from knoepfe_obs_plugin.plugin import OBSPlugin
 from knoepfe_obs_plugin.widgets.base import TASK_EVENT_LISTENER, OBSWidget
 
 
@@ -27,13 +27,13 @@ class MockOBSWidget(OBSWidget[MockWidgetConfig]):
 
 
 @fixture
-def mock_context():
-    return OBSPluginContext(OBSPluginConfig())
+def mock_plugin():
+    return OBSPlugin(OBSPluginConfig())
 
 
 @fixture
-def obs_widget(mock_context):
-    widget = MockOBSWidget(MockWidgetConfig(), mock_context)
+def obs_widget(mock_plugin):
+    widget = MockOBSWidget(MockWidgetConfig(), mock_plugin)
 
     # Mock the TaskManager to avoid pytest warnings about unawaited tasks
     def mock_start_task(name, coro):
@@ -49,8 +49,8 @@ def obs_widget(mock_context):
     return widget
 
 
-def test_obs_widget_init(mock_context):
-    widget = MockOBSWidget(MockWidgetConfig(), mock_context)
+def test_obs_widget_init(mock_plugin):
+    widget = MockOBSWidget(MockWidgetConfig(), mock_plugin)
     assert widget.relevant_events == ["TestEvent"]
     assert widget.tasks is not None
 
@@ -58,8 +58,7 @@ def test_obs_widget_init(mock_context):
 async def test_obs_widget_activate(obs_widget):
     """Test widget activation starts listener.
 
-    Note: OBS connection is now managed by the plugin context lifecycle hooks,
-    not by individual widget activation.
+    Note: OBS connection is managed by the plugin lifecycle hooks, not by individual widget activation.
     """
     await obs_widget.activate()
 
@@ -83,7 +82,7 @@ async def test_obs_widget_deactivate(obs_widget):
 
 async def test_obs_widget_listener_relevant_event(obs_widget):
     with patch.object(obs_widget, "request_update") as mock_request_update:
-        with patch.object(obs_widget.context, "obs") as mock_obs:
+        with patch.object(obs_widget.plugin, "obs") as mock_obs:
             # Mock async iterator
             async def mock_listen():
                 yield "TestEvent"
@@ -103,7 +102,7 @@ async def test_obs_widget_listener_connection_events(obs_widget):
     with (
         patch.object(obs_widget, "acquire_wake_lock") as mock_acquire,
         patch.object(obs_widget, "release_wake_lock") as mock_release,
-        patch.object(obs_widget.context, "obs") as mock_obs,
+        patch.object(obs_widget.plugin, "obs") as mock_obs,
     ):
         # Test ConnectionEstablished
         async def mock_listen_established():

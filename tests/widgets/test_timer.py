@@ -3,20 +3,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from knoepfe.config.plugin import EmptyPluginConfig
-from knoepfe.plugins import PluginContext
+from knoepfe.plugins import Plugin
 from knoepfe.widgets.builtin.timer import Timer, TimerConfig
 
 
 @pytest.fixture
-def context():
-    """Create a plugin context for testing."""
+def plugin():
+    """Create a plugin instance for testing."""
     config = EmptyPluginConfig()
-    return PluginContext(config)
+    return Plugin(config)
 
 
-async def test_timer_idle_with_defaults(context) -> None:
+async def test_timer_idle_with_defaults(plugin) -> None:
     """Test that Timer displays icon when idle with default configuration."""
-    widget = Timer(TimerConfig(), context)
+    widget = Timer(TimerConfig(), plugin)
 
     # Mock key
     key = MagicMock()
@@ -34,9 +34,9 @@ async def test_timer_idle_with_defaults(context) -> None:
     )
 
 
-async def test_timer_idle_with_custom_icon_and_color(context) -> None:
+async def test_timer_idle_with_custom_icon_and_color(plugin) -> None:
     """Test that Timer uses custom icon and base color when idle."""
-    widget = Timer(TimerConfig(icon="⏱️", color="#00ff00"), context)
+    widget = Timer(TimerConfig(icon="⏱️", color="#00ff00"), plugin)
 
     # Mock key
     key = MagicMock()
@@ -49,9 +49,9 @@ async def test_timer_idle_with_custom_icon_and_color(context) -> None:
     renderer.icon.assert_called_once_with("⏱️", size=86, color="#00ff00")
 
 
-async def test_timer_running_with_custom_font_and_color(context) -> None:
+async def test_timer_running_with_custom_font_and_color(plugin) -> None:
     """Test that Timer uses custom font and color when running."""
-    widget = Timer(TimerConfig(font="monospace:style=Bold", running_color="#00ff00"), context)
+    widget = Timer(TimerConfig(font="monospace:style=Bold", running_color="#00ff00"), plugin)
 
     # Set timer to running state
     with patch("knoepfe.widgets.builtin.timer.time.monotonic", return_value=100.0):
@@ -73,9 +73,9 @@ async def test_timer_running_with_custom_font_and_color(context) -> None:
     assert call_args[1]["anchor"] == "mm"
 
 
-async def test_timer_stopped_with_custom_color(context) -> None:
+async def test_timer_stopped_with_custom_color(plugin) -> None:
     """Test that Timer uses custom stopped color when stopped."""
-    widget = Timer(TimerConfig(font="sans:style=Bold", stopped_color="#ff00ff"), context)
+    widget = Timer(TimerConfig(font="sans:style=Bold", stopped_color="#ff00ff"), plugin)
 
     # Set timer to stopped state
     widget.start = 95.0
@@ -96,9 +96,9 @@ async def test_timer_stopped_with_custom_color(context) -> None:
     assert call_args[1]["anchor"] == "mm"
 
 
-async def test_timer_start_stop_reset_cycle(context) -> None:
+async def test_timer_start_stop_reset_cycle(plugin) -> None:
     """Test the complete timer lifecycle: start, stop, reset."""
-    widget = Timer(TimerConfig(), context)
+    widget = Timer(TimerConfig(), plugin)
     widget.request_periodic_update = MagicMock()
     widget.stop_periodic_update = MagicMock()
     widget.request_update = MagicMock()
@@ -130,9 +130,9 @@ async def test_timer_start_stop_reset_cycle(context) -> None:
     assert widget.stop_periodic_update.call_count == 1
 
 
-async def test_timer_deactivate_cleanup(context) -> None:
+async def test_timer_deactivate_cleanup(plugin) -> None:
     """Test that deactivate preserves timer state for running timers."""
-    widget = Timer(TimerConfig(), context)
+    widget = Timer(TimerConfig(), plugin)
     widget.release_wake_lock = MagicMock()
 
     # Test 1: Timer is running - state should be preserved, wake lock kept

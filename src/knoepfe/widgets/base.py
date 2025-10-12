@@ -10,9 +10,9 @@ from ..utils.wakelock import WakeLock
 from .actions import SwitchDeckAction, WidgetAction
 
 if TYPE_CHECKING:
-    from ..plugins.context import PluginContext
+    from ..plugins.plugin import Plugin
 
-TPluginContext = TypeVar("TPluginContext", bound="PluginContext")
+TPlugin = TypeVar("TPlugin", bound="Plugin")
 TConfig = TypeVar("TConfig", bound="WidgetConfig")
 
 # Task name constants
@@ -20,25 +20,25 @@ TASK_PERIODIC_UPDATE = "periodic_update"
 TASK_LONG_PRESS = "long_press"
 
 
-class Widget(ABC, Generic[TConfig, TPluginContext]):
+class Widget(ABC, Generic[TConfig, TPlugin]):
     """Base widget class with strongly typed configuration.
 
     Widgets should specify their config type as the first generic parameter
-    and their plugin context type as the second generic parameter.
+    and their plugin instance type as the second generic parameter.
     """
 
     name: str
     description: str | None = None
 
-    def __init__(self, config: TConfig, context: TPluginContext) -> None:
+    def __init__(self, config: TConfig, plugin: TPlugin) -> None:
         """Initialize widget with typed configuration.
 
         Args:
             config: Validated widget configuration
-            context: Plugin context container
+            plugin: Plugin instance
         """
         self.config = config
-        self.context = context
+        self.plugin = plugin
 
         # Runtime state
         self.update_requested_event: Event | None = None

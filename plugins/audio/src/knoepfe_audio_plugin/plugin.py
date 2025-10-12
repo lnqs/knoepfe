@@ -1,9 +1,9 @@
-"""Context container for audio plugin."""
+"""Audio plugin instance for knoepfe."""
 
 import logging
 from typing import TYPE_CHECKING
 
-from knoepfe.plugins import PluginContext
+from knoepfe.plugins import Plugin
 
 from .config import AudioPluginConfig
 from .connector import PulseAudioConnector
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class AudioPluginContext(PluginContext):
-    """Context container for audio plugin widgets.
+class AudioPlugin(Plugin):
+    """Audio plugin instance for knoepfe.
 
     Provides shared state and resources for all audio widgets, including
     a single PulseAudio connection that is shared across all widgets.
@@ -30,7 +30,7 @@ class AudioPluginContext(PluginContext):
     """
 
     def __init__(self, config: AudioPluginConfig):
-        """Initialize the audio plugin context.
+        """Initialize the audio plugin instance.
 
         Args:
             config: Plugin configuration containing default_source and other settings.

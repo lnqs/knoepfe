@@ -150,5 +150,5 @@ def create_widget(spec: WidgetSpec, plugin_manager: "PluginManager") -> "Widget"
     # Create and validate typed config from spec
     config = widget_info.config_type(**spec.config)
 
-    # Instantiate widget with validated config and context
-    return widget_info.widget_class(config, widget_info.plugin_info.context)
+    # Instantiate widget with validated config and plugin instance
+    return widget_info.widget_class(config, widget_info.plugin_info.plugin)

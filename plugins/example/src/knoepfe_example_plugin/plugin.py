@@ -1,9 +1,9 @@
-"""Context container for example plugin."""
+"""Example plugin instance for knoepfe."""
 
 import logging
 from typing import TYPE_CHECKING
 
-from knoepfe.plugins import PluginContext
+from knoepfe.plugins import Plugin
 
 from .config import ExamplePluginConfig
 
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ExamplePluginContext(PluginContext):
-    """Context container for example plugin widgets.
+class ExamplePlugin(Plugin):
+    """Example plugin instance for knoepfe.
 
     This example demonstrates the lifecycle hooks that plugins can use
     to be notified when widgets are activated or deactivated.
@@ -27,7 +27,7 @@ class ExamplePluginContext(PluginContext):
         self.total_clicks = 0
 
     async def on_widget_activate(self, widget: "Widget") -> None:
-        """Called when a widget using this context is activated.
+        """Called when a widget using this plugin is activated.
 
         This is called BEFORE the widget's activate() method.
         Use this for lazy initialization of shared resources.
@@ -47,7 +47,7 @@ class ExamplePluginContext(PluginContext):
             )
 
     async def on_widget_deactivate(self, widget: "Widget") -> None:
-        """Called when a widget using this context is deactivated.
+        """Called when a widget using this plugin is deactivated.
 
         This is called AFTER the widget's deactivate() method.
         Use this for cleanup when the last widget deactivates.

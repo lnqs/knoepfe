@@ -5,7 +5,7 @@ from pydantic import Field
 
 from ...config.widget import WidgetConfig
 from ...core.key import Key
-from ...plugins.context import PluginContext
+from ...plugins.plugin import Plugin
 from ..base import Widget
 
 
@@ -22,12 +22,12 @@ class TimerConfig(WidgetConfig):
     stopped_color: str = Field(default="red", description="Text color when timer is stopped")
 
 
-class Timer(Widget[TimerConfig, PluginContext]):
+class Timer(Widget[TimerConfig, Plugin]):
     name = "Timer"
     description = "Start/stop timer with elapsed time display"
 
-    def __init__(self, config: TimerConfig, context: PluginContext) -> None:
-        super().__init__(config, context)
+    def __init__(self, config: TimerConfig, plugin: Plugin) -> None:
+        super().__init__(config, plugin)
         self.start: float | None = None
         self.stop: float | None = None
 

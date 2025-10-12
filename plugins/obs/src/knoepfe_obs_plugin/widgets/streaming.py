@@ -4,7 +4,7 @@ from knoepfe.config.widget import WidgetConfig
 from knoepfe.core.key import Key
 from pydantic import Field
 
-from ..context import OBSPluginContext
+from ..plugin import OBSPlugin
 from .base import OBSWidget
 
 
@@ -37,31 +37,31 @@ class Streaming(OBSWidget[StreamingConfig]):
         "StreamStateChanged",
     ]
 
-    def __init__(self, config: StreamingConfig, context: OBSPluginContext) -> None:
-        super().__init__(config, context)
+    def __init__(self, config: StreamingConfig, plugin: OBSPlugin) -> None:
+        super().__init__(config, plugin)
         self.streaming = False
         self.show_help = False
         self.show_loading = False
 
     async def update(self, key: Key) -> None:
-        if self.context.obs.streaming != self.streaming:
-            if self.context.obs.streaming:
+        if self.plugin.obs.streaming != self.streaming:
+            if self.plugin.obs.streaming:
                 self.request_periodic_update(1.0)
             else:
                 self.stop_periodic_update()
-            self.streaming = self.context.obs.streaming
+            self.streaming = self.plugin.obs.streaming
 
         with key.renderer() as renderer:
             renderer.clear()
             if self.show_loading:
                 self.show_loading = False
                 renderer.icon(self.config.loading_icon, size=86)
-            elif not self.context.obs.connected:
-                renderer.icon(self.config.stopped_icon, size=86, color=self.context.disconnected_color)
+            elif not self.plugin.obs.connected:
+                renderer.icon(self.config.stopped_icon, size=86, color=self.plugin.disconnected_color)
             elif self.show_help:
                 renderer.text_wrapped("long press\nto toggle", size=16)
-            elif self.context.obs.streaming:
-                timecode = (await self.context.obs.get_streaming_timecode() or "").rsplit(".", 1)[0]
+            elif self.plugin.obs.streaming:
+                timecode = (await self.plugin.obs.get_streaming_timecode() or "").rsplit(".", 1)[0]
                 renderer.icon_and_text(
                     self.config.streaming_icon,
                     timecode,
@@ -75,13 +75,13 @@ class Streaming(OBSWidget[StreamingConfig]):
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:
-            if not self.context.obs.connected:
+            if not self.plugin.obs.connected:
                 return
 
-            if self.context.obs.streaming:
-                await self.context.obs.stop_streaming()
+            if self.plugin.obs.streaming:
+                await self.plugin.obs.stop_streaming()
             else:
-                await self.context.obs.start_streaming()
+                await self.plugin.obs.start_streaming()
 
             self.show_loading = True
             self.request_update()

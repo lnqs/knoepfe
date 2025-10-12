@@ -11,11 +11,11 @@ class TaskManager:
     """Manages background tasks with automatic lifecycle management.
 
     This class provides a unified API for creating and managing background tasks
-    in both widgets (per-widget tasks) and plugin contexts (plugin-wide tasks).
+    in both widgets (per-widget tasks) and plugins (plugin-wide tasks).
 
     Tasks are automatically cleaned up when cleanup() is called:
     - For widgets: cleanup() is called in widget.deactivate()
-    - For plugins: cleanup() is called in context.shutdown()
+    - For plugins: cleanup() is called in plugin.shutdown()
 
     Features:
     - Named tasks for easy identification
@@ -35,8 +35,8 @@ class TaskManager:
 
         # Automatic cleanup on deactivate - no code needed!
 
-    Example (Plugin Context):
-        # In context __init__
+    Example (Plugin):
+        # In plugin __init__
         self.tasks = TaskManager()
 
         # In connector connect()
@@ -130,7 +130,7 @@ class TaskManager:
 
         This is called automatically:
         - For widgets: When widget.deactivate() is called
-        - For plugins: When context.shutdown() is called
+        - For plugins: When plugin.shutdown() is called
 
         Example:
             # Called automatically by Widget.deactivate()

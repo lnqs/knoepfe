@@ -33,7 +33,7 @@ class PulseAudioConnector:
         """Initialize the PulseAudio connector.
 
         Args:
-            tasks: TaskManager from plugin context for managing background tasks.
+            tasks: TaskManager from plugin instance for managing background tasks.
         """
         self.tasks = tasks
         self.pulse: PulseAsync | None = None

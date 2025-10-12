@@ -6,8 +6,8 @@ import pytest
 from pydantic import ValidationError
 
 from knoepfe_example_plugin.config import ExamplePluginConfig
-from knoepfe_example_plugin.context import ExamplePluginContext
 from knoepfe_example_plugin.example_widget import ExampleWidget, ExampleWidgetConfig
+from knoepfe_example_plugin.plugin import ExamplePlugin
 
 
 class TestExampleWidget:
@@ -16,9 +16,9 @@ class TestExampleWidget:
     def test_init_with_defaults(self):
         """Test widget initialization with default configuration."""
         widget_config = ExampleWidgetConfig()
-        context = ExamplePluginContext(ExamplePluginConfig())
+        plugin = ExamplePlugin(ExamplePluginConfig())
 
-        widget = ExampleWidget(widget_config, context)
+        widget = ExampleWidget(widget_config, plugin)
 
         assert widget._click_count == 0
         assert widget.config.message == "Example"  # Default value
@@ -26,17 +26,17 @@ class TestExampleWidget:
     def test_init_with_custom_config(self):
         """Test widget initialization with custom configuration."""
         widget_config = ExampleWidgetConfig(message="Custom Message")
-        context = ExamplePluginContext(ExamplePluginConfig())
+        plugin = ExamplePlugin(ExamplePluginConfig())
 
-        widget = ExampleWidget(widget_config, context)
+        widget = ExampleWidget(widget_config, plugin)
 
         assert widget.config.message == "Custom Message"
 
     @pytest.mark.asyncio
     async def test_activate_resets_click_count(self):
         """Test that activate resets the click count."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
         widget._click_count = 5
 
         await widget.activate()
@@ -46,8 +46,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_deactivate(self):
         """Test deactivate method."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
 
         # Should not raise any exceptions
         await widget.deactivate()
@@ -55,8 +55,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_with_defaults(self):
         """Test update method with default configuration."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -75,8 +75,8 @@ class TestExampleWidget:
     async def test_update_with_custom_config(self):
         """Test update method with custom configuration."""
         widget_config = ExampleWidgetConfig(message="Hello")
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(widget_config, context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(widget_config, plugin)
 
         # Mock the key and renderer
         mock_renderer = Mock()
@@ -93,8 +93,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_update_after_clicks(self):
         """Test update method after some clicks."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
         widget._click_count = 3
 
         # Mock the key and renderer
@@ -112,8 +112,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_down_increments_counter(self):
         """Test that key down increments click counter."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
         widget.request_update = Mock()  # Mock the request_update method
 
         initial_count = widget._click_count
@@ -126,8 +126,8 @@ class TestExampleWidget:
     @pytest.mark.asyncio
     async def test_on_key_up(self):
         """Test key up handler."""
-        context = ExamplePluginContext(ExamplePluginConfig())
-        widget = ExampleWidget(ExampleWidgetConfig(), context)
+        plugin = ExamplePlugin(ExamplePluginConfig())
+        widget = ExampleWidget(ExampleWidgetConfig(), plugin)
 
         # Should not raise any exceptions
         await widget.on_key_up()
@@ -146,4 +146,4 @@ class TestExampleWidget:
         """Test that invalid configuration raises validation error."""
         # Invalid configuration (wrong type)
         with pytest.raises(ValidationError):
-            ExampleWidgetConfig(message=123)  # Should be string
+            ExampleWidgetConfig(message=123)  # type: ignore[arg-type]  # Should be string

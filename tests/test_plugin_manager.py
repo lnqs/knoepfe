@@ -7,7 +7,7 @@ from pydantic import Field
 
 from knoepfe.config.plugin import EmptyPluginConfig, PluginConfig
 from knoepfe.config.widget import EmptyConfig
-from knoepfe.plugins.context import PluginContext
+from knoepfe.plugins.descriptor import PluginDescriptor
 from knoepfe.plugins.manager import PluginManager
 from knoepfe.plugins.plugin import Plugin
 from knoepfe.widgets.base import Widget
@@ -19,7 +19,7 @@ class MockWidgetConfig(EmptyConfig):
     pass
 
 
-class MockWidget(Widget[MockWidgetConfig, PluginContext]):
+class MockWidget(Widget[MockWidgetConfig, Plugin]):
     name = "MockWidget"
     description = "A mock widget for testing"
 
@@ -27,32 +27,32 @@ class MockWidget(Widget[MockWidgetConfig, PluginContext]):
         pass
 
 
-class MockWidgetNoSchema(Widget[EmptyConfig, PluginContext]):
+class MockWidgetNoSchema(Widget[EmptyConfig, Plugin]):
     name = "MockWidgetNoSchema"
 
     async def update(self, key):
         pass
 
 
-class MockPluginConfig(PluginConfig):
+class MockPluginDescriptorConfig(PluginConfig):
     """Config for mock plugin."""
 
     test_config: str = Field(default="default", description="Test configuration")
 
 
-class MockPlugin(Plugin[MockPluginConfig, PluginContext]):
+class MockPluginDescriptor(PluginDescriptor[MockPluginDescriptorConfig, Plugin]):
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return [MockWidget, MockWidgetNoSchema]
 
 
-class MockPlugin1(Plugin[EmptyPluginConfig, PluginContext]):
+class MockPluginDescriptor1(PluginDescriptor[EmptyPluginConfig, Plugin]):
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return []
 
 
-class MockPlugin2(Plugin[EmptyPluginConfig, PluginContext]):
+class MockPluginDescriptor2(PluginDescriptor[EmptyPluginConfig, Plugin]):
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return []
@@ -64,7 +64,7 @@ def test_plugin_manager_init():
         # Mock plugin entry points
         mock_ep1 = Mock()
         mock_ep1.name = "test"
-        mock_ep1.load.return_value = MockPlugin
+        mock_ep1.load.return_value = MockPluginDescriptor
         # Mock the distribution object properly
         mock_dist = Mock()
         mock_dist.name = "test-package"
@@ -103,13 +103,13 @@ def test_plugin_manager_load_plugins_with_error():
             mock_logger.exception.assert_called_once()
 
 
-def test_plugin_manager_get_context():
-    """Test getting plugin context successfully."""
+def test_plugin_manager_get_plugin():
+    """Test getting plugin instance successfully."""
     with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
+        mock_ep.load.return_value = MockPluginDescriptor
         mock_dist = Mock()
         mock_dist.name = "test-package"
         mock_dist.version = "1.0.0"
@@ -119,8 +119,8 @@ def test_plugin_manager_get_context():
 
         pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
-        retrieved_context = pm.plugins["test_plugin"].context
-        assert isinstance(retrieved_context, PluginContext)
+        retrieved_plugin = pm.plugins["test_plugin"].plugin
+        assert isinstance(retrieved_plugin, Plugin)
 
 
 def test_plugin_manager_get_nonexistent_plugin():
@@ -137,7 +137,7 @@ def test_plugin_manager_list_plugins():
         # Mock two plugin entry points
         mock_ep1 = Mock()
         mock_ep1.name = "plugin1"
-        mock_ep1.load.return_value = MockPlugin1
+        mock_ep1.load.return_value = MockPluginDescriptor1
         mock_dist1 = Mock()
         mock_dist1.name = "plugin1-package"
         mock_dist1.version = "1.0.0"
@@ -146,7 +146,7 @@ def test_plugin_manager_list_plugins():
 
         mock_ep2 = Mock()
         mock_ep2.name = "plugin2"
-        mock_ep2.load.return_value = MockPlugin2
+        mock_ep2.load.return_value = MockPluginDescriptor2
         mock_dist2 = Mock()
         mock_dist2.name = "plugin2-package"
         mock_dist2.version = "1.0.0"
@@ -174,7 +174,7 @@ def test_plugin_manager_register_plugin():
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
+        mock_ep.load.return_value = MockPluginDescriptor
         mock_dist = Mock()
         mock_dist.name = "test-package"
         mock_dist.version = "1.0.0"
@@ -186,9 +186,9 @@ def test_plugin_manager_register_plugin():
 
         assert "test_plugin" in pm.plugins
         # Verify plugin info contains the plugin class
-        assert pm.plugins["test_plugin"].plugin_class == MockPlugin
-        # Verify context was created
-        assert isinstance(pm.plugins["test_plugin"].context, PluginContext)
+        assert pm.plugins["test_plugin"].descriptor_class == MockPluginDescriptor
+        # Verify plugin was created
+        assert isinstance(pm.plugins["test_plugin"].plugin, Plugin)
 
         # Check that plugin widgets are available from plugin manager
         assert "MockWidget" in pm.widgets
@@ -201,7 +201,7 @@ def test_plugin_manager_register_duplicate_plugin():
         # Mock two entry points with the same name (shouldn't happen in practice)
         mock_ep1 = Mock()
         mock_ep1.name = "test_plugin"
-        mock_ep1.load.return_value = MockPlugin
+        mock_ep1.load.return_value = MockPluginDescriptor
         mock_dist1 = Mock()
         mock_dist1.name = "test-package-1"
         mock_dist1.version = "1.0.0"
@@ -210,7 +210,7 @@ def test_plugin_manager_register_duplicate_plugin():
 
         mock_ep2 = Mock()
         mock_ep2.name = "test_plugin"  # Same name
-        mock_ep2.load.return_value = MockPlugin
+        mock_ep2.load.return_value = MockPluginDescriptor
         mock_dist2 = Mock()
         mock_dist2.name = "test-package-2"
         mock_dist2.version = "1.0.0"
@@ -233,7 +233,7 @@ def test_plugin_manager_register_plugin_with_duplicate_widget():
             # Mock two plugins with the same widget names
             mock_ep1 = Mock()
             mock_ep1.name = "plugin1"
-            mock_ep1.load.return_value = MockPlugin
+            mock_ep1.load.return_value = MockPluginDescriptor
             mock_dist1 = Mock()
             mock_dist1.name = "plugin1-package"
             mock_dist1.version = "1.0.0"
@@ -242,7 +242,7 @@ def test_plugin_manager_register_plugin_with_duplicate_widget():
 
             mock_ep2 = Mock()
             mock_ep2.name = "plugin2"
-            mock_ep2.load.return_value = MockPlugin  # Same widgets
+            mock_ep2.load.return_value = MockPluginDescriptor  # Same widgets
             mock_dist2 = Mock()
             mock_dist2.name = "plugin2-package"
             mock_dist2.version = "1.0.0"
@@ -267,7 +267,7 @@ def test_plugin_manager_shutdown_all():
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
+        mock_ep.load.return_value = MockPluginDescriptor
         mock_dist = Mock()
         mock_dist.name = "test-package"
         mock_dist.version = "1.0.0"
@@ -277,12 +277,12 @@ def test_plugin_manager_shutdown_all():
 
         pm = PluginManager({"test_plugin": {"test_config": "value"}})
 
-        # Get the plugin context and mock its shutdown method
-        context = pm.plugins["test_plugin"].context
-        context.shutdown = Mock()
+        # Get the plugin instance and mock its shutdown method
+        plugin = pm.plugins["test_plugin"].plugin
+        plugin.shutdown = Mock()
 
         pm.shutdown_all()
-        context.shutdown.assert_called_once()
+        plugin.shutdown.assert_called_once()
 
 
 def test_plugin_manager_disabled_plugin():
@@ -292,7 +292,7 @@ def test_plugin_manager_disabled_plugin():
             # Mock plugin entry point
             mock_ep = Mock()
             mock_ep.name = "test_plugin"
-            mock_ep.load.return_value = MockPlugin
+            mock_ep.load.return_value = MockPluginDescriptor
             mock_dist = Mock()
             mock_dist.name = "test-package"
             mock_dist.version = "1.0.0"
@@ -320,7 +320,7 @@ def test_plugin_manager_enabled_plugin_explicit():
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
+        mock_ep.load.return_value = MockPluginDescriptor
         mock_dist = Mock()
         mock_dist.name = "test-package"
         mock_dist.version = "1.0.0"
@@ -345,7 +345,7 @@ def test_plugin_manager_enabled_by_default():
         # Mock plugin entry point
         mock_ep = Mock()
         mock_ep.name = "test_plugin"
-        mock_ep.load.return_value = MockPlugin
+        mock_ep.load.return_value = MockPluginDescriptor
         mock_dist = Mock()
         mock_dist.name = "test-package"
         mock_dist.version = "1.0.0"
@@ -370,7 +370,7 @@ def test_plugin_manager_mixed_enabled_disabled():
         # Mock two plugin entry points
         mock_ep1 = Mock()
         mock_ep1.name = "enabled_plugin"
-        mock_ep1.load.return_value = MockPlugin1
+        mock_ep1.load.return_value = MockPluginDescriptor1
         mock_dist1 = Mock()
         mock_dist1.name = "enabled-package"
         mock_dist1.version = "1.0.0"
@@ -379,7 +379,7 @@ def test_plugin_manager_mixed_enabled_disabled():
 
         mock_ep2 = Mock()
         mock_ep2.name = "disabled_plugin"
-        mock_ep2.load.return_value = MockPlugin2
+        mock_ep2.load.return_value = MockPluginDescriptor2
         mock_dist2 = Mock()
         mock_dist2.name = "disabled-package"
         mock_dist2.version = "1.0.0"

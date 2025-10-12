@@ -5,7 +5,7 @@ from knoepfe.core.key import Key
 from knoepfe.widgets import Widget
 from pydantic import Field
 
-from .context import ExamplePluginContext
+from .plugin import ExamplePlugin
 
 
 class ExampleWidgetConfig(WidgetConfig):
@@ -14,7 +14,7 @@ class ExampleWidgetConfig(WidgetConfig):
     message: str = Field(default="Example", description="Message to display")
 
 
-class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePluginContext]):
+class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
     """A minimal example widget that demonstrates the basic structure of a knoepfe widget.
 
     This widget displays a customizable message and changes appearance when clicked.
@@ -24,14 +24,14 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePluginContext]):
     name = "ExampleWidget"
     description = "Interactive example widget with click counter"
 
-    def __init__(self, config: ExampleWidgetConfig, context: ExamplePluginContext) -> None:
+    def __init__(self, config: ExampleWidgetConfig, plugin: ExamplePlugin) -> None:
         """Initialize the ExampleWidget.
 
         Args:
             config: Widget-specific configuration
-            context: Example plugin context for sharing data
+            plugin: Example plugin instance for sharing data between widgets and access to TaskManager
         """
-        super().__init__(config, context)
+        super().__init__(config, plugin)
 
         # Internal state to track clicks
         self._click_count = 0
@@ -84,9 +84,9 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePluginContext]):
         self._click_count += 1
 
         # Also increment the shared plugin counter
-        total_clicks = self.context.increment_clicks()
+        total_clicks = self.plugin.increment_clicks()
 
-        # Log the shared context for demonstration
+        # Log the shared plugin state for demonstration
         print(f"Widget clicked {self._click_count} times, total across all widgets: {total_clicks}")
 
         # Request an update to show the new state

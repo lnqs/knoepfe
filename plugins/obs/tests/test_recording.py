@@ -3,29 +3,29 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
-from knoepfe_obs_plugin.context import OBSPluginContext
+from knoepfe_obs_plugin.plugin import OBSPlugin
 from knoepfe_obs_plugin.widgets.recording import Recording, RecordingConfig
 
 
 @fixture
-def mock_context():
-    return OBSPluginContext(OBSPluginConfig())
+def mock_plugin():
+    return OBSPlugin(OBSPluginConfig())
 
 
 @fixture
-def recording_widget(mock_context):
-    return Recording(RecordingConfig(), mock_context)
+def recording_widget(mock_plugin):
+    return Recording(RecordingConfig(), mock_plugin)
 
 
-def test_recording_init(mock_context):
-    widget = Recording(RecordingConfig(), mock_context)
+def test_recording_init(mock_plugin):
+    widget = Recording(RecordingConfig(), mock_plugin)
     assert not widget.recording
     assert not widget.show_help
     assert not widget.show_loading
 
 
 async def test_recording_update_disconnected(recording_widget):
-    with patch.object(recording_widget.context, "obs") as mock_obs:
+    with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
         key = MagicMock()
 
@@ -41,7 +41,7 @@ async def test_recording_update_disconnected(recording_widget):
 
 
 async def test_recording_update_not_recording(recording_widget):
-    with patch.object(recording_widget.context, "obs") as mock_obs:
+    with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.recording = False
         key = MagicMock()
@@ -58,7 +58,7 @@ async def test_recording_update_not_recording(recording_widget):
 
 
 async def test_recording_update_recording(recording_widget):
-    with patch.object(recording_widget.context, "obs") as mock_obs:
+    with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.recording = True
         mock_obs.get_recording_timecode = AsyncMock(return_value="00:01:23.456")
@@ -81,7 +81,7 @@ async def test_recording_update_recording(recording_widget):
 
 
 async def test_recording_update_show_help(recording_widget):
-    with patch.object(recording_widget.context, "obs") as mock_obs:
+    with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.recording = False
         mock_obs.connected = True
         recording_widget.show_help = True
@@ -95,7 +95,7 @@ async def test_recording_update_show_help(recording_widget):
 
 
 async def test_recording_update_show_loading(recording_widget):
-    with patch.object(recording_widget.context, "obs") as mock_obs:
+    with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.recording = False
         recording_widget.show_loading = True
         key = MagicMock()

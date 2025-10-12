@@ -5,7 +5,7 @@ from pydantic import Field
 from ...config.base import BaseConfig
 from ...config.widget import WidgetConfig
 from ...core.key import Key
-from ...plugins.context import PluginContext
+from ...plugins.plugin import Plugin
 from ..base import Widget
 
 
@@ -32,12 +32,12 @@ class ClockConfig(WidgetConfig):
     interval: float = Field(default=1.0, description="Update interval in seconds")
 
 
-class Clock(Widget[ClockConfig, PluginContext]):
+class Clock(Widget[ClockConfig, Plugin]):
     name = "Clock"
     description = "Display current time with flexible segment-based layout"
 
-    def __init__(self, config: ClockConfig, context: PluginContext) -> None:
-        super().__init__(config, context)
+    def __init__(self, config: ClockConfig, plugin: Plugin) -> None:
+        super().__init__(config, plugin)
         self.last_time = ""
 
     async def activate(self) -> None:

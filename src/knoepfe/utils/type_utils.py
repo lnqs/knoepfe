@@ -20,11 +20,11 @@ def extract_generic_arg(cls: type, base_class: Type[T], arg_index: int = 0) -> T
         TypeError: If the type argument cannot be found or is invalid
 
     Example:
-        class MyWidget(Widget[TextConfig, PluginContext]):
+        class MyWidget(Widget[TextConfig, Plugin]):
             pass
 
         config_type = extract_generic_arg(MyWidget, WidgetConfig, 0)  # Returns TextConfig
-        context_type = extract_generic_arg(MyWidget, PluginContext, 1)   # Returns PluginContext
+        plugin_type = extract_generic_arg(MyWidget, Plugin, 1)   # Returns Plugin
     """
     if hasattr(cls, "__orig_bases__"):
         for base in cls.__orig_bases__:  # type: ignore

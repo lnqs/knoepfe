@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.widgets import Widget
 
-from .context import AudioPluginContext
+from .plugin import AudioPlugin
 
 TConfig = TypeVar("TConfig", bound=WidgetConfig)
 
@@ -13,7 +13,7 @@ TConfig = TypeVar("TConfig", bound=WidgetConfig)
 TASK_EVENT_LISTENER = "event_listener"
 
 
-class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
+class AudioWidget(Widget[TConfig, AudioPlugin], Generic[TConfig]):
     """Base class for audio widgets with shared PulseAudio connection.
 
     Subclasses should define `relevant_events` with event types they care about.
@@ -23,13 +23,13 @@ class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
 
     @property
     def pulse(self):
-        """Get the shared PulseAudio connector from context."""
-        return self.context.pulse
+        """Get the shared PulseAudio connector from plugin."""
+        return self.plugin.pulse
 
     async def activate(self) -> None:
         """Start event listener.
 
-        The PulseAudio connection is managed by the plugin context and is
+        The PulseAudio connection is managed by the plugin instance and is
         established when the first widget activates.
         """
         self.tasks.start_task(TASK_EVENT_LISTENER, self.listener())
@@ -60,7 +60,7 @@ class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
 
             # Fall back to plugin default
             if not source_name:
-                source_name = self.context.default_source
+                source_name = self.plugin.default_source
 
         # Use system default if still no source specified
         if not source_name:

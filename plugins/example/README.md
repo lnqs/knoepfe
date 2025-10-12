@@ -153,9 +153,8 @@ plugins/example/
 ├── pyproject.toml                     # Package configuration
 ├── src/
 │   └── knoepfe_example_plugin/
-│       ├── __init__.py               # Package initialization
-│       ├── plugin.py                 # Plugin class with state management
-│       ├── plugin_state.py           # Custom plugin state (optional)
+│       ├── __init__.py               # Package initialization & plugin descriptor
+│       ├── plugin.py                 # Plugin instance with state management
 │       └── example_widget.py        # Widget implementation
 └── tests/
     └── test_example_widget.py       # Unit tests (optional)

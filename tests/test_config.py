@@ -75,7 +75,7 @@ def test_load_config_file_not_found():
 
 def test_global_config_device_defaults():
     """Test that device config has proper defaults."""
-    config = GlobalConfig(decks={"main": DeckConfig(name="main", widgets=[])})
+    config = GlobalConfig(decks={"main": DeckConfig(name="main", widgets=[])})  # type: ignore[call-arg]
 
     assert config.device.brightness == 100
     assert config.device.sleep_timeout == 10.0
@@ -86,8 +86,8 @@ def test_global_config_device_defaults():
 def test_device_config_with_serial_number():
     """Test that device config accepts serial number."""
     config = GlobalConfig(
-        device=DeviceConfig(serial_number="ABC123"),
-        decks={"main": DeckConfig(name="main", widgets=[])},
+        device=DeviceConfig(serial_number="ABC123"),  # type: ignore[call-arg]
+        decks={"main": DeckConfig(name="main", widgets=[])},  # type: ignore[call-arg]
     )
     assert config.device.serial_number == "ABC123"
 
@@ -96,18 +96,18 @@ def test_global_config_validation():
     """Test GlobalConfig validation."""
     # Valid config
     config = GlobalConfig(
-        device=DeviceConfig(brightness=50),
-        decks={"main": DeckConfig(name="main", widgets=[])},
+        device=DeviceConfig(brightness=50),  # type: ignore[call-arg]
+        decks={"main": DeckConfig(name="main", widgets=[])},  # type: ignore[call-arg]
     )
     assert config.device.brightness == 50
 
     # Invalid brightness
     with pytest.raises(ValidationError):
         GlobalConfig(
-            device=DeviceConfig(brightness=150),
-            decks={"main": DeckConfig(name="main", widgets=[])},
+            device=DeviceConfig(brightness=150),  # type: ignore[call-arg]
+            decks={"main": DeckConfig(name="main", widgets=[])},  # type: ignore[call-arg]
         )
 
     # Missing main deck
     with pytest.raises(ValidationError):
-        GlobalConfig(decks={"other": DeckConfig(name="other", widgets=[])})
+        GlobalConfig(decks={"other": DeckConfig(name="other", widgets=[])})  # type: ignore[call-arg]

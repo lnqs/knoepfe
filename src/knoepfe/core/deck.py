@@ -90,8 +90,8 @@ class Deck:
             widget.update_requested_event = update_requested_event
             widget.wake_lock = wake_lock
 
-        # Notify plugin contexts before widget activation
-        await asyncio.gather(*[w.context.on_widget_activate(w) for w in self.widgets])
+        # Notify plugins before widget activation
+        await asyncio.gather(*[w.plugin.on_widget_activate(w) for w in self.widgets])
 
         # Activate widgets
         await asyncio.gather(*[w.activate() for w in self.widgets])
@@ -105,8 +105,8 @@ class Deck:
         # Deactivate widgets first
         await asyncio.gather(*[w.deactivate() for w in self.widgets])
 
-        # Notify plugin contexts after widget deactivation
-        await asyncio.gather(*[w.context.on_widget_deactivate(w) for w in self.widgets])
+        # Notify plugins after widget deactivation
+        await asyncio.gather(*[w.plugin.on_widget_deactivate(w) for w in self.widgets])
 
     async def update(self, device: StreamDeck, force: bool = False) -> None:
         async def update_widget(w: Widget, i: int) -> None:

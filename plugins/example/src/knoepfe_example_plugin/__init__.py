@@ -5,18 +5,18 @@ A minimal example plugin demonstrating how to create widgets for knoepfe.
 
 from typing import Type
 
-from knoepfe.plugins import Plugin
+from knoepfe.plugins import PluginDescriptor
 from knoepfe.widgets import Widget
 
 from .config import ExamplePluginConfig
-from .context import ExamplePluginContext
 from .example_widget import ExampleWidget
+from .plugin import ExamplePlugin
 
 __version__ = "0.1.0"
 
 
-class ExamplePlugin(Plugin[ExamplePluginConfig, ExamplePluginContext]):
-    """Example plugin demonstrating knoepfe plugin development."""
+class ExamplePluginDescriptor(PluginDescriptor[ExamplePluginConfig, ExamplePlugin]):
+    """Example plugin descriptor demonstrating knoepfe plugin development."""
 
     description = "Example plugin demonstrating knoepfe widget development"
 
