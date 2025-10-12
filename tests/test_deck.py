@@ -13,6 +13,10 @@ def create_mock_widget(index: int | None = None) -> Mock:
     widget = Mock(spec=Widget)
     widget.config = Mock()
     widget.config.index = index
+    # Add mock context with lifecycle methods
+    widget.context = Mock()
+    widget.context.on_widget_activate = AsyncMock()
+    widget.context.on_widget_deactivate = AsyncMock()
     return widget
 
 

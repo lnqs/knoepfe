@@ -48,15 +48,17 @@ def test_mic_mute_init(mock_context):
 
 
 async def test_mic_mute_activate(mic_mute_widget):
-    """Test widget activation connects to PulseAudio and starts listener."""
-    with patch.object(mic_mute_widget.context.pulse, "connect", AsyncMock()) as mock_connect:
-        await mic_mute_widget.activate()
+    """Test widget activation starts listener.
 
-        mock_connect.assert_called_once()
-        mic_mute_widget.tasks.start_task.assert_called_once()
-        # Verify the task name is correct
-        call_args = mic_mute_widget.tasks.start_task.call_args
-        assert call_args[0][0] == TASK_EVENT_LISTENER
+    Note: PulseAudio connection is now managed by the plugin context lifecycle hooks,
+    not by individual widget activation.
+    """
+    await mic_mute_widget.activate()
+
+    mic_mute_widget.tasks.start_task.assert_called_once()
+    # Verify the task name is correct
+    call_args = mic_mute_widget.tasks.start_task.call_args
+    assert call_args[0][0] == TASK_EVENT_LISTENER
 
 
 async def test_mic_mute_deactivate(mic_mute_widget):

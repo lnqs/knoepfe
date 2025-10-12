@@ -27,8 +27,11 @@ class AudioWidget(Widget[TConfig, AudioPluginContext], Generic[TConfig]):
         return self.context.pulse
 
     async def activate(self) -> None:
-        """Connect to PulseAudio and start event listener."""
-        await self.pulse.connect()
+        """Start event listener.
+
+        The PulseAudio connection is managed by the plugin context and is
+        established when the first widget activates.
+        """
         self.tasks.start_task(TASK_EVENT_LISTENER, self.listener())
 
     async def listener(self) -> None:

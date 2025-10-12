@@ -17,7 +17,11 @@ class OBSWidget(Widget[TConfig, OBSPluginContext], Generic[TConfig]):
     relevant_events: list[str] = []
 
     async def activate(self) -> None:
-        await self.context.obs.connect()
+        """Start event listener.
+
+        The OBS connection is managed by the plugin context and is
+        established when the first widget activates.
+        """
         self.tasks.start_task(TASK_EVENT_LISTENER, self.listener())
 
     async def listener(self) -> None:

@@ -56,17 +56,17 @@ def test_obs_widget_init(mock_context):
 
 
 async def test_obs_widget_activate(obs_widget):
-    with patch.object(obs_widget.context, "obs") as mock_obs:
-        mock_obs.connect = AsyncMock()
+    """Test widget activation starts listener.
 
-        await obs_widget.activate()
+    Note: OBS connection is now managed by the plugin context lifecycle hooks,
+    not by individual widget activation.
+    """
+    await obs_widget.activate()
 
-        # OBS connect is called without arguments (config is in OBS __init__)
-        mock_obs.connect.assert_called_once_with()
-        obs_widget.tasks.start_task.assert_called_once()
-        # Verify the task name is correct
-        call_args = obs_widget.tasks.start_task.call_args
-        assert call_args[0][0] == TASK_EVENT_LISTENER
+    obs_widget.tasks.start_task.assert_called_once()
+    # Verify the task name is correct
+    call_args = obs_widget.tasks.start_task.call_args
+    assert call_args[0][0] == TASK_EVENT_LISTENER
 
 
 async def test_obs_widget_deactivate(obs_widget):
