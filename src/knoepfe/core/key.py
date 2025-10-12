@@ -69,6 +69,10 @@ class Renderer:
         if size:
             img = img.resize(size, Image.Resampling.LANCZOS)
 
+        # Handle palette mode images with transparency
+        if img.mode == "P" and "transparency" in img.info:
+            img = img.convert("RGBA")
+
         if img.mode in ("RGBA", "LA"):
             self.canvas.paste(img, position, img)
         else:
