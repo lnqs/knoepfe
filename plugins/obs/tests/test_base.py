@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 from knoepfe.config.widget import WidgetConfig
+from knoepfe.rendering import Renderer
+from knoepfe.widgets.actions import UpdateResult
 from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
@@ -19,8 +21,8 @@ class MockOBSWidget(OBSWidget[MockWidgetConfig]):
 
     relevant_events = ["TestEvent"]
 
-    async def update(self, key):
-        pass
+    async def update(self, renderer: Renderer) -> UpdateResult:
+        return UpdateResult.UPDATED
 
     async def triggered(self, long_press=False):
         pass
