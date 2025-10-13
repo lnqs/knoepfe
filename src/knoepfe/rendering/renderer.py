@@ -12,15 +12,17 @@ from .font_manager import FontManager
 class Renderer:
     """Renderer with both primitive operations and convenience methods."""
 
-    def __init__(self, default_text_font: str) -> None:
-        """Initialize renderer with default font.
+    def __init__(self, default_text_font: str, default_icons_font: str) -> None:
+        """Initialize renderer with default fonts.
 
         Args:
-            default_text_font: Default font pattern for text and icons (e.g., "RobotoMono Nerd Font")
+            default_text_font: Default font pattern for text (e.g., "Roboto")
+            default_icons_font: Default font pattern for icons (e.g., "RobotoMono Nerd Font")
         """
         self.canvas = Image.new("RGB", (96, 96), color="black")
         self._draw = ImageDraw.Draw(self.canvas)
         self.default_text_font = default_text_font
+        self.default_icons_font = default_icons_font
 
     # ========== Primitive Operations ==========
 
@@ -163,10 +165,10 @@ class Renderer:
             size: Icon size
             color: Icon color
             position: Optional (x, y) position, defaults to center (48, 48)
-            font: Font to use for icon (defaults to config default_text_font)
+            font: Font to use for icon (defaults to config default_icons_font)
         """
         if font is None:
-            font = self.default_text_font
+            font = self.default_icons_font
         if position is None:
             position = (48, 48)
 
@@ -227,12 +229,12 @@ class Renderer:
             text_size: Size of text
             icon_color: Color of icon
             text_color: Color of text
-            icon_font: Font for icon (defaults to config default_text_font)
+            icon_font: Font for icon (defaults to config default_icons_font)
             text_font: Font for text (defaults to config default_text_font)
             spacing: Pixels between icon and text
         """
         if icon_font is None:
-            icon_font = self.default_text_font
+            icon_font = self.default_icons_font
         if text_font is None:
             text_font = self.default_text_font
 

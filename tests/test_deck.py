@@ -219,12 +219,13 @@ async def test_deck_update_respects_indices() -> None:
 
 
 async def test_deck_passes_default_font_to_renderer() -> None:
-    """Test that Deck.update() passes the default font from global config to Renderer instances."""
+    """Test that Deck.update() passes the default fonts from global config to Renderer instances."""
     device: StreamDeck = MagicMock(key_count=Mock(return_value=10))
 
-    # Create a global config with a custom default font
-    custom_font = "CustomFont Nerd Font"
-    device_config = DeviceConfig(default_text_font=custom_font)
+    # Create a global config with custom default fonts
+    custom_text_font = "CustomFont"
+    custom_icons_font = "CustomFont Nerd Font"
+    device_config = DeviceConfig(default_text_font=custom_text_font, default_icons_font=custom_icons_font)
     global_config = GlobalConfig(device=device_config)
 
     # Create a widget
@@ -241,8 +242,8 @@ async def test_deck_passes_default_font_to_renderer() -> None:
 
         await deck.update(device, force=True)
 
-        # Verify Renderer was created with the correct default font
-        MockRenderer.assert_called_once_with(custom_font)
+        # Verify Renderer was created with the correct default fonts
+        MockRenderer.assert_called_once_with(custom_text_font, custom_icons_font)
 
         # Verify the widget's update method was called with the renderer
         widget.update.assert_called_once_with(mock_renderer_instance)

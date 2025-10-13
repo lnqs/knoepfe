@@ -116,7 +116,10 @@ class Deck:
                 logger.debug(f"Updating widget on key {i}")
 
                 # Create renderer and let widget draw
-                renderer = Renderer(self.global_config.device.default_text_font)
+                renderer = Renderer(
+                    self.global_config.device.default_text_font,
+                    self.global_config.device.default_icons_font,
+                )
                 result = await w.update(renderer)
 
                 # Only push to device if widget actually rendered

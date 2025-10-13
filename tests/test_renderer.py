@@ -22,7 +22,7 @@ def mock_fontconfig_system():
 
 
 def test_renderer_text() -> None:
-    renderer = Renderer("RobotoMono Nerd Font")
+    renderer = Renderer("Roboto", "RobotoMono Nerd Font")
     with patch.object(renderer, "_draw") as mock_draw:
         with mock_fontconfig_system():
             renderer.text((48, 48), "Blubb")
@@ -31,7 +31,7 @@ def test_renderer_text() -> None:
 
 def test_renderer_draw_text() -> None:
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test basic text rendering
@@ -46,7 +46,7 @@ def test_renderer_draw_text() -> None:
 
 def test_renderer_convenience_methods() -> None:
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test icon method
@@ -61,7 +61,7 @@ def test_renderer_convenience_methods() -> None:
 def test_renderer_image_method() -> None:
     """Test the image convenience method."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         # Mock the draw_image method to verify it's called correctly
         with patch.object(renderer, "draw_image") as mock_draw_image:
@@ -83,7 +83,7 @@ def test_renderer_image_method() -> None:
 def test_renderer_image_method_custom_size() -> None:
     """Test image method with custom size."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "draw_image") as mock_draw_image:
             mock_draw_image.return_value = renderer
@@ -99,7 +99,7 @@ def test_renderer_image_method_custom_size() -> None:
 def test_renderer_image_method_custom_position() -> None:
     """Test image method with custom position."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "draw_image") as mock_draw_image:
             mock_draw_image.return_value = renderer
@@ -115,7 +115,7 @@ def test_renderer_image_method_custom_position() -> None:
 def test_renderer_image_method_with_pil_image() -> None:
     """Test image method with PIL Image object instead of path."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         # Create a mock PIL Image object
         from PIL import Image
@@ -187,7 +187,7 @@ def test_renderer_fontconfig_integration() -> None:
         # Override for Ubuntu font
         mocks["fontconfig"].query.return_value = ["/path/to/ubuntu.ttf"]
 
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test text with fontconfig pattern
@@ -204,7 +204,7 @@ def test_renderer_fontconfig_integration() -> None:
 def test_renderer_text_at() -> None:
     """Test Renderer text_at method."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             renderer.text((10, 20), "Positioned", font="monospace", anchor="la")
@@ -218,7 +218,7 @@ def test_renderer_text_at() -> None:
 def test_renderer_backward_compatibility() -> None:
     """Test that existing code without font parameter still works."""
     with mock_fontconfig_system():
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test with default font (should use Roboto)
@@ -236,7 +236,7 @@ def test_renderer_unicode_icons() -> None:
         # Override for Material Icons font
         mocks["fontconfig"].query.return_value = ["/path/to/materialicons.ttf"]
 
-        renderer = Renderer("RobotoMono Nerd Font")
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
             # Test Unicode icon with Nerd Font
