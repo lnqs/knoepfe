@@ -75,14 +75,13 @@ async def test_mic_mute_deactivate(mic_mute_widget):
 async def test_mic_mute_update_muted(mic_mute_widget, mock_source):
     """Test update renders muted icon when source is muted."""
     mock_source.mute = True
-    key = MagicMock()
+    renderer = MagicMock()
 
     with patch.object(mic_mute_widget, "get_source", AsyncMock(return_value=mock_source)):
-        await mic_mute_widget.update(key)
+        await mic_mute_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰍭",  # nf-md-microphone_off
             size=86,
             color="white",
@@ -92,14 +91,13 @@ async def test_mic_mute_update_muted(mic_mute_widget, mock_source):
 async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
     """Test update renders unmuted icon when source is unmuted."""
     mock_source.mute = False
-    key = MagicMock()
+    renderer = MagicMock()
 
     with patch.object(mic_mute_widget, "get_source", AsyncMock(return_value=mock_source)):
-        await mic_mute_widget.update(key)
+        await mic_mute_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰍬",  # nf-md-microphone
             size=86,
             color="red",
@@ -108,13 +106,14 @@ async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
 
 async def test_mic_mute_update_no_source(mic_mute_widget):
     """Test update handles missing source gracefully."""
-    key = MagicMock()
+    renderer = MagicMock()
 
     with patch.object(mic_mute_widget, "get_source", AsyncMock(return_value=None)):
-        await mic_mute_widget.update(key)
+        await mic_mute_widget.update(renderer)
 
         # Should return early without rendering
-        key.renderer.assert_not_called()
+        renderer.clear.assert_not_called()
+        renderer.icon.assert_not_called()
 
 
 async def test_mic_mute_triggered(mic_mute_widget, mock_source):

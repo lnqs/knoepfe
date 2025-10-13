@@ -27,13 +27,12 @@ def test_streaming_init(mock_plugin):
 async def test_streaming_update_disconnected(streaming_widget):
     with patch.object(streaming_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await streaming_widget.update(key)
+        await streaming_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰄘",  # nf-md-cast
             size=86,
             color="#202020",
@@ -44,13 +43,12 @@ async def test_streaming_update_not_streaming(streaming_widget):
     with patch.object(streaming_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.streaming = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await streaming_widget.update(key)
+        await streaming_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰄘",  # nf-md-cast
             size=86,
             color="white",
@@ -63,14 +61,13 @@ async def test_streaming_update_streaming(streaming_widget):
         mock_obs.streaming = True
         mock_obs.get_streaming_timecode = AsyncMock(return_value="00:01:23.456")
         streaming_widget.streaming = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await streaming_widget.update(key)
+        await streaming_widget.update(renderer)
 
         # Check icon_and_text call for the streaming state
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰄘",  # nf-md-cast
             "00:01:23",  # timecode without milliseconds
             icon_size=64,
@@ -85,26 +82,24 @@ async def test_streaming_update_show_help(streaming_widget):
         mock_obs.streaming = False
         mock_obs.connected = True
         streaming_widget.show_help = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await streaming_widget.update(key)
+        await streaming_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.text_wrapped.assert_called_with("long press\nto toggle", size=16)
+        renderer.clear.assert_called_once()
+        renderer.text_wrapped.assert_called_with("long press\nto toggle", size=16)
 
 
 async def test_streaming_update_show_loading(streaming_widget):
     with patch.object(streaming_widget.plugin, "obs") as mock_obs:
         mock_obs.streaming = False
         streaming_widget.show_loading = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await streaming_widget.update(key)
+        await streaming_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰔟",  # nf-md-timer_sand
             size=86,
         )

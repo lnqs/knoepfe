@@ -10,6 +10,7 @@ from knoepfe.config.widget import EmptyConfig
 from knoepfe.plugins.descriptor import PluginDescriptor
 from knoepfe.plugins.manager import PluginManager
 from knoepfe.plugins.plugin import Plugin
+from knoepfe.widgets.actions import UpdateResult
 from knoepfe.widgets.base import Widget
 
 
@@ -24,15 +25,15 @@ class MockWidget(Widget[MockWidgetConfig, Plugin]):
 
     name = "MockWidget"
 
-    async def update(self, key):
-        pass
+    async def update(self, renderer) -> UpdateResult:
+        return UpdateResult.UPDATED
 
 
 class MockWidgetNoSchema(Widget[EmptyConfig, Plugin]):
     name = "MockWidgetNoSchema"
 
-    async def update(self, key):
-        pass
+    async def update(self, renderer) -> UpdateResult:
+        return UpdateResult.UPDATED
 
 
 class MockPluginDescriptorConfig(PluginConfig):

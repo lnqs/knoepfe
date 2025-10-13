@@ -4,8 +4,9 @@ from pydantic import Field
 
 from ...config.base import BaseConfig
 from ...config.widget import WidgetConfig
-from ...core.key import Key
 from ...plugins.plugin import Plugin
+from ...rendering import Renderer
+from ..actions import UpdateResult
 from ..base import Widget
 
 
@@ -65,41 +66,43 @@ class Clock(Widget[ClockConfig, Plugin]):
 
         return best_size
 
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> UpdateResult:
         now = datetime.now()
 
         # Generate current time string for all segments to check if update needed
         current_time = "".join(now.strftime(seg.format) for seg in self.config.segments)
 
+        # Skip rendering if time hasn't changed
         if current_time == self.last_time:
-            return
+            return UpdateResult.UNCHANGED
 
         self.last_time = current_time
 
-        with key.renderer() as renderer:
-            renderer.clear()
+        renderer.clear()
 
-            for segment in self.config.segments:
-                # Get text for this segment
-                text = now.strftime(segment.format)
+        for segment in self.config.segments:
+            # Get text for this segment
+            text = now.strftime(segment.format)
 
-                # Determine font and color (segment-specific or widget default)
-                font = segment.font or self.config.font
-                color = segment.color or self.config.color
+            # Determine font and color (segment-specific or widget default)
+            font = segment.font or self.config.font
+            color = segment.color or self.config.color
 
-                # Calculate optimal font size to fit within segment bounds
-                font_size = self._calculate_font_size(text, font, segment.width, segment.height, renderer)
+            # Calculate optimal font size to fit within segment bounds
+            font_size = self._calculate_font_size(text, font, segment.width, segment.height, renderer)
 
-                # Calculate center position of segment
-                center_x = segment.x + segment.width // 2
-                center_y = segment.y + segment.height // 2
+            # Calculate center position of segment
+            center_x = segment.x + segment.width // 2
+            center_y = segment.y + segment.height // 2
 
-                # Render text at segment position
-                renderer.text(
-                    (center_x, center_y),
-                    text,
-                    font=font,
-                    size=font_size,
-                    color=color,
-                    anchor=segment.anchor,
-                )
+            # Render text at segment position
+            renderer.text(
+                (center_x, center_y),
+                text,
+                font=font,
+                size=font_size,
+                color=color,
+                anchor=segment.anchor,
+            )
+
+        return UpdateResult.UPDATED

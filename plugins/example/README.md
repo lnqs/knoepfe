@@ -86,7 +86,7 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
     async def deactivate(self) -> None:
         # Called when widget becomes inactive
         
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> None:
         # Render the widget display
         
     async def pressed(self) -> None:
@@ -122,14 +122,14 @@ class ExampleWidgetConfig(WidgetConfig):
     message: str = Field(default="Example", description="The text message to display")
 ```
 
-### 5. Rendering with Key Renderer
+### 5. Rendering with Renderer
 
-Use the key renderer context manager to draw the widget:
+Use the renderer to draw the widget:
 
 ```python
-async def update(self, key: Key) -> None:
-    with key.renderer() as renderer:
-        renderer.text('Hello World')
+async def update(self, renderer: Renderer) -> None:
+    renderer.clear()
+    renderer.text((48, 48), 'Hello World', anchor='mm')
 ```
 
 ### 6. State Management
@@ -236,8 +236,8 @@ For simple plugins that don't need shared state, use the base `Plugin` class dir
 
 ### Rendering
 
-- Use `key.renderer()` context manager for drawing
-- Use `renderer.text()` for text display
+- The `renderer` is passed directly to `update()` method
+- Use `renderer.text()`, `renderer.icon()`, etc. for drawing
 - Call `self.request_update()` to trigger re-rendering
 
 ## Testing

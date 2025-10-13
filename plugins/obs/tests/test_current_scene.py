@@ -32,13 +32,12 @@ async def test_current_scene_update_connected_with_scene(current_scene_widget):
     with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Gaming"
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await current_scene_widget.update(key)
+        await current_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰏜",  # nf-md-panorama
             "Gaming",
             icon_size=64,
@@ -53,13 +52,12 @@ async def test_current_scene_update_connected_no_scene(current_scene_widget):
     with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = None
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await current_scene_widget.update(key)
+        await current_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰏜",  # nf-md-panorama
             "[none]",
             icon_size=64,
@@ -73,13 +71,12 @@ async def test_current_scene_update_disconnected(current_scene_widget):
     """Test update when disconnected."""
     with patch.object(current_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await current_scene_widget.update(key)
+        await current_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰏜",  # nf-md-panorama
             size=64,
             color="#202020",
@@ -94,13 +91,12 @@ async def test_current_scene_update_with_custom_config(mock_plugin):
     with patch.object(widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await widget.update(key)
+        await widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "🎬",
             "Chatting",
             icon_size=64,

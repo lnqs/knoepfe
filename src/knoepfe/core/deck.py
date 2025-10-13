@@ -3,13 +3,14 @@ import logging
 from asyncio import Event
 
 from StreamDeck.Devices.StreamDeck import StreamDeck
+from StreamDeck.ImageHelpers import PILHelper
 
 from ..config import ConfigError
 from ..config.models import GlobalConfig
+from ..rendering import Renderer
 from ..utils.wakelock import WakeLock
-from ..widgets.actions import WidgetAction
+from ..widgets.actions import UpdateResult, WidgetAction
 from ..widgets.base import Widget
-from .key import Key
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,19 @@ class Deck:
             # Only update widgets that fit on the device
             if i < device.key_count() and (force or w.needs_update):
                 logger.debug(f"Updating widget on key {i}")
-                await w.update(Key(device, i, self.global_config))
+
+                # Create renderer and let widget draw
+                renderer = Renderer(self.global_config.device.default_text_font)
+                result = await w.update(renderer)
+
+                # Only push to device if widget actually rendered
+                if result != UpdateResult.UPDATED:
+                    return
+
+                image = PILHelper.to_native_format(device, renderer.canvas)
+                with device:
+                    device.set_key_image(i, image)
+
                 w.needs_update = False
 
         await asyncio.gather(*[update_widget(widget, index) for index, widget in enumerate(self.widgets)])

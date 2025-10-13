@@ -58,16 +58,12 @@ class TestExampleWidget:
         plugin = ExamplePlugin(ExamplePluginConfig())
         widget = ExampleWidget(ExampleWidgetConfig(), plugin)
 
-        # Mock the key and renderer
+        # Mock the renderer
         mock_renderer = Mock()
-        mock_key = Mock()
-        mock_key.renderer.return_value.__enter__ = Mock(return_value=mock_renderer)
-        mock_key.renderer.return_value.__exit__ = Mock(return_value=None)
 
-        await widget.update(mock_key)
+        await widget.update(mock_renderer)
 
         # Verify renderer was called
-        mock_key.renderer.assert_called_once()
         mock_renderer.clear.assert_called_once()
         mock_renderer.text_wrapped.assert_called_once_with("Example\nClick me!")
 
@@ -78,13 +74,10 @@ class TestExampleWidget:
         plugin = ExamplePlugin(ExamplePluginConfig())
         widget = ExampleWidget(widget_config, plugin)
 
-        # Mock the key and renderer
+        # Mock the renderer
         mock_renderer = Mock()
-        mock_key = Mock()
-        mock_key.renderer.return_value.__enter__ = Mock(return_value=mock_renderer)
-        mock_key.renderer.return_value.__exit__ = Mock(return_value=None)
 
-        await widget.update(mock_key)
+        await widget.update(mock_renderer)
 
         # Verify renderer was called with custom values
         mock_renderer.clear.assert_called_once()
@@ -97,13 +90,10 @@ class TestExampleWidget:
         widget = ExampleWidget(ExampleWidgetConfig(), plugin)
         widget._click_count = 3
 
-        # Mock the key and renderer
+        # Mock the renderer
         mock_renderer = Mock()
-        mock_key = Mock()
-        mock_key.renderer.return_value.__enter__ = Mock(return_value=mock_renderer)
-        mock_key.renderer.return_value.__exit__ = Mock(return_value=None)
 
-        await widget.update(mock_key)
+        await widget.update(mock_renderer)
 
         # Verify renderer shows click count
         mock_renderer.clear.assert_called_once()

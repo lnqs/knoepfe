@@ -1,8 +1,9 @@
 from pydantic import Field
 
 from ...config.widget import WidgetConfig
-from ...core.key import Key
 from ...plugins.plugin import Plugin
+from ...rendering import Renderer
+from ..actions import UpdateResult
 from ..base import Widget
 
 
@@ -20,11 +21,11 @@ class Text(Widget[TextConfig, Plugin]):
     def __init__(self, config: TextConfig, plugin: Plugin) -> None:
         super().__init__(config, plugin)
 
-    async def update(self, key: Key) -> None:
-        with key.renderer() as renderer:
-            renderer.clear()
-            renderer.text_wrapped(
-                self.config.text,
-                font=self.config.font,
-                color=self.config.color,
-            )
+    async def update(self, renderer: Renderer) -> UpdateResult:
+        renderer.clear()
+        renderer.text_wrapped(
+            self.config.text,
+            font=self.config.font,
+            color=self.config.color,
+        )
+        return UpdateResult.UPDATED

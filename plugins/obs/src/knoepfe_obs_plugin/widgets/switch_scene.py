@@ -1,5 +1,6 @@
 from knoepfe.config.widget import WidgetConfig
-from knoepfe.core.key import Key
+from knoepfe.rendering import Renderer
+from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
 from ..plugin import OBSPlugin
@@ -34,7 +35,7 @@ class SwitchScene(OBSWidget[SwitchSceneConfig]):
     def __init__(self, config: SwitchSceneConfig, plugin: OBSPlugin) -> None:
         super().__init__(config, plugin)
 
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> UpdateResult:
         if not self.plugin.obs.connected:
             color = self.plugin.disconnected_color
         elif self.plugin.obs.current_scene == self.config.scene:
@@ -42,16 +43,17 @@ class SwitchScene(OBSWidget[SwitchSceneConfig]):
         else:
             color = self.config.inactive_color or self.config.color
 
-        with key.renderer() as renderer:
-            renderer.clear()
-            renderer.icon_and_text(
-                self.config.icon,
-                self.config.scene,
-                icon_size=64,
-                text_size=16,
-                icon_color=color,
-                text_color=color,
-            )
+        renderer.clear()
+        renderer.icon_and_text(
+            self.config.icon,
+            self.config.scene,
+            icon_size=64,
+            text_size=16,
+            icon_color=color,
+            text_color=color,
+        )
+
+        return UpdateResult.UPDATED
 
     async def triggered(self, long_press: bool = False) -> None:
         if self.plugin.obs.connected:

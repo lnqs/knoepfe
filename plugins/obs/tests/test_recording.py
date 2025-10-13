@@ -27,13 +27,12 @@ def test_recording_init(mock_plugin):
 async def test_recording_update_disconnected(recording_widget):
     with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await recording_widget.update(key)
+        await recording_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰕨",  # nf-md-video_off
             size=86,
             color="#202020",
@@ -44,13 +43,12 @@ async def test_recording_update_not_recording(recording_widget):
     with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.recording = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await recording_widget.update(key)
+        await recording_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰕨",  # nf-md-video_off
             size=86,
             color="white",
@@ -63,14 +61,13 @@ async def test_recording_update_recording(recording_widget):
         mock_obs.recording = True
         mock_obs.get_recording_timecode = AsyncMock(return_value="00:01:23.456")
         recording_widget.recording = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await recording_widget.update(key)
+        await recording_widget.update(renderer)
 
         # Check icon_and_text call for the recording state
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰕧",  # nf-md-video
             "00:01:23",  # timecode without milliseconds
             icon_size=64,
@@ -85,26 +82,24 @@ async def test_recording_update_show_help(recording_widget):
         mock_obs.recording = False
         mock_obs.connected = True
         recording_widget.show_help = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await recording_widget.update(key)
+        await recording_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.text_wrapped.assert_called_with("long press\nto toggle", size=16)
+        renderer.clear.assert_called_once()
+        renderer.text_wrapped.assert_called_with("long press\nto toggle", size=16)
 
 
 async def test_recording_update_show_loading(recording_widget):
     with patch.object(recording_widget.plugin, "obs") as mock_obs:
         mock_obs.recording = False
         recording_widget.show_loading = True
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await recording_widget.update(key)
+        await recording_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon.assert_called_with(
             "󰔟",  # nf-md-timer_sand
             size=86,
         )

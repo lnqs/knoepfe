@@ -1,26 +1,26 @@
+"""Renderer for Stream Deck key displays."""
+
 import textwrap
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Union
+from typing import Union
 
 from PIL import Image, ImageDraw, ImageFont
-from StreamDeck.Devices.StreamDeck import StreamDeck
-from StreamDeck.ImageHelpers import PILHelper
 
-from ..config.models import GlobalConfig
-from ..rendering.font_manager import FontManager
+from .font_manager import FontManager
 
 
 class Renderer:
     """Renderer with both primitive operations and convenience methods."""
 
-    def __init__(self, config: GlobalConfig) -> None:
+    def __init__(self, default_text_font: str) -> None:
+        """Initialize renderer with default font.
+
+        Args:
+            default_text_font: Default font pattern for text and icons (e.g., "RobotoMono Nerd Font")
+        """
         self.canvas = Image.new("RGB", (96, 96), color="black")
         self._draw = ImageDraw.Draw(self.canvas)
-        self.config = config
-
-        # Get default font from config (Nerd Font contains both text and icons)
-        self.default_text_font = config.device.default_text_font
+        self.default_text_font = default_text_font
 
     # ========== Primitive Operations ==========
 
@@ -332,19 +332,3 @@ class Renderer:
             self.text((48, line_y), line, font=font, size=size, color=color, anchor="mt")
 
         return self
-
-
-class Key:
-    def __init__(self, device: StreamDeck, index: int, config: GlobalConfig) -> None:
-        self.device = device
-        self.index = index
-        self.config = config
-
-    @contextmanager
-    def renderer(self) -> Iterator[Renderer]:
-        r = Renderer(self.config)
-        yield r
-
-        image = PILHelper.to_native_format(self.device, r.canvas)
-        with self.device:
-            self.device.set_key_image(self.index, image)

@@ -18,13 +18,12 @@ async def test_clock_update_with_defaults(plugin) -> None:
     """Test that Clock widget updates with default configuration."""
     widget = Clock(ClockConfig(), plugin)
 
-    # Mock key and renderer
-    key = MagicMock()
-    renderer = key.renderer.return_value.__enter__.return_value
+    # Mock renderer
+    renderer = MagicMock()
     renderer.measure_text.return_value = (50, 20)  # Mock text dimensions
 
     # Update widget
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify renderer was used
     renderer.clear.assert_called_once()
@@ -48,13 +47,12 @@ async def test_clock_update_with_custom_segments(plugin) -> None:
     )
     widget = Clock(config, plugin)
 
-    # Mock key and renderer
-    key = MagicMock()
-    renderer = key.renderer.return_value.__enter__.return_value
+    # Mock renderer
+    renderer = MagicMock()
     renderer.measure_text.return_value = (50, 20)  # Mock text dimensions
 
     # Update widget
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify renderer was called for each segment
     renderer.clear.assert_called_once()
@@ -80,33 +78,32 @@ async def test_clock_update_only_when_time_changes(plugin) -> None:
     """Test that Clock widget only updates when time changes."""
     widget = Clock(ClockConfig(), plugin)
 
-    # Mock key and renderer
-    key = MagicMock()
-    renderer = key.renderer.return_value.__enter__.return_value
+    # Mock renderer
+    renderer = MagicMock()
     renderer.measure_text.return_value = (50, 20)
 
     # First update
     with patch("knoepfe.widgets.builtin.clock.datetime") as mock_datetime:
         mock_datetime.now.return_value.strftime.return_value = "12:34"
-        await widget.update(key)
+        await widget.update(renderer)
         assert widget.last_time == "12:34"
         assert renderer.text.call_count == 1
 
     # Second update with same time - should not render
-    key.reset_mock()
+    renderer.reset_mock()
     with patch("knoepfe.widgets.builtin.clock.datetime") as mock_datetime:
         mock_datetime.now.return_value.strftime.return_value = "12:34"
-        await widget.update(key)
-        # Should return early, not call renderer
-        key.renderer.assert_not_called()
+        await widget.update(renderer)
+        # Should return early, not call renderer methods
+        renderer.clear.assert_not_called()
+        renderer.text.assert_not_called()
 
     # Third update with different time - should render
-    key.reset_mock()
-    renderer = key.renderer.return_value.__enter__.return_value
+    renderer.reset_mock()
     renderer.measure_text.return_value = (50, 20)
     with patch("knoepfe.widgets.builtin.clock.datetime") as mock_datetime:
         mock_datetime.now.return_value.strftime.return_value = "12:35"
-        await widget.update(key)
+        await widget.update(renderer)
         assert widget.last_time == "12:35"
         assert renderer.text.call_count == 1
 

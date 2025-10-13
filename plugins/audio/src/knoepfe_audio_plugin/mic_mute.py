@@ -3,7 +3,8 @@
 import logging
 
 from knoepfe.config.widget import WidgetConfig
-from knoepfe.core.key import Key
+from knoepfe.rendering import Renderer
+from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
 from .base import AudioWidget
@@ -37,18 +38,19 @@ class MicMute(AudioWidget[MicMuteConfig]):
     name = "MicMute"
     relevant_events = ["SourceChanged"]
 
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> UpdateResult:
         """Update the key display based on current mute state."""
         source = await self.get_source()
         if not source:
-            return
+            return UpdateResult.UNCHANGED
 
-        with key.renderer() as renderer:
-            renderer.clear()
-            if source.mute:
-                renderer.icon(self.config.muted_icon, size=86, color=self.config.muted_color or self.config.color)
-            else:
-                renderer.icon(self.config.unmuted_icon, size=86, color=self.config.unmuted_color)
+        renderer.clear()
+        if source.mute:
+            renderer.icon(self.config.muted_icon, size=86, color=self.config.muted_color or self.config.color)
+        else:
+            renderer.icon(self.config.unmuted_icon, size=86, color=self.config.unmuted_color)
+
+        return UpdateResult.UPDATED
 
     async def triggered(self, long_press: bool = False) -> None:
         """Toggle microphone mute state."""

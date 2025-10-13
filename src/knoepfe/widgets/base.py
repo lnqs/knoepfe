@@ -3,11 +3,11 @@ from asyncio import Event, sleep
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ..config.widget import WidgetConfig
-from ..core.key import Key
+from ..rendering import Renderer
 from ..utils.task_manager import TaskManager
 from ..utils.type_utils import extract_generic_arg
 from ..utils.wakelock import WakeLock
-from .actions import SwitchDeckAction, WidgetAction
+from .actions import SwitchDeckAction, UpdateResult, WidgetAction
 
 if TYPE_CHECKING:
     from ..plugins.plugin import Plugin
@@ -69,8 +69,16 @@ class Widget(ABC, Generic[TConfig, TPlugin]):
         return
 
     @abstractmethod
-    async def update(self, key: Key) -> None:
-        """Update the widget display on the given key."""
+    async def update(self, renderer: Renderer) -> UpdateResult:
+        """Update the widget display using the provided renderer.
+
+        Args:
+            renderer: Renderer instance to draw the widget display
+
+        Returns:
+            UpdateResult.UPDATED if the widget drew to the canvas and it should be pushed to device
+            UpdateResult.UNCHANGED if the widget didn't draw and the device should keep current display
+        """
         pass
 
     async def pressed(self) -> None:

@@ -1,8 +1,9 @@
 """Example Widget - A minimal widget demonstrating knoepfe plugin development."""
 
 from knoepfe.config.widget import WidgetConfig
-from knoepfe.core.key import Key
+from knoepfe.rendering import Renderer
 from knoepfe.widgets import Widget
+from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
 from .plugin import ExamplePlugin
@@ -51,13 +52,16 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
         # Clean up any resources if needed
         pass
 
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> UpdateResult:
         """Update the widget display.
 
         This method is called whenever the widget needs to be redrawn.
 
         Args:
-            key: The Stream Deck key to render to
+            renderer: Renderer instance to draw the widget display
+
+        Returns:
+            UpdateResult.UPDATED to push the rendered canvas to the device
         """
         # Get the message from config
         message = self.config.message
@@ -68,11 +72,12 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
         else:
             display_text = f"{message}\nClicked {self._click_count}x"
 
-        # Use the key renderer to draw the widget
-        with key.renderer() as renderer:
-            renderer.clear()
-            # Draw the text
-            renderer.text_wrapped(display_text)
+        # Use the renderer to draw the widget
+        renderer.clear()
+        # Draw the text
+        renderer.text_wrapped(display_text)
+
+        return UpdateResult.UPDATED
 
     async def on_key_down(self) -> None:
         """Handle key press events.

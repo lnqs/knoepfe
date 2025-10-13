@@ -33,13 +33,12 @@ async def test_switch_scene_update_disconnected(switch_scene_widget):
     """Test update when disconnected."""
     with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = False
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await switch_scene_widget.update(key)
+        await switch_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰏜",  # nf-md-panorama
             "Gaming",
             icon_size=64,
@@ -54,13 +53,12 @@ async def test_switch_scene_update_active(switch_scene_widget):
     with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Gaming"
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await switch_scene_widget.update(key)
+        await switch_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰏜",  # nf-md-panorama
             "Gaming",
             icon_size=64,
@@ -75,13 +73,12 @@ async def test_switch_scene_update_inactive(switch_scene_widget):
     with patch.object(switch_scene_widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await switch_scene_widget.update(key)
+        await switch_scene_widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "󰏜",  # nf-md-panorama
             "Gaming",
             icon_size=64,
@@ -137,13 +134,12 @@ async def test_switch_scene_update_with_custom_config(mock_plugin):
     with patch.object(widget.plugin, "obs") as mock_obs:
         mock_obs.connected = True
         mock_obs.current_scene = "Chatting"
-        key = MagicMock()
+        renderer = MagicMock()
 
-        await widget.update(key)
+        await widget.update(renderer)
 
-        renderer_mock = key.renderer.return_value.__enter__.return_value
-        renderer_mock.clear.assert_called_once()
-        renderer_mock.icon_and_text.assert_called_with(
+        renderer.clear.assert_called_once()
+        renderer.icon_and_text.assert_called_with(
             "🎮",
             "Chatting",
             icon_size=64,

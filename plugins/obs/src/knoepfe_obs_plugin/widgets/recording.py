@@ -1,7 +1,8 @@
 from asyncio import sleep
 
 from knoepfe.config.widget import WidgetConfig
-from knoepfe.core.key import Key
+from knoepfe.rendering import Renderer
+from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
 from ..plugin import OBSPlugin
@@ -44,7 +45,7 @@ class Recording(OBSWidget[RecordingConfig]):
         self.show_help = False
         self.show_loading = False
 
-    async def update(self, key: Key) -> None:
+    async def update(self, renderer: Renderer) -> UpdateResult:
         if self.plugin.obs.recording != self.recording:
             if self.plugin.obs.recording:
                 self.request_periodic_update(1.0)
@@ -52,27 +53,28 @@ class Recording(OBSWidget[RecordingConfig]):
                 self.stop_periodic_update()
             self.recording = self.plugin.obs.recording
 
-        with key.renderer() as renderer:
-            renderer.clear()
-            if self.show_loading:
-                self.show_loading = False
-                renderer.icon(self.config.loading_icon, size=86)
-            elif not self.plugin.obs.connected:
-                renderer.icon(self.config.stopped_icon, size=86, color=self.plugin.disconnected_color)
-            elif self.show_help:
-                renderer.text_wrapped("long press\nto toggle", size=16)
-            elif self.plugin.obs.recording:
-                timecode = (await self.plugin.obs.get_recording_timecode() or "").rsplit(".", 1)[0]
-                renderer.icon_and_text(
-                    self.config.recording_icon,
-                    timecode,
-                    icon_size=64,
-                    text_size=16,
-                    icon_color=self.config.recording_color,
-                    text_color=self.config.recording_color,
-                )
-            else:
-                renderer.icon(self.config.stopped_icon, size=86, color=self.config.stopped_color or self.config.color)
+        renderer.clear()
+        if self.show_loading:
+            self.show_loading = False
+            renderer.icon(self.config.loading_icon, size=86)
+        elif not self.plugin.obs.connected:
+            renderer.icon(self.config.stopped_icon, size=86, color=self.plugin.disconnected_color)
+        elif self.show_help:
+            renderer.text_wrapped("long press\nto toggle", size=16)
+        elif self.plugin.obs.recording:
+            timecode = (await self.plugin.obs.get_recording_timecode() or "").rsplit(".", 1)[0]
+            renderer.icon_and_text(
+                self.config.recording_icon,
+                timecode,
+                icon_size=64,
+                text_size=16,
+                icon_color=self.config.recording_color,
+                text_color=self.config.recording_color,
+            )
+        else:
+            renderer.icon(self.config.stopped_icon, size=86, color=self.config.stopped_color or self.config.color)
+
+        return UpdateResult.UPDATED
 
     async def triggered(self, long_press: bool = False) -> None:
         if long_press:

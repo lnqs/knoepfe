@@ -17,14 +17,14 @@ async def test_text_update() -> None:
     # Create widget with config
     widget = Text(TextConfig(text="Test Text"), plugin)
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify text_wrapped was called
-    assert key.renderer.return_value.__enter__.return_value.text_wrapped.called
+    assert renderer.text_wrapped.called
 
 
 def test_text_config_validation() -> None:
@@ -50,14 +50,13 @@ async def test_text_with_font_and_color() -> None:
     # Create widget with custom font and color
     widget = Text(TextConfig(text="Styled Text", font="sans:style=Bold", color="#ff0000"), plugin)
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify text_wrapped was called with font and color
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.text_wrapped.assert_called_once_with("Styled Text", font="sans:style=Bold", color="#ff0000")
 
 
@@ -69,12 +68,11 @@ async def test_text_with_defaults() -> None:
     # Create widget with defaults
     widget = Text(TextConfig(text="Plain Text"), plugin)
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify text_wrapped was called with default color (font is None)
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.text_wrapped.assert_called_once_with("Plain Text", font=None, color="white")

@@ -4,8 +4,9 @@ from datetime import timedelta
 from pydantic import Field
 
 from ...config.widget import WidgetConfig
-from ...core.key import Key
 from ...plugins.plugin import Plugin
+from ...rendering import Renderer
+from ..actions import UpdateResult
 from ..base import Widget
 
 
@@ -45,32 +46,33 @@ class Timer(Widget[TimerConfig, Plugin]):
         if not (self.start and not self.stop):
             self.release_wake_lock()
 
-    async def update(self, key: Key) -> None:
-        with key.renderer() as renderer:
-            renderer.clear()
-            if self.start and not self.stop:
-                # Timer is running
-                elapsed = f"{timedelta(seconds=time.monotonic() - self.start)}".rsplit(".", 1)[0]
-                renderer.text(
-                    (48, 48),
-                    elapsed,
-                    anchor="mm",
-                    font=self.config.font,
-                    color=self.config.running_color or self.config.color,
-                )
-            elif self.start and self.stop:
-                # Timer is stopped
-                elapsed = f"{timedelta(seconds=self.stop - self.start)}".rsplit(".", 1)[0]
-                renderer.text(
-                    (48, 48),
-                    elapsed,
-                    anchor="mm",
-                    font=self.config.font,
-                    color=self.config.stopped_color,
-                )
-            else:
-                # Timer is idle
-                renderer.icon(self.config.icon, size=86, color=self.config.color)
+    async def update(self, renderer: Renderer) -> UpdateResult:
+        renderer.clear()
+        if self.start and not self.stop:
+            # Timer is running
+            elapsed = f"{timedelta(seconds=time.monotonic() - self.start)}".rsplit(".", 1)[0]
+            renderer.text(
+                (48, 48),
+                elapsed,
+                anchor="mm",
+                font=self.config.font,
+                color=self.config.running_color or self.config.color,
+            )
+        elif self.start and self.stop:
+            # Timer is stopped
+            elapsed = f"{timedelta(seconds=self.stop - self.start)}".rsplit(".", 1)[0]
+            renderer.text(
+                (48, 48),
+                elapsed,
+                anchor="mm",
+                font=self.config.font,
+                color=self.config.stopped_color,
+            )
+        else:
+            # Timer is idle
+            renderer.icon(self.config.icon, size=86, color=self.config.color)
+
+        return UpdateResult.UPDATED
 
     async def triggered(self, long_press: bool = False) -> None:
         if not self.start:

@@ -4,12 +4,18 @@ from unittest.mock import AsyncMock, Mock
 
 from StreamDeck.Devices.StreamDeck import StreamDeck
 
-from knoepfe.config.models import GlobalConfig
+from knoepfe.config.models import DeviceConfig, GlobalConfig
 from knoepfe.config.plugin import PluginConfig
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.core.deck import Deck
 from knoepfe.plugins.plugin import Plugin
+from knoepfe.widgets.actions import UpdateResult
 from knoepfe.widgets.base import Widget
+
+
+def make_global_config() -> GlobalConfig:
+    """Helper to create GlobalConfig for tests."""
+    return GlobalConfig(device=DeviceConfig())
 
 
 class MockPluginConfig(PluginConfig):
@@ -42,9 +48,9 @@ class MockWidget(Widget[WidgetConfig, MockPlugin]):
 
     name = "MockWidget"
 
-    async def update(self, key) -> None:
+    async def update(self, renderer) -> UpdateResult:
         """Dummy update implementation."""
-        pass
+        return UpdateResult.UPDATED
 
 
 async def test_plugin_receives_widget_reference():
@@ -82,9 +88,12 @@ async def test_deck_calls_lifecycle_hooks_on_activate():
     widget.needs_update = False
 
     # Create deck and activate
-    deck = Deck("test", [widget], GlobalConfig())
+    deck = Deck("test", [widget], make_global_config())
     device = Mock(spec=StreamDeck)
     device.key_count = Mock(return_value=4)
+    device.key_image_format = Mock(
+        return_value={"size": (96, 96), "format": "JPEG", "rotation": 0, "flip": (False, False)}
+    )
     device.__enter__ = Mock(return_value=device)
     device.__exit__ = Mock(return_value=None)
     device.set_key_image = Mock()
@@ -113,7 +122,7 @@ async def test_deck_calls_lifecycle_hooks_on_deactivate():
     widget.tasks.cleanup = Mock()
 
     # Create deck and deactivate
-    deck = Deck("test", [widget], GlobalConfig())
+    deck = Deck("test", [widget], make_global_config())
     device = Mock(spec=StreamDeck)
 
     await deck.deactivate(device)
@@ -146,9 +155,12 @@ async def test_deck_calls_lifecycle_hooks_for_all_widgets():
         widgets.append(widget)
 
     # Create deck
-    deck = Deck("test", widgets, GlobalConfig())
+    deck = Deck("test", widgets, make_global_config())
     device = Mock(spec=StreamDeck)
     device.key_count = Mock(return_value=4)
+    device.key_image_format = Mock(
+        return_value={"size": (96, 96), "format": "JPEG", "rotation": 0, "flip": (False, False)}
+    )
     device.__enter__ = Mock(return_value=device)
     device.__exit__ = Mock(return_value=None)
     device.set_key_image = Mock()
@@ -198,9 +210,12 @@ async def test_lifecycle_hooks_called_in_correct_order():
     widget.deactivate = AsyncMock(side_effect=track_widget_deactivate)
 
     # Create deck
-    deck = Deck("test", [widget], GlobalConfig())
+    deck = Deck("test", [widget], make_global_config())
     device = Mock(spec=StreamDeck)
     device.key_count = Mock(return_value=4)
+    device.key_image_format = Mock(
+        return_value={"size": (96, 96), "format": "JPEG", "rotation": 0, "flip": (False, False)}
+    )
     device.__enter__ = Mock(return_value=device)
     device.__exit__ = Mock(return_value=None)
     device.set_key_image = Mock()

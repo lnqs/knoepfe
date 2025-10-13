@@ -18,14 +18,13 @@ async def test_timer_idle_with_defaults(plugin) -> None:
     """Test that Timer displays icon when idle with default configuration."""
     widget = Timer(TimerConfig(), plugin)
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget (idle state)
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify icon was called with defaults
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.clear.assert_called_once()
     renderer.icon.assert_called_once_with(
         "󱎫",  # nf-md-timer
@@ -38,14 +37,13 @@ async def test_timer_idle_with_custom_icon_and_color(plugin) -> None:
     """Test that Timer uses custom icon and base color when idle."""
     widget = Timer(TimerConfig(icon="⏱️", color="#00ff00"), plugin)
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget (idle state)
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify icon was called with custom values
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.icon.assert_called_once_with("⏱️", size=86, color="#00ff00")
 
 
@@ -57,14 +55,13 @@ async def test_timer_running_with_custom_font_and_color(plugin) -> None:
     with patch("knoepfe.widgets.builtin.timer.time.monotonic", return_value=100.0):
         widget.start = 95.0  # 5 seconds elapsed
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget (running state)
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify text was called with custom font and running color
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.clear.assert_called_once()
     renderer.text.assert_called_once()
     call_args = renderer.text.call_args
@@ -81,14 +78,13 @@ async def test_timer_stopped_with_custom_color(plugin) -> None:
     widget.start = 95.0
     widget.stop = 100.0  # 5 seconds elapsed
 
-    # Mock key
-    key = MagicMock()
+    # Mock renderer
+    renderer = MagicMock()
 
     # Update widget (stopped state)
-    await widget.update(key)
+    await widget.update(renderer)
 
     # Verify text was called with stopped color
-    renderer = key.renderer.return_value.__enter__.return_value
     renderer.clear.assert_called_once()
     renderer.text.assert_called_once()
     call_args = renderer.text.call_args
