@@ -15,7 +15,7 @@ from knoepfe.widgets.base import Widget
 
 def make_global_config() -> GlobalConfig:
     """Helper to create GlobalConfig for tests."""
-    return GlobalConfig(device=DeviceConfig())
+    return GlobalConfig(device=DeviceConfig(), deck={"main": []})
 
 
 class MockPluginConfig(PluginConfig):

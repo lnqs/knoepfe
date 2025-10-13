@@ -1,14 +1,13 @@
 """Configuration loading and processing functions."""
 
 import logging
-from importlib.resources import files
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import platformdirs
 from pydantic import ValidationError
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, TomlConfigSettingsSource
 
-from ..config.dsl import ConfigBuilder
 from ..config.models import GlobalConfig, WidgetSpec
 from ..utils.exceptions import WidgetNotFoundError
 
@@ -26,8 +25,37 @@ class ConfigError(Exception):
     pass
 
 
+def _create_config_with_file(config_path: Path) -> GlobalConfig:
+    """Create GlobalConfig with explicit file path.
+
+    This creates a custom settings source that loads from the specified file path.
+    """
+
+    class ConfigWithFile(GlobalConfig):
+        """GlobalConfig with custom file path."""
+
+        @classmethod
+        def settings_customise_sources(
+            cls,
+            settings_cls: type[BaseSettings],
+            init_settings: PydanticBaseSettingsSource,
+            env_settings: PydanticBaseSettingsSource,
+            dotenv_settings: PydanticBaseSettingsSource,
+            file_secret_settings: PydanticBaseSettingsSource,
+        ) -> tuple[PydanticBaseSettingsSource, ...]:
+            """Customize settings sources with explicit file path."""
+            # Return sources in priority order: env vars > TOML file > init
+            return (
+                env_settings,
+                TomlConfigSettingsSource(settings_cls, config_path),
+                init_settings,
+            )
+
+    return ConfigWithFile()
+
+
 def load_config(path: Path | None = None) -> GlobalConfig:
-    """Load configuration from file.
+    """Load configuration from TOML file with environment variable support.
 
     Args:
         path: Optional path to config file. If None, uses default locations.
@@ -38,51 +66,41 @@ def load_config(path: Path | None = None) -> GlobalConfig:
     Raises:
         ConfigError: If configuration is invalid or cannot be loaded
     """
-    # Resolve config file
+    # Resolve config file path
     if path:
         logger.info(f"Using config file: {path}")
-        config_file = open(path, "r")
-        config_name = str(path)
+        config_path = path
     else:
         # Check user config directory
         config_dir = Path(platformdirs.user_config_dir("knoepfe"))
-        user_config = config_dir / "knoepfe.cfg"
+        user_config = config_dir / "knoepfe.toml"
 
         if user_config.exists():
             logger.info(f"Using user config: {user_config}")
-            config_file = open(user_config, "r")
-            config_name = str(user_config)
+            config_path = user_config
         else:
-            # Fall back to default config from package resources
-            logger.info("No user config found, using default configuration")
-            logger.info(f"Consider creating your own config file at {user_config}")
-            default_resource = files("knoepfe").joinpath("data/default.cfg")
-            config_file = default_resource.open("r")
-            config_name = "knoepfe/data/default.cfg"
+            # No default config - user must create one
+            raise ConfigError(
+                f"No configuration file found. Please create a config file at {user_config}\n"
+                "See the documentation for examples."
+            )
+
+    # Check if file exists before attempting to load
+    if not config_path.exists():
+        raise ConfigError(f"Configuration file not found: {config_path}")
 
     try:
-        # Create builder and namespace
-        builder = ConfigBuilder()
-        namespace = {
-            "device": builder.device,
-            "plugin": builder.plugin,
-            "deck": builder.deck,
-            "widget": builder.widget,
-        }
-
-        # Execute config file in namespace
-        config_content = config_file.read()
-        exec(compile(config_content, config_name, "exec"), namespace)
-
-        # Build and return configuration
-        return builder.build()
+        # Create GlobalConfig instance with explicit file path
+        # The custom settings_customise_sources method will:
+        # 1. Load from TOML file via TomlConfigSettingsSource with explicit path
+        # 2. Override with environment variables (KNOEPFE_ prefix)
+        config = _create_config_with_file(config_path)
+        return config
 
     except ValidationError as e:
         raise ConfigError("Configuration validation failed") from e
     except Exception as e:
-        raise ConfigError("Failed to load configuration") from e
-    finally:
-        config_file.close()
+        raise ConfigError(f"Failed to load configuration: {e}") from e
 
 
 def create_decks(config: GlobalConfig, plugin_manager: "PluginManager") -> list["Deck"]:
@@ -96,15 +114,14 @@ def create_decks(config: GlobalConfig, plugin_manager: "PluginManager") -> list[
         List of all decks
 
     Raises:
-        ConfigError: If deck creation fails or no main deck defined
+        ConfigError: If deck creation fails
     """
     # Late import to avoid circular dependency
     from ..core.deck import Deck
 
     decks = []
-    has_main_deck = False
 
-    for deck_name, deck_config in config.decks.items():
+    for deck_config in config.decks:
         widgets = []
 
         for widget_spec in deck_config.widgets:
@@ -112,18 +129,12 @@ def create_decks(config: GlobalConfig, plugin_manager: "PluginManager") -> list[
                 widget = create_widget(widget_spec, plugin_manager)
                 widgets.append(widget)
             except ValidationError as e:
-                raise ConfigError(f"Invalid config for widget {widget_spec.type} in deck {deck_name}") from e
+                raise ConfigError(f"Invalid config for widget {widget_spec.type} in deck {deck_config.name}") from e
             except Exception as e:
-                raise ConfigError(f"Failed to create widget {widget_spec.type} in deck {deck_name}") from e
+                raise ConfigError(f"Failed to create widget {widget_spec.type} in deck {deck_config.name}") from e
 
-        deck = Deck(deck_name, widgets, config)
+        deck = Deck(deck_config.name, widgets, config)
         decks.append(deck)
-
-        if deck_name == "main":
-            has_main_deck = True
-
-    if not has_main_deck:
-        raise ConfigError("No 'main' deck defined in configuration")
 
     return decks
 

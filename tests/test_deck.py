@@ -22,7 +22,7 @@ def create_mock_widget(index: int | None = None) -> Mock:
 
 def test_deck_init() -> None:
     widgets: List[Widget] = [create_mock_widget()]
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", widgets, global_config)
     assert len(deck.widgets) == 1
 
@@ -31,7 +31,7 @@ async def test_deck_activate() -> None:
     device: StreamDeck = MagicMock(key_count=Mock(return_value=4))
     device.key_image_format.return_value = {"size": (96, 96), "format": "JPEG", "rotation": 0, "flip": (False, False)}
     widget = create_mock_widget()
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget], global_config)
     await deck.activate(device, Mock(), Mock())
     assert device.set_key_image.called
@@ -42,7 +42,7 @@ async def test_deck_deactivate() -> None:
     device: StreamDeck = MagicMock(key_count=Mock(return_value=4))
     widget = create_mock_widget()
     widget.tasks = Mock()  # Add tasks mock
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget], global_config)
     await deck.deactivate(device)
     assert widget.tasks.cleanup.called  # Verify cleanup was called
@@ -58,7 +58,7 @@ async def test_deck_update() -> None:
     mock_widget_1 = create_mock_widget()
     mock_widget_1.update = AsyncMock()
     mock_widget_1.needs_update = True
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [mock_widget_0, mock_widget_1], global_config)
 
     await deck.update(device)
@@ -74,7 +74,7 @@ async def test_deck_handle_key() -> None:
         mock_widget.released = AsyncMock()
         mock_widgets.append(mock_widget)
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", mock_widgets, global_config)
     await deck.handle_key(0, True)
     assert mock_widgets[0].pressed.called
@@ -89,7 +89,7 @@ def test_deck_index_assignment_unindexed() -> None:
     widget_b = create_mock_widget(None)
     widget_c = create_mock_widget(None)
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_a, widget_b, widget_c], global_config)
 
     # Verify widgets are in order and have correct indices assigned
@@ -109,7 +109,7 @@ def test_deck_index_assignment_mixed_no_gaps() -> None:
     widget_c = create_mock_widget(2)  # Explicit index 2
     widget_d = create_mock_widget(None)  # Should get index 3
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_a, widget_b, widget_c, widget_d], global_config)
 
     # Verify correct ordering and index assignment
@@ -130,7 +130,7 @@ def test_deck_index_assignment_explicit_with_gaps() -> None:
     widget_b = create_mock_widget(3)
     widget_c = create_mock_widget(5)
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_a, widget_b, widget_c], global_config)
 
     # Verify widgets are at their explicit positions
@@ -151,7 +151,7 @@ def test_deck_index_assignment_mixed_with_gaps() -> None:
     widget_d = create_mock_widget(None)  # Should fill gap at index 2
     widget_e = create_mock_widget(None)  # Should fill gap at index 3
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_a, widget_b, widget_c, widget_d, widget_e], global_config)
 
     # Verify correct ordering and gap filling
@@ -175,7 +175,7 @@ def test_deck_index_assignment_out_of_order() -> None:
     widget_c = create_mock_widget(0)
     widget_d = create_mock_widget(2)
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_a, widget_b, widget_c, widget_d], global_config)
 
     # Verify widgets are reordered by their indices
@@ -208,7 +208,7 @@ async def test_deck_update_respects_indices() -> None:
     widget_auto.update = AsyncMock()
     widget_auto.needs_update = True
 
-    global_config = GlobalConfig(device=DeviceConfig())
+    global_config = GlobalConfig(device=DeviceConfig(), deck={"main": []})
     deck = Deck("id", [widget_at_0, widget_at_5, widget_auto], global_config)
     await deck.update(device, force=True)
 
@@ -226,7 +226,7 @@ async def test_deck_passes_default_font_to_renderer() -> None:
     custom_text_font = "CustomFont"
     custom_icons_font = "CustomFont Nerd Font"
     device_config = DeviceConfig(default_text_font=custom_text_font, default_icons_font=custom_icons_font)
-    global_config = GlobalConfig(device=device_config)
+    global_config = GlobalConfig(device=device_config, deck={"main": []})
 
     # Create a widget
     widget = create_mock_widget(0)

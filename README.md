@@ -86,9 +86,9 @@ systemctl --user start knoepfe
 
 ### Starting
 
-Usually just running `knoepfe` should be enough. It reads the configuration from `~/.config/knoepfe/knoepfe.cfg` (see below for more information) and connects to the stream deck.
+Usually just running `knoepfe` should be enough. It reads the configuration from `~/.config/knoepfe/knoepfe.toml` (see below for more information) and connects to the stream deck.
 
-Anyway, some command line options are available:
+Command line options are available:
 ```
 Usage: knoepfe [OPTIONS] COMMAND [ARGS]...
 
@@ -111,12 +111,103 @@ widget-info   Show detailed information about a widget.
 
 ### Configuration
 
-Unless overwritten on command line, Knöpfe loads its configuration from `~/.config/knoepfe/knoepfe.cfg`. So you should create that file if you don't want to stick to the example config used as fallback.
+Knöpfe uses TOML format for configuration files. Create your configuration at `~/.config/knoepfe/knoepfe.toml`.
 
-Anyway, the example is a great way to start. It can be found as `knoepfe/default.cfg` in this repository and the installation target directory.
+Example configurations can be found in the `src/knoepfe/data/` directory:
+- `default.toml` - Basic configuration with built-in widgets
+- `clocks.toml` - Various clock widget examples
+- `streaming.toml` - Configuration with OBS integration
 
-The configuration is parsed as Python code. So every valid Python statement can be used, allowing to dynamically create and reuse parts of it.
-The default configuration is heavily commented, hopefully explaining how to use it clear enough.
+#### Basic Configuration Structure
+
+```toml
+# Device settings
+[device]
+brightness = 100
+sleep_timeout = 10.0
+device_poll_frequency = 5
+
+# Plugin configurations (optional)
+[plugins.obs]
+enabled = true
+host = "localhost"
+port = 4455
+password = "${OBS_PASSWORD}"  # Load from environment variable
+
+# Decks - at least one deck named "main" is required
+# Widgets in the main deck - properties can be specified directly
+[[deck.main]]
+type = "Clock"
+[[deck.main.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
+
+[[deck.main]]
+type = "Text"
+text = "Hello\nWorld"
+
+# Widgets can be assigned to specific positions using the 'index' parameter
+# Without index, widgets are placed in order of appearance
+[[deck.main]]
+type = "Timer"
+index = 5  # Place this widget at position 5 (0-based)
+
+# Additional decks can be defined similarly
+[[deck.utilities]]
+type = "Text"
+text = "Back"
+switch_deck = "main"
+```
+
+#### Widget Positioning
+
+By default, widgets are placed on the Stream Deck in the order they appear in the configuration file. However, you can explicitly control widget positions using the `index` parameter:
+
+```toml
+# Without index - widgets placed in order (0, 1, 2, ...)
+[[deck.main]]
+type = "Clock"
+
+[[deck.main]]
+type = "Text"
+text = "Button 1"
+
+# With explicit index - can be out of order
+[[deck.main]]
+type = "Timer"
+index = 5  # This will be at position 5
+
+[[deck.main]]
+type = "Text"
+text = "Button 3"
+index = 3  # This will be at position 3
+
+# Mixing indexed and unindexed widgets
+# Unindexed widgets fill remaining positions in order
+[[deck.main]]
+type = "Text"
+text = "Auto"  # Will fill next available position
+```
+
+**Note:** Index is 0-based, so `index = 0` is the first button, `index = 1` is the second, etc.
+
+#### Environment Variables
+
+Configuration values can reference environment variables using `${VAR_NAME}` syntax. This is particularly useful for sensitive data like passwords:
+
+```toml
+[plugins.obs]
+password = "${OBS_PASSWORD}"
+```
+
+You can also use the `KNOEPFE_` prefix to override any configuration value via environment variables:
+```bash
+export KNOEPFE_DEVICE__BRIGHTNESS=50
+export KNOEPFE_PLUGINS__OBS__PASSWORD=mysecret
+```
 
 ## Widgets
 
@@ -124,94 +215,89 @@ Following widgets are included:
 
 ### Text
 
-Simple widget just displaying a text.
+Simple widget displaying text.
 
-Can be instantiated as:
-
-```python
-widget("Text", {"text": "My great text!"})
+```toml
+[[deck.main]]
+type = "Text"
+text = "My great text!"
 ```
-
-Does nothing but showing the text specified with `text` on the key.
 
 ### Clock
 
-Widget displaying the current time. Instantiated as:
+Widget displaying the current time with customizable segments.
 
-```python
-widget("Clock", {'format': '%H:%M'})
+```toml
+[[deck.main]]
+type = "Clock"
+interval = 1.0  # Update interval in seconds
+[[deck.main.segments]]
+format = "%H:%M"  # strftime format code
+x = 0
+y = 0
+width = 96
+height = 96
 ```
 
-`format` expects a [strftime() format code](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) to define the formatting.
+The `format` field expects a [strftime() format code](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
 
 ### Timer
 
 Stop watch widget.
 
-Instantiated as:
-
-```python
-widget("Timer")
+```toml
+[[deck.main]]
+type = "Timer"
 ```
 
-When pressed it counts the seconds until it is pressed again. It then shows the time elapsed between both presses until pressed again to reset.
+When pressed it counts the seconds until pressed again. It then shows the elapsed time until pressed again to reset.
 
-This widget acquires the wake lock while the time is running, preventing the device from going to sleep.
+This widget acquires the wake lock while running, preventing the device from going to sleep.
 
 ### Mic Mute
 
-Mute/unmute PulseAudio source, i.e. microphone. **Requires the audio plugin** (`pip install knoepfe[audio]`).
+Mute/unmute PulseAudio source (microphone). **Requires the audio plugin** (`pip install knoepfe[audio]`).
 
-Instantiated with:
-
-```python
-widget("MicMute")
+```toml
+[[deck.main]]
+type = "MicMute"
+# device = "alsa_input.usb-..."  # Optional: specific device name
 ```
 
-Accepts `device` as optional argument with the name of source the operate with. If not set, the default source is used.
-This widget shows if the source is muted and toggles the state on pressing it.
+If no device is specified, the default source is used. Shows mute state and toggles on press.
 
 ### OBS Streaming and Recording
 
 Show and toggle OBS streaming/recording. **Requires the OBS plugin** (`pip install knoepfe[obs]`).
 
-These widgets can be instantiated with
+```toml
+[[deck.main]]
+type = "OBSRecording"
 
-```python
-widget("OBSRecording")
+[[deck.main]]
+type = "OBSStreaming"
 ```
 
-and
+These widgets connect to OBS and show if streaming/recording is active. Long press toggles the state.
 
-```python
-widget("OBSStreaming")
-```
-
-They connect to OBS (if running, they're quite gray if not) and show if the stream or recording is running. On a long press the state is toggled.
-
-As long as the connection to OBS is established these widgest hold the wake lock.
+As long as the connection to OBS is established, these widgets hold the wake lock.
 
 ### OBS Current Scene and Scene Switch
 
 Show and switch active OBS scene. **Requires the OBS plugin** (`pip install knoepfe[obs]`).
 
-These widgets are instantiated with
+```toml
+[[deck.main]]
+type = "OBSCurrentScene"
 
-```python
-widget("OBSCurrentScene")
+[[deck.scenes]]
+type = "OBSSwitchScene"
+scene = "Scene Name"
 ```
 
-and
+The current scene widget displays the active OBS scene. The scene switch widget indicates if the specified scene is active and switches to it when pressed.
 
-```python
-widget("OBSSwitchScene", {'scene': 'Scene'})
-```
-
-The current scene widget just displays the active OBS scene.
-
-The scene switch widget indicates if the scene set with the `scene` key is currently active. If not and the widget is pressed it switches to the scene.
-
-As long as the connection to OBS is established these widgets hold the wake lock.
+As long as the connection to OBS is established, these widgets hold the wake lock.
 
 ## Development
 

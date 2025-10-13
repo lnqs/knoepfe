@@ -30,6 +30,7 @@ dependencies = [
   "hidapi>=0.14.0.post4",
   "python-fontconfig>=0.6.2.post1",
   "pydantic>=2.11.9",
+  "pydantic-settings>=2.11.0",
 ]
 
 # Optional dependencies for different widget groups

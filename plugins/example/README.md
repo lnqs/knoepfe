@@ -22,14 +22,15 @@ A simple interactive widget that demonstrates the basic structure and functional
 
 ### Configuration
 
-```python
+```toml
 # Basic usage with defaults
-widget("ExampleWidget")
+[[deck.main]]
+type = "ExampleWidget"
 
 # Customized configuration
-widget("ExampleWidget", {
-    'message': 'Hello World'
-})
+[[deck.main]]
+type = "ExampleWidget"
+message = "Hello World"
 ```
 
 ### Parameters

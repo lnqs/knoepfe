@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from pytest import raises
 
-from knoepfe.config.models import DeckConfig, DeviceConfig, GlobalConfig
+from knoepfe.config.models import DeviceConfig, GlobalConfig
 from knoepfe.core.deck import Deck
 from knoepfe.core.deckmanager import DeckManager
 from knoepfe.widgets.actions import SwitchDeckAction
@@ -11,7 +11,7 @@ from knoepfe.widgets.actions import SwitchDeckAction
 
 def make_global_config() -> GlobalConfig:
     """Helper to create a minimal GlobalConfig for tests."""
-    return GlobalConfig(decks={"main": DeckConfig(name="main", widgets=[])})
+    return GlobalConfig(deck={"main": []})
 
 
 async def test_deck_manager_run() -> None:
@@ -72,7 +72,7 @@ async def test_deck_manager_sleep_activation() -> None:
     deck = Mock(id="main", spec=Deck)
     config = GlobalConfig(
         device=DeviceConfig(sleep_timeout=1.0),
-        decks={"main": DeckConfig(name="main", widgets=[])},
+        deck={"main": []},
     )
     deck_manager = DeckManager([deck], config, MagicMock())
     deck_manager.last_action = 0.0

@@ -137,23 +137,35 @@ widget.OBSSwitchScene(
 
 Configure OBS connection and global settings in your knoepfe config:
 
-```python
-plugin.obs(
-    # Host OBS is running. Probably `localhost`.
-    host='localhost',
-    # Port to obs-websocket is listening on. Defaults to 4455.
-    port=4455,
-    # Password to use when authenticating with obs-websocket.
-    password='supersecret',
-    # Icon color when OBS is disconnected (applies to all widgets)
-    disconnected_color='#202020'
-)
+```toml
+# ============================================================================
+# OBS Plugin Configuration
+# ============================================================================
+
+[plugins.obs]
+# Enable/disable the OBS plugin
+enabled = true
+
+# Host OBS is running on (usually 'localhost')
+host = "localhost"
+
+# Port obs-websocket is listening on (default: 4455)
+port = 4455
+
+# Password for obs-websocket authentication
+# You can use environment variables: password = "${OBS_PASSWORD}"
+# Or set via: export KNOEPFE_PLUGINS__OBS__PASSWORD="your_password"
+password = "supersecret"
+
+# Icon color when OBS is disconnected (applies to all widgets)
+disconnected_color = "#202020"
 ```
 
 **Parameters:**
+- `enabled` (optional): Enable the OBS plugin. Default: `true`
 - `host` (optional): OBS WebSocket host. Default: `'localhost'`
 - `port` (optional): OBS WebSocket port. Default: `4455`
-- `password` (optional): OBS WebSocket password. Default: `None`
+- `password` (optional): OBS WebSocket password. Supports environment variables. Default: `None`
 - `disconnected_color` (optional): Icon color when OBS is disconnected. Default: `'#202020'`
 
 ## Requirements

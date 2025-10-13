@@ -16,14 +16,24 @@ pip install knoepfe-audio-plugin
 
 The audio plugin supports global configuration that applies to all widgets:
 
-```python
-plugin.audio(
-    default_source='alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone'
-)
+```toml
+# ============================================================================
+# Audio Plugin Configuration
+# ============================================================================
+
+[plugins.audio]
+# Enable/disable the audio plugin
+enabled = true
+
+# Default PulseAudio source name for all audio widgets
+# Individual widgets can override this with their own 'source' parameter
+# Find available sources with: pactl list sources short
+default_source = "alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone"
 ```
 
 **Parameters:**
 
+- `enabled` (optional): Enable the audio plugin. Default: `true`
 - `default_source` (optional): Default PulseAudio source name to use for all audio widgets. Individual widgets can override this with their own `source` parameter.
 
 ## Widgets
@@ -34,36 +44,48 @@ Controls microphone mute/unmute functionality via PulseAudio.
 
 **Configuration:**
 
-```python
-# Use system default microphone with default icons
-widget.MicMute()
+```toml
+# ----------------------------------------------------------------------------
+# Example 1: Use system default microphone
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "MicMute"
 
-# Use plugin's default_source (if configured)
-plugin.audio(
-    default_source='alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone'
-)
-widget.MicMute()
+# ----------------------------------------------------------------------------
+# Example 2: Use plugin's default_source (if configured)
+# ----------------------------------------------------------------------------
+[plugins.audio]
+default_source = "alsa_input.usb-Blue_Microphones_Yeti_Stereo_Microphone"
 
-# Override with widget-specific source
-widget.MicMute(
-    source='alsa_input.pci-0000_00_1f.3.analog-stereo'
-)
+[[deck.main]]
+type = "MicMute"
 
-# Customize icons and colors with unicode characters
-widget.MicMute(
-    muted_icon='🔇',
-    unmuted_icon='🎤',
-    muted_color='gray',
-    unmuted_color='green'
-)
+# ----------------------------------------------------------------------------
+# Example 3: Override with widget-specific source
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "MicMute"
+source = "alsa_input.pci-0000_00_1f.3.analog-stereo"
 
-# Customize icons and colors with codepoints
-widget.MicMute(
-    muted_icon='\ue02b',
-    unmuted_icon='\ue029',
-    muted_color='blue',
-    unmuted_color='red'
-)
+# ----------------------------------------------------------------------------
+# Example 4: Customize icons and colors
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "MicMute"
+muted_icon = "🔇"
+unmuted_icon = "🎤"
+muted_color = "gray"
+unmuted_color = "green"
+
+# ----------------------------------------------------------------------------
+# Example 5: Use Nerd Font codepoints
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "MicMute"
+muted_icon = "\ue02b"
+unmuted_icon = "\ue029"
+muted_color = "blue"
+unmuted_color = "red"
 ```
 
 **Parameters:**
