@@ -34,7 +34,6 @@ async def test_streaming_update_disconnected(streaming_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰄘",  # nf-md-cast
-            size=86,
             color="#202020",
         )
 
@@ -50,7 +49,6 @@ async def test_streaming_update_not_streaming(streaming_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰄘",  # nf-md-cast
-            size=86,
             color="white",
         )
 
@@ -70,8 +68,6 @@ async def test_streaming_update_streaming(streaming_widget):
         renderer.icon_and_text.assert_called_with(
             "󰄘",  # nf-md-cast
             "00:01:23",  # timecode without milliseconds
-            icon_size=64,
-            text_size=16,
             icon_color="red",
             text_color="red",
         )
@@ -101,7 +97,6 @@ async def test_streaming_update_show_loading(streaming_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰔟",  # nf-md-timer_sand
-            size=86,
         )
         assert not streaming_widget.show_loading
 

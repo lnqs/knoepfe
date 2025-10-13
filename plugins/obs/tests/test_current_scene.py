@@ -78,7 +78,6 @@ async def test_current_scene_update_disconnected(current_scene_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰏜",  # nf-md-panorama
-            size=64,
             color="#202020",
         )
 

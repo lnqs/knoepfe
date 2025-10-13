@@ -147,7 +147,7 @@ class Renderer:
     def icon(
         self,
         icon: str,
-        size: int = 64,
+        size: int = 86,
         color: str = "white",
         position: tuple[int, int] | None = None,
         font: str | None = None,

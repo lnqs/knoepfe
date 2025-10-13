@@ -83,7 +83,6 @@ async def test_mic_mute_update_muted(mic_mute_widget, mock_source):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰍭",  # nf-md-microphone_off
-            size=86,
             color="white",
         )
 
@@ -99,7 +98,6 @@ async def test_mic_mute_update_unmuted(mic_mute_widget, mock_source):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰍬",  # nf-md-microphone
-            size=86,
             color="red",
         )
 

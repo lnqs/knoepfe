@@ -28,7 +28,6 @@ async def test_timer_idle_with_defaults(plugin) -> None:
     renderer.clear.assert_called_once()
     renderer.icon.assert_called_once_with(
         "󱎫",  # nf-md-timer
-        size=86,
         color="white",
     )
 
@@ -44,7 +43,7 @@ async def test_timer_idle_with_custom_icon_and_color(plugin) -> None:
     await widget.update(renderer)
 
     # Verify icon was called with custom values
-    renderer.icon.assert_called_once_with("⏱️", size=86, color="#00ff00")
+    renderer.icon.assert_called_once_with("⏱️", color="#00ff00")
 
 
 async def test_timer_running_with_custom_font_and_color(plugin) -> None:

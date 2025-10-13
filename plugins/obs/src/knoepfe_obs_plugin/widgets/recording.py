@@ -56,9 +56,9 @@ class Recording(OBSWidget[RecordingConfig]):
         renderer.clear()
         if self.show_loading:
             self.show_loading = False
-            renderer.icon(self.config.loading_icon, size=86)
+            renderer.icon(self.config.loading_icon)
         elif not self.plugin.obs.connected:
-            renderer.icon(self.config.stopped_icon, size=86, color=self.plugin.disconnected_color)
+            renderer.icon(self.config.stopped_icon, color=self.plugin.disconnected_color)
         elif self.show_help:
             renderer.text_wrapped("long press\nto toggle", size=16)
         elif self.plugin.obs.recording:
@@ -66,13 +66,11 @@ class Recording(OBSWidget[RecordingConfig]):
             renderer.icon_and_text(
                 self.config.recording_icon,
                 timecode,
-                icon_size=64,
-                text_size=16,
                 icon_color=self.config.recording_color,
                 text_color=self.config.recording_color,
             )
         else:
-            renderer.icon(self.config.stopped_icon, size=86, color=self.config.stopped_color or self.config.color)
+            renderer.icon(self.config.stopped_icon, color=self.config.stopped_color or self.config.color)
 
         return UpdateResult.UPDATED
 

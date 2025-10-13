@@ -34,7 +34,6 @@ async def test_recording_update_disconnected(recording_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰕨",  # nf-md-video_off
-            size=86,
             color="#202020",
         )
 
@@ -50,7 +49,6 @@ async def test_recording_update_not_recording(recording_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰕨",  # nf-md-video_off
-            size=86,
             color="white",
         )
 
@@ -70,8 +68,6 @@ async def test_recording_update_recording(recording_widget):
         renderer.icon_and_text.assert_called_with(
             "󰕧",  # nf-md-video
             "00:01:23",  # timecode without milliseconds
-            icon_size=64,
-            text_size=16,
             icon_color="red",
             text_color="red",
         )
@@ -101,7 +97,6 @@ async def test_recording_update_show_loading(recording_widget):
         renderer.clear.assert_called_once()
         renderer.icon.assert_called_with(
             "󰔟",  # nf-md-timer_sand
-            size=86,
         )
         assert not recording_widget.show_loading
 

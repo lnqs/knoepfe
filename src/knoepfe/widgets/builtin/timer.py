@@ -70,7 +70,7 @@ class Timer(Widget[TimerConfig, Plugin]):
             )
         else:
             # Timer is idle
-            renderer.icon(self.config.icon, size=86, color=self.config.color)
+            renderer.icon(self.config.icon, color=self.config.color)
 
         return UpdateResult.UPDATED
 

@@ -46,9 +46,9 @@ class MicMute(AudioWidget[MicMuteConfig]):
 
         renderer.clear()
         if source.mute:
-            renderer.icon(self.config.muted_icon, size=86, color=self.config.muted_color or self.config.color)
+            renderer.icon(self.config.muted_icon, color=self.config.muted_color or self.config.color)
         else:
-            renderer.icon(self.config.unmuted_icon, size=86, color=self.config.unmuted_color)
+            renderer.icon(self.config.unmuted_icon, color=self.config.unmuted_color)
 
         return UpdateResult.UPDATED
 

@@ -46,6 +46,6 @@ class CurrentScene(OBSWidget[CurrentSceneConfig]):
                 text_color=color,
             )
         else:
-            renderer.icon(self.config.icon, size=64, color=self.plugin.disconnected_color)
+            renderer.icon(self.config.icon, color=self.plugin.disconnected_color)
 
         return UpdateResult.UPDATED
