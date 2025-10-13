@@ -28,8 +28,9 @@ class RecordingConfig(WidgetConfig):
 
 
 class Recording(OBSWidget[RecordingConfig]):
+    """Start/stop OBS recording with timecode display."""
+
     name = "OBSRecording"
-    description = "Start/stop OBS recording with timecode display"
 
     relevant_events = [
         "ConnectionEstablished",

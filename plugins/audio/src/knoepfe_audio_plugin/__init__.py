@@ -13,9 +13,7 @@ __version__ = "0.1.0"
 
 
 class AudioPluginDescriptor(PluginDescriptor[AudioPluginConfig, AudioPlugin]):
-    """Audio control plugin descriptor for knoepfe."""
-
-    description = "Audio control widgets for knoepfe"
+    """Audio control widgets for knoepfe."""
 
     @classmethod
     def widgets(cls) -> list[Type[Widget]]:

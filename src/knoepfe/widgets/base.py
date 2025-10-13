@@ -28,7 +28,6 @@ class Widget(ABC, Generic[TConfig, TPlugin]):
     """
 
     name: str
-    description: str | None = None
 
     def __init__(self, config: TConfig, plugin: TPlugin) -> None:
         """Initialize widget with typed configuration.

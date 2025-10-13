@@ -23,8 +23,9 @@ class TimerConfig(WidgetConfig):
 
 
 class Timer(Widget[TimerConfig, Plugin]):
+    """Start/stop timer with elapsed time display."""
+
     name = "Timer"
-    description = "Start/stop timer with elapsed time display"
 
     def __init__(self, config: TimerConfig, plugin: Plugin) -> None:
         super().__init__(config, plugin)

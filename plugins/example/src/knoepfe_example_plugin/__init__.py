@@ -16,9 +16,7 @@ __version__ = "0.1.0"
 
 
 class ExamplePluginDescriptor(PluginDescriptor[ExamplePluginConfig, ExamplePlugin]):
-    """Example plugin descriptor demonstrating knoepfe plugin development."""
-
-    description = "Example plugin demonstrating knoepfe widget development"
+    """Example plugin demonstrating knoepfe widget development."""
 
     @classmethod
     def widgets(cls) -> list[Type[Widget]]:

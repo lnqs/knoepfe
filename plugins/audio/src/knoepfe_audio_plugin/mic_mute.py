@@ -35,7 +35,6 @@ class MicMute(AudioWidget[MicMuteConfig]):
     """
 
     name = "MicMute"
-    description = "Toggle microphone mute status"
     relevant_events = ["SourceChanged"]
 
     async def update(self, key: Key) -> None:

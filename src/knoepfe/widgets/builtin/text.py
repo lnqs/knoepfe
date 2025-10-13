@@ -13,8 +13,9 @@ class TextConfig(WidgetConfig):
 
 
 class Text(Widget[TextConfig, Plugin]):
+    """Display static text."""
+
     name = "Text"
-    description = "Display static text"
 
     def __init__(self, config: TextConfig, plugin: Plugin) -> None:
         super().__init__(config, plugin)

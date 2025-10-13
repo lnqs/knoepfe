@@ -28,8 +28,9 @@ class StreamingConfig(WidgetConfig):
 
 
 class Streaming(OBSWidget[StreamingConfig]):
+    """Start/stop OBS streaming with timecode display."""
+
     name = "OBSStreaming"
-    description = "Start/stop OBS streaming with timecode display"
 
     relevant_events = [
         "ConnectionEstablished",

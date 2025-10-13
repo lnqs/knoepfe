@@ -19,8 +19,9 @@ class CurrentSceneConfig(WidgetConfig):
 
 
 class CurrentScene(OBSWidget[CurrentSceneConfig]):
+    """Display currently active OBS scene."""
+
     name = "OBSCurrentScene"
-    description = "Display currently active OBS scene"
 
     relevant_events = [
         "ConnectionEstablished",

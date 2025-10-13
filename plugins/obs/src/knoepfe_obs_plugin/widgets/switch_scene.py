@@ -21,8 +21,9 @@ class SwitchSceneConfig(WidgetConfig):
 
 
 class SwitchScene(OBSWidget[SwitchSceneConfig]):
+    """Switch to a specific OBS scene."""
+
     name = "OBSSwitchScene"
-    description = "Switch to a specific OBS scene"
 
     relevant_events = [
         "ConnectionEstablished",

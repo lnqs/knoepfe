@@ -15,14 +15,13 @@ class ExampleWidgetConfig(WidgetConfig):
 
 
 class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
-    """A minimal example widget that demonstrates the basic structure of a knoepfe widget.
+    """Interactive example widget with click counter.
 
     This widget displays a customizable message and changes appearance when clicked.
     It serves as a template for developing custom widgets.
     """
 
     name = "ExampleWidget"
-    description = "Interactive example widget with click counter"
 
     def __init__(self, config: ExampleWidgetConfig, plugin: ExamplePlugin) -> None:
         """Initialize the ExampleWidget.

@@ -20,8 +20,9 @@ class MockWidgetConfig(EmptyConfig):
 
 
 class MockWidget(Widget[MockWidgetConfig, Plugin]):
+    """A mock widget for testing."""
+
     name = "MockWidget"
-    description = "A mock widget for testing"
 
     async def update(self, key):
         pass
@@ -41,18 +42,24 @@ class MockPluginDescriptorConfig(PluginConfig):
 
 
 class MockPluginDescriptor(PluginDescriptor[MockPluginDescriptorConfig, Plugin]):
+    """Mock plugin descriptor for testing."""
+
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return [MockWidget, MockWidgetNoSchema]
 
 
 class MockPluginDescriptor1(PluginDescriptor[EmptyPluginConfig, Plugin]):
+    """First mock plugin descriptor for testing."""
+
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return []
 
 
 class MockPluginDescriptor2(PluginDescriptor[EmptyPluginConfig, Plugin]):
+    """Second mock plugin descriptor for testing."""
+
     @classmethod
     def widgets(cls) -> list[type[Widget]]:
         return []
@@ -394,3 +401,162 @@ def test_plugin_manager_mixed_enabled_disabled():
         # Only enabled plugin should be registered
         assert "enabled_plugin" in pm._plugins
         assert "disabled_plugin" not in pm._plugins
+
+
+def test_plugin_manager_extracts_description_from_docstring():
+    """Test that plugin descriptions are extracted from class docstrings."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPluginDescriptor
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.0.0"
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        pm = PluginManager({"test_plugin": {"test_config": "value"}})
+
+        # Verify plugin is registered
+        assert "test_plugin" in pm._plugins
+
+        # Verify description is extracted from docstring
+        plugin_info = pm._plugins["test_plugin"]
+        assert plugin_info.description == "Mock plugin descriptor for testing."
+
+
+def test_plugin_manager_handles_missing_docstring():
+    """Test that plugin manager handles descriptors without docstrings.
+
+    When a descriptor doesn't have its own docstring, inspect.getdoc() returns
+    the parent class docstring, which is the expected Python behavior.
+    """
+
+    class DescriptorWithoutDocstring(PluginDescriptor[EmptyPluginConfig, Plugin]):
+        @classmethod
+        def widgets(cls) -> list[type[Widget]]:
+            return []
+
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "no_docstring_plugin"
+        mock_ep.load.return_value = DescriptorWithoutDocstring
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.0.0"
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        pm = PluginManager({"no_docstring_plugin": {}})
+
+        # Verify plugin is registered
+        assert "no_docstring_plugin" in pm._plugins
+
+        # Verify description inherits from parent class when no docstring exists
+        plugin_info = pm._plugins["no_docstring_plugin"]
+        assert plugin_info.description is not None
+        assert "Base class for all knoepfe plugin descriptors" in plugin_info.description
+
+
+def test_plugin_info_attributes():
+    """Test that all PluginInfo attributes are correctly populated."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPluginDescriptor
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.2.3"
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        pm = PluginManager({"test_plugin": {"test_config": "custom_value"}})
+
+        # Verify plugin is registered
+        assert "test_plugin" in pm._plugins
+        plugin_info = pm._plugins["test_plugin"]
+
+        # Test name attribute
+        assert plugin_info.name == "test_plugin"
+
+        # Test version attribute
+        assert plugin_info.version == "1.2.3"
+
+        # Test descriptor_class attribute
+        assert plugin_info.descriptor_class == MockPluginDescriptor
+
+        # Test config attribute
+        assert isinstance(plugin_info.config, MockPluginDescriptorConfig)
+        assert plugin_info.config.test_config == "custom_value"
+        assert plugin_info.config.enabled is True
+
+        # Test plugin attribute
+        assert isinstance(plugin_info.plugin, Plugin)
+
+        # Test description attribute
+        assert plugin_info.description == "Mock plugin descriptor for testing."
+
+        # Test widgets attribute
+        assert len(plugin_info.widgets) == 2
+        widget_names = [w.name for w in plugin_info.widgets]
+        assert "MockWidget" in widget_names
+        assert "MockWidgetNoSchema" in widget_names
+
+
+def test_plugin_info_version_fallback():
+    """Test that version falls back to 'unknown' when dist is None."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point without dist
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPluginDescriptor
+        mock_ep.dist = None  # No distribution info
+        mock_entry_points.return_value = [mock_ep]
+
+        pm = PluginManager({"test_plugin": {}})
+
+        # Verify plugin is registered
+        assert "test_plugin" in pm._plugins
+        plugin_info = pm._plugins["test_plugin"]
+
+        # Test version falls back to "unknown"
+        assert plugin_info.version == "unknown"
+
+
+def test_widget_info_attributes():
+    """Test that WidgetInfo attributes are correctly populated."""
+    with patch("knoepfe.plugins.manager.entry_points") as mock_entry_points:
+        # Mock plugin entry point
+        mock_ep = Mock()
+        mock_ep.name = "test_plugin"
+        mock_ep.load.return_value = MockPluginDescriptor
+        mock_dist = Mock()
+        mock_dist.name = "test-package"
+        mock_dist.version = "1.0.0"
+        mock_ep.dist = mock_dist
+        mock_entry_points.return_value = [mock_ep]
+
+        pm = PluginManager({"test_plugin": {}})
+
+        # Get widget info
+        assert "MockWidget" in pm._widgets
+        widget_info = pm._widgets["MockWidget"]
+
+        # Test widget name
+        assert widget_info.name == "MockWidget"
+
+        # Test widget description (extracted from docstring)
+        assert widget_info.description == "A mock widget for testing."
+
+        # Test widget class
+        assert widget_info.widget_class == MockWidget
+
+        # Test config type
+        assert widget_info.config_type == MockWidgetConfig
+
+        # Test plugin_info reference
+        assert widget_info.plugin_info.name == "test_plugin"
+        assert widget_info.plugin_info.descriptor_class == MockPluginDescriptor

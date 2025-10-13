@@ -79,8 +79,8 @@ class PluginManager:
 
                 # Load the plugin with its metadata
                 version = ep.dist.version if ep.dist else "unknown"
-                # Get description from descriptor class attribute
-                description = getattr(descriptor_class, "description", None)
+                # Get description from descriptor class docstring
+                description = inspect.getdoc(descriptor_class)
 
                 self._load_plugin(plugin_name, descriptor_class, version, description)
 
@@ -161,7 +161,7 @@ class PluginManager:
 
             widget_info = WidgetInfo(
                 name=widget_class.name,
-                description=widget_class.description,
+                description=inspect.getdoc(widget_class),
                 widget_class=widget_class,
                 config_type=config_type,
                 plugin_info=plugin_info,

@@ -19,9 +19,7 @@ __version__ = "0.1.0"
 
 
 class OBSPluginDescriptor(PluginDescriptor[OBSPluginConfig, OBSPlugin]):
-    """OBS Studio integration plugin descriptor for knoepfe."""
-
-    description = "OBS Studio integration widgets for knoepfe"
+    """OBS Studio integration widgets for knoepfe."""
 
     @classmethod
     def widgets(cls) -> list[Type[Widget]]:

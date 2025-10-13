@@ -25,14 +25,12 @@ class PluginDescriptor(ABC, Generic[TPluginConfig, TPlugin]):
 
     Example:
         class AudioPluginDescriptor(PluginDescriptor[AudioPluginConfig, AudioPlugin]):
-            description = "Audio control plugin for knoepfe"
+            '''Audio control plugin for knoepfe.'''
 
             @classmethod
             def widgets(cls) -> list[Type[Widget]]:
                 return [MicMute, VolumeControl]
     """
-
-    description: str | None = None
 
     @classmethod
     def get_config_type(cls) -> Type[PluginConfig]:

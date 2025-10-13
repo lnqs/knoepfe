@@ -33,8 +33,9 @@ class ClockConfig(WidgetConfig):
 
 
 class Clock(Widget[ClockConfig, Plugin]):
+    """Display current time with flexible segment-based layout."""
+
     name = "Clock"
-    description = "Display current time with flexible segment-based layout"
 
     def __init__(self, config: ClockConfig, plugin: Plugin) -> None:
         super().__init__(config, plugin)

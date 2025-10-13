@@ -51,12 +51,34 @@ widget("ExampleWidget", {
 
 This example demonstrates the essential components of a knoepfe widget:
 
-### 1. Widget Class Structure
+### 1. Plugin Descriptor
+
+Define a plugin descriptor that declares your plugin's configuration and widgets:
 
 ```python
-class ExampleWidget(Widget[ExamplePluginState]):
-    def __init__(self, widget_config: Dict[str, Any], global_config: Dict[str, Any], plugin_state: ExamplePluginState) -> None:
-        # Initialize widget with configuration and plugin state
+from knoepfe.plugins import PluginDescriptor
+
+class ExamplePluginDescriptor(PluginDescriptor[ExamplePluginConfig, ExamplePlugin]):
+    """Brief description of your plugin (used as plugin description)."""
+
+    @classmethod
+    def widgets(cls) -> list[Type[Widget]]:
+        return [ExampleWidget]
+```
+
+### 2. Widget Class Structure
+
+```python
+from knoepfe.widgets import Widget
+
+class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
+    """Brief description of your widget (used as widget description)."""
+    
+    name = "ExampleWidget"
+    
+    def __init__(self, config: ExampleWidgetConfig, plugin: ExamplePlugin) -> None:
+        super().__init__(config, plugin)
+        # Initialize widget state
         
     async def activate(self) -> None:
         # Called when widget becomes active
@@ -67,40 +89,40 @@ class ExampleWidget(Widget[ExamplePluginState]):
     async def update(self, key: Key) -> None:
         # Render the widget display
         
-    async def on_key_down(self) -> None:
+    async def pressed(self) -> None:
         # Handle key press events
         
-    async def on_key_up(self) -> None:
+    async def released(self) -> WidgetAction | None:
         # Handle key release events
-        
-    @classmethod
-    def get_config_schema(cls) -> Schema:
-        # Define configuration parameters
+        return None
 ```
 
-### 2. Entry Point Registration
+**Important**: Widget and plugin descriptions are automatically extracted from class docstrings. Do not use a separate `description` attribute.
+
+### 3. Entry Point Registration
 
 In `pyproject.toml`:
 
 ```toml
-[project.entry-points."knoepfe.widgets"]
-ExampleWidget = "knoepfe_example_plugin.example_widget:ExampleWidget"
+[project.entry-points."knoepfe.plugins"]
+example = "knoepfe_example_plugin:ExamplePluginDescriptor"
 ```
 
-### 3. Configuration Schema
+### 4. Configuration with Pydantic
 
-Use the `schema` library to define and validate configuration parameters:
+Use Pydantic models to define and validate configuration:
 
 ```python
-@classmethod
-def get_config_schema(cls) -> Schema:
-    schema = Schema({
-        Optional('message', default='Example'): str,
-    })
-    return cls.add_defaults(schema)
+from pydantic import Field
+from knoepfe.config.widget import WidgetConfig
+
+class ExampleWidgetConfig(WidgetConfig):
+    """Configuration for ExampleWidget."""
+    
+    message: str = Field(default="Example", description="The text message to display")
 ```
 
-### 4. Rendering with Key Renderer
+### 5. Rendering with Key Renderer
 
 Use the key renderer context manager to draw the widget:
 
@@ -110,39 +132,41 @@ async def update(self, key: Key) -> None:
         renderer.text('Hello World')
 ```
 
-### 5. State Management
+### 6. State Management
 
 Widgets can maintain both internal state and shared plugin state:
 
 ```python
-def __init__(self, widget_config, global_config, plugin_state):
-    super().__init__(widget_config, global_config, plugin_state)
+def __init__(self, config: ExampleWidgetConfig, plugin: ExamplePlugin) -> None:
+    super().__init__(config, plugin)
     self._click_count = 0  # Internal widget state
-    
-    # Access shared plugin state
-    self.plugin_state.register_widget(f"ExampleWidget-{id(self)}")
-    shared_count = self.plugin_state.increment_counter()
 ```
 
-#### Plugin State vs Widget State
+#### Plugin Instance vs Widget State
 
 - **Widget State**: Private to each widget instance (e.g., `self._click_count`)
-- **Plugin State**: Shared between all widgets of the same plugin (e.g., `self.plugin_state.shared_counter`)
+- **Plugin Instance**: Shared between all widgets of the same plugin (e.g., `self.plugin`)
 
-Plugin state is useful for:
+The plugin instance is useful for:
 - Sharing connections (like OBS WebSocket)
 - Coordinating between multiple widget instances
 - Maintaining plugin-wide configuration
-- Tracking global plugin statistics
+- Managing shared resources and background tasks
 
-### 6. Event Handling
+### 7. Event Handling
 
 Handle user interactions:
 
 ```python
-async def on_key_down(self) -> None:
+async def pressed(self) -> None:
+    # Called when key is pressed
+    pass
+
+async def released(self) -> WidgetAction | None:
+    # Called when key is released
     self._click_count += 1
     self.request_update()  # Trigger re-render
+    return None
 ```
 
 ## Plugin Structure
@@ -160,66 +184,55 @@ plugins/example/
     └── test_example_widget.py       # Unit tests (optional)
 ```
 
-### Creating Custom Plugin State
+### Creating Custom Plugin Instances
 
-For plugins that need to share data between widgets, create a custom plugin state:
+For plugins that need to share data or resources between widgets, create a custom plugin class:
 
 ```python
-# plugin_state.py
-from knoepfe.plugin_state import PluginState
+# plugin.py
+from knoepfe.plugins import Plugin
 
-class ExamplePluginState(PluginState):
-    def __init__(self, plugin_config):
-        super().__init__(plugin_config)
+class ExamplePlugin(Plugin):
+    def __init__(self, config: ExamplePluginConfig):
+        super().__init__(config)
         self.shared_counter = 0
         self.widget_instances = []
     
     def increment_counter(self):
         self.shared_counter += 1
         return self.shared_counter
-```
-
-Then implement the `plugin_state` property in your plugin:
-
-```python
-# plugin.py
-class ExamplePlugin(Plugin):
-    def __init__(self, config):
-        super().__init__(config)
-        self._plugin_state = ExamplePluginState(config)
     
-    @property
-    def plugin_state(self):
-        return self._plugin_state
+    def shutdown(self):
+        """Called when the plugin is being shut down."""
+        # Clean up resources here
+        pass
 ```
 
-For simple plugins that don't need shared state, use `NullPluginState`:
-
-```python
-from knoepfe.plugin_state import NullPluginState
-
-class SimplePlugin(Plugin):
-    @property
-    def plugin_state(self):
-        return NullPluginState()
-```
+For simple plugins that don't need shared state, use the base `Plugin` class directly in your descriptor.
 
 ## Key Concepts
+
+### Plugin Lifecycle
+
+1. **Discovery**: Plugin descriptors are discovered via entry points
+2. **Instantiation**: Plugin instance is created with validated configuration
+3. **Widget Registration**: Widgets from the plugin are registered with the system
+4. **Runtime**: Plugin instance is shared across all widget instances
+5. **Shutdown**: `shutdown()` method is called for cleanup when knoepfe exits
 
 ### Widget Lifecycle
 
 1. **Initialization**: `__init__()` - Set up initial state and configuration
 2. **Activation**: `activate()` - Start background tasks, initialize resources
 3. **Updates**: `update()` - Render the widget display (called frequently)
-4. **Events**: `on_key_down()`, `on_key_up()` - Handle user interactions
+4. **Events**: `pressed()`, `released()`, `triggered()` - Handle user interactions
 5. **Deactivation**: `deactivate()` - Clean up resources, stop tasks
 
 ### Configuration Management
 
-- Use `self.config` to access widget-specific configuration
-- Use `self.global_config` to access global knoepfe settings
-- Define schema with `get_config_schema()` for validation
-- Use `Optional()` with defaults for optional parameters
+- Use `self.config` to access widget-specific configuration (typed as your WidgetConfig subclass)
+- Define configuration with Pydantic models for validation and type safety
+- Use `Field()` with defaults and descriptions for configuration parameters
 
 ### Rendering
 
