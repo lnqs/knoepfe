@@ -58,6 +58,80 @@ def test_renderer_convenience_methods() -> None:
             assert mock_draw.text.call_count >= 1
 
 
+def test_renderer_image_method() -> None:
+    """Test the image convenience method."""
+    with mock_fontconfig_system():
+        renderer = Renderer("RobotoMono Nerd Font")
+
+        # Mock the draw_image method to verify it's called correctly
+        with patch.object(renderer, "draw_image") as mock_draw_image:
+            mock_draw_image.return_value = renderer  # For method chaining
+
+            # Test with default parameters (centered, 86px)
+            result = renderer.image("test.png")
+
+            # Verify draw_image was called with correct parameters
+            # Default: size=86, position=(48,48)
+            # Calculated position: (48 - 86//2, 48 - 86//2) = (5, 5)
+            # Size passed to draw_image: (86, 86)
+            mock_draw_image.assert_called_once_with("test.png", (5, 5), (86, 86))
+
+            # Verify method chaining works
+            assert result is renderer
+
+
+def test_renderer_image_method_custom_size() -> None:
+    """Test image method with custom size."""
+    with mock_fontconfig_system():
+        renderer = Renderer("RobotoMono Nerd Font")
+
+        with patch.object(renderer, "draw_image") as mock_draw_image:
+            mock_draw_image.return_value = renderer
+
+            # Test with custom size
+            renderer.image("test.png", size=64)
+
+            # Verify draw_image was called with correct position for 64px image
+            # Position: (48 - 64//2, 48 - 64//2) = (16, 16)
+            mock_draw_image.assert_called_once_with("test.png", (16, 16), (64, 64))
+
+
+def test_renderer_image_method_custom_position() -> None:
+    """Test image method with custom position."""
+    with mock_fontconfig_system():
+        renderer = Renderer("RobotoMono Nerd Font")
+
+        with patch.object(renderer, "draw_image") as mock_draw_image:
+            mock_draw_image.return_value = renderer
+
+            # Test with custom position
+            renderer.image("test.png", position=(30, 40))
+
+            # Verify draw_image was called with position adjusted for centering
+            # Position: (30 - 86//2, 40 - 86//2) = (-13, -3)
+            mock_draw_image.assert_called_once_with("test.png", (-13, -3), (86, 86))
+
+
+def test_renderer_image_method_with_pil_image() -> None:
+    """Test image method with PIL Image object instead of path."""
+    with mock_fontconfig_system():
+        renderer = Renderer("RobotoMono Nerd Font")
+
+        # Create a mock PIL Image object
+        from PIL import Image
+
+        mock_img = Mock(spec=Image.Image)
+
+        with patch.object(renderer, "draw_image") as mock_draw_image:
+            mock_draw_image.return_value = renderer
+
+            # Pass PIL Image directly
+            renderer.image(mock_img)
+
+            # Verify draw_image was called with the PIL Image object
+            mock_draw_image.assert_called_once_with(mock_img, (5, 5), (86, 86))
+
+
 def test_font_manager_get_font() -> None:
     """Test FontManager font loading with mocked fontconfig."""
     # Clear the cache first to ensure clean test

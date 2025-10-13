@@ -179,36 +179,32 @@ class Renderer:
         # Use visual centering helper for accurate positioning
         return self._text_centered_visual(icon, font_obj, position, color)
 
-    def image_centered(
-        self, image_path: Union[str, Path, Image.Image], size: Union[int, tuple[int, int]] = 72, padding: int = 12
+    def image(
+        self,
+        image_path: Union[str, Path, Image.Image],
+        size: int = 86,
+        position: tuple[int, int] | None = None,
     ) -> "Renderer":
-        """Render an image centered with optional padding.
+        """Render an image at a centered position with automatic sizing.
+
+        Displays an image at the specified size, centered at the given position.
+        By default, renders an 86x86 image centered on the key (matching typical
+        icon sizes). The image is resized to fit within the specified dimensions
+        while maintaining its aspect ratio.
 
         Args:
-            image_path: Path to image or PIL Image
-            size: Target size (int for square, tuple for width/height)
-            padding: Padding from edges
+            image_path: Path to image file or PIL Image object
+            size: Target size in pixels (image scaled to fit within size×size)
+            position: Center point (x, y) for the image, defaults to (48, 48)
         """
-        # Load image if needed
-        if isinstance(image_path, (str, Path)):
-            img = Image.open(image_path)
-        else:
-            img = image_path
+        if position is None:
+            position = (48, 48)
 
-        # Calculate size with padding
-        canvas_size = 96 - 2 * padding
+        # Calculate top-left position to center the image at the target position
+        x = position[0] - size // 2
+        y = position[1] - size // 2
 
-        if isinstance(size, int):
-            target_size = min(size, canvas_size)
-            img.thumbnail((target_size, target_size), Image.Resampling.LANCZOS)
-        else:
-            img = img.resize(size, Image.Resampling.LANCZOS)
-
-        # Center image
-        x = (96 - img.width) // 2
-        y = (96 - img.height) // 2
-
-        return self.draw_image(img, (x, y))
+        return self.draw_image(image_path, (x, y), (size, size))
 
     def icon_and_text(
         self,
