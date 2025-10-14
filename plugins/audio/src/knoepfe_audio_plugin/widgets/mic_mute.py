@@ -4,7 +4,7 @@ import logging
 
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.rendering import Renderer
-from knoepfe.widgets.actions import UpdateResult
+from knoepfe.widgets.widget import UpdateResult
 from pydantic import Field
 
 from .audio_widget import AudioWidget

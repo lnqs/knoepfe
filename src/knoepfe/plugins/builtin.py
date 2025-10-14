@@ -3,10 +3,10 @@
 from typing import Type
 
 from ..config.plugin import EmptyPluginConfig
-from ..widgets.base import Widget
 from ..widgets.builtin.clock import Clock
 from ..widgets.builtin.text import Text
 from ..widgets.builtin.timer import Timer
+from ..widgets.widget import Widget
 from .descriptor import PluginDescriptor
 from .plugin import Plugin
 

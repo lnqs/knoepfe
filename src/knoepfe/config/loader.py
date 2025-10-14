@@ -14,7 +14,7 @@ from ..utils.exceptions import WidgetNotFoundError
 if TYPE_CHECKING:
     from ..core.deck import Deck
     from ..plugins.manager import PluginManager
-    from ..widgets.base import Widget
+    from ..widgets.widget import Widget
 
 logger = logging.getLogger(__name__)
 

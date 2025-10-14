@@ -6,7 +6,7 @@ from ..config.plugin import PluginConfig
 from ..utils.task_manager import TaskManager
 
 if TYPE_CHECKING:
-    from ..widgets.base import Widget
+    from ..widgets.widget import Widget
 
 
 class Plugin:

@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from knoepfe.config.plugin import EmptyPluginConfig
 from knoepfe.config.widget import EmptyConfig
+from knoepfe.core.actions import SwitchDeckAction
 from knoepfe.plugins.plugin import Plugin
 from knoepfe.rendering import Renderer
 from knoepfe.utils.wakelock import WakeLock
-from knoepfe.widgets.actions import SwitchDeckAction, UpdateResult
-from knoepfe.widgets.base import TASK_LONG_PRESS, Widget
+from knoepfe.widgets.widget import TASK_LONG_PRESS, UpdateResult, Widget
 
 
 class ConcreteWidget(Widget[EmptyConfig, Plugin]):
@@ -30,7 +30,7 @@ async def test_presses() -> None:
 
     with (
         patch.object(widget, "triggered") as triggered,
-        patch("knoepfe.widgets.base.sleep", AsyncMock()),
+        patch("knoepfe.widgets.widget.sleep", AsyncMock()),
     ):
         await widget.pressed()
         await sleep(0.1)

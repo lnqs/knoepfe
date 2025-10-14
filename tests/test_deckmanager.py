@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 from pytest import raises
 
 from knoepfe.config.models import DeviceConfig, GlobalConfig
+from knoepfe.core.actions import SwitchDeckAction
 from knoepfe.core.deck import Deck
 from knoepfe.core.deckmanager import DeckManager
-from knoepfe.widgets.actions import SwitchDeckAction
 
 
 def make_global_config() -> GlobalConfig:

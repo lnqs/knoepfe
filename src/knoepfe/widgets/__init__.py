@@ -1,3 +1,3 @@
-from .base import Widget
+from .widget import UpdateResult, Widget
 
-__all__ = ["Widget"]
+__all__ = ["UpdateResult", "Widget"]

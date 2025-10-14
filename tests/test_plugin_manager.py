@@ -10,8 +10,7 @@ from knoepfe.config.widget import EmptyConfig
 from knoepfe.plugins.descriptor import PluginDescriptor
 from knoepfe.plugins.manager import PluginManager
 from knoepfe.plugins.plugin import Plugin
-from knoepfe.widgets.actions import UpdateResult
-from knoepfe.widgets.base import Widget
+from knoepfe.widgets.widget import UpdateResult, Widget
 
 
 class MockWidgetConfig(EmptyConfig):

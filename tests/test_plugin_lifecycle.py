@@ -9,8 +9,7 @@ from knoepfe.config.plugin import PluginConfig
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.core.deck import Deck
 from knoepfe.plugins.plugin import Plugin
-from knoepfe.widgets.actions import UpdateResult
-from knoepfe.widgets.base import Widget
+from knoepfe.widgets.widget import UpdateResult, Widget
 
 
 def make_global_config() -> GlobalConfig:

@@ -6,7 +6,7 @@ from typing import Type
 
 from ..config.plugin import PluginConfig
 from ..config.widget import WidgetConfig
-from ..widgets.base import Widget
+from ..widgets.widget import Widget
 from .descriptor import PluginDescriptor
 from .plugin import Plugin
 

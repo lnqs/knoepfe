@@ -9,7 +9,7 @@ from .config import AudioPluginConfig
 from .connector import PulseAudioConnector
 
 if TYPE_CHECKING:
-    from knoepfe.widgets.base import Widget
+    from knoepfe.widgets.widget import Widget
 
 logger = logging.getLogger(__name__)
 

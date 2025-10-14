@@ -5,7 +5,7 @@ from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from knoepfe.config.models import DeviceConfig, GlobalConfig
 from knoepfe.core.deck import Deck
-from knoepfe.widgets.base import Widget
+from knoepfe.widgets.widget import Widget
 
 
 def create_mock_widget(index: int | None = None) -> Mock:

@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 from asyncio import Event, sleep
+from enum import Enum
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 from ..config.widget import WidgetConfig
+from ..core.actions import SwitchDeckAction, WidgetAction
 from ..rendering import Renderer
 from ..utils.task_manager import TaskManager
 from ..utils.type_utils import extract_generic_arg
 from ..utils.wakelock import WakeLock
-from .actions import SwitchDeckAction, UpdateResult, WidgetAction
 
 if TYPE_CHECKING:
     from ..plugins.plugin import Plugin
@@ -18,6 +19,13 @@ TConfig = TypeVar("TConfig", bound="WidgetConfig")
 # Task name constants
 TASK_PERIODIC_UPDATE = "periodic_update"
 TASK_LONG_PRESS = "long_press"
+
+
+class UpdateResult(Enum):
+    """Result of a widget update operation indicating whether the renderer's canvas should be used."""
+
+    UPDATED = "updated"  # Widget updated the canvas, push to device
+    UNCHANGED = "unchanged"  # Widget didn't update canvas, keep current display
 
 
 class Widget(ABC, Generic[TConfig, TPlugin]):

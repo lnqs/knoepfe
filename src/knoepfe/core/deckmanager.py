@@ -7,7 +7,7 @@ from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from ..config.models import GlobalConfig
 from ..utils.wakelock import WakeLock
-from ..widgets.actions import SwitchDeckAction, WidgetActionType
+from .actions import SwitchDeckAction, WidgetActionType
 from .deck import Deck
 
 logger = logging.getLogger(__name__)

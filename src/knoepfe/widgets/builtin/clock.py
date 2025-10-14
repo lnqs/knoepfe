@@ -6,8 +6,7 @@ from ...config.base import BaseConfig
 from ...config.widget import WidgetConfig
 from ...plugins.plugin import Plugin
 from ...rendering import Renderer
-from ..actions import UpdateResult
-from ..base import Widget
+from ..widget import UpdateResult, Widget
 
 
 class ClockSegment(BaseConfig):

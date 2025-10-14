@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.rendering import Renderer
-from knoepfe.widgets.actions import UpdateResult
+from knoepfe.widgets.widget import UpdateResult
 from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig

@@ -1,12 +1,7 @@
+"""Actions that widgets can request from the deck management system."""
+
 from dataclasses import dataclass
 from enum import Enum
-
-
-class UpdateResult(Enum):
-    """Result of a widget update operation indicating whether the renderer's canvas should be used."""
-
-    UPDATED = "updated"  # Widget updated the canvas, push to device
-    UNCHANGED = "unchanged"  # Widget didn't update canvas, keep current display
 
 
 class WidgetActionType(Enum):

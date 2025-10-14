@@ -8,7 +8,7 @@ from knoepfe.plugins import Plugin
 from .config import ExamplePluginConfig
 
 if TYPE_CHECKING:
-    from knoepfe.widgets.base import Widget
+    from knoepfe.widgets.widget import Widget
 
 logger = logging.getLogger(__name__)
 

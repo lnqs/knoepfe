@@ -9,8 +9,8 @@ from ..config import ConfigError
 from ..config.models import GlobalConfig
 from ..rendering import Renderer
 from ..utils.wakelock import WakeLock
-from ..widgets.actions import UpdateResult, WidgetAction
-from ..widgets.base import Widget
+from ..widgets.widget import UpdateResult, Widget
+from .actions import WidgetAction
 
 logger = logging.getLogger(__name__)
 

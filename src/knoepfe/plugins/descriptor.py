@@ -5,7 +5,7 @@ from typing import Generic, Type, TypeVar
 
 from ..config.plugin import PluginConfig
 from ..utils.type_utils import extract_generic_arg
-from ..widgets.base import Widget
+from ..widgets.widget import Widget
 from .plugin import Plugin
 
 TPluginConfig = TypeVar("TPluginConfig", bound=PluginConfig)
