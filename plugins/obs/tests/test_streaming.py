@@ -83,7 +83,7 @@ async def test_streaming_update_show_help(streaming_widget):
         await streaming_widget.update(renderer)
 
         renderer.clear.assert_called_once()
-        renderer.text_wrapped.assert_called_with("long press\nto toggle", size=16)
+        renderer.text_multiline.assert_called_with("long press\nto toggle", size=16)
 
 
 async def test_streaming_update_show_loading(streaming_widget):

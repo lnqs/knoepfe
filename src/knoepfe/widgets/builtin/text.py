@@ -23,7 +23,7 @@ class Text(Widget[TextConfig, Plugin]):
 
     async def update(self, renderer: Renderer) -> UpdateResult:
         renderer.clear()
-        renderer.text_wrapped(
+        renderer.text_multiline(
             self.config.text,
             font=self.config.font,
             color=self.config.color,

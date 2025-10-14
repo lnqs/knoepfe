@@ -83,7 +83,7 @@ async def test_recording_update_show_help(recording_widget):
         await recording_widget.update(renderer)
 
         renderer.clear.assert_called_once()
-        renderer.text_wrapped.assert_called_with("long press\nto toggle", size=16)
+        renderer.text_multiline.assert_called_with("long press\nto toggle", size=16)
 
 
 async def test_recording_update_show_loading(recording_widget):

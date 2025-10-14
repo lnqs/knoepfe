@@ -65,7 +65,7 @@ class TestExampleWidget:
 
         # Verify renderer was called
         mock_renderer.clear.assert_called_once()
-        mock_renderer.text_wrapped.assert_called_once_with("Example\nClick me!")
+        mock_renderer.text_multiline.assert_called_once_with("Example\nClick me!")
 
     @pytest.mark.asyncio
     async def test_update_with_custom_config(self):
@@ -81,7 +81,7 @@ class TestExampleWidget:
 
         # Verify renderer was called with custom values
         mock_renderer.clear.assert_called_once()
-        mock_renderer.text_wrapped.assert_called_once_with("Hello\nClick me!")
+        mock_renderer.text_multiline.assert_called_once_with("Hello\nClick me!")
 
     @pytest.mark.asyncio
     async def test_update_after_clicks(self):
@@ -97,7 +97,7 @@ class TestExampleWidget:
 
         # Verify renderer shows click count
         mock_renderer.clear.assert_called_once()
-        mock_renderer.text_wrapped.assert_called_once_with("Example\nClicked 3x")
+        mock_renderer.text_multiline.assert_called_once_with("Example\nClicked 3x")
 
     @pytest.mark.asyncio
     async def test_on_key_down_increments_counter(self):

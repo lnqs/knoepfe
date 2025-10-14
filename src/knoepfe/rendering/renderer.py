@@ -1,6 +1,5 @@
 """Renderer for Stream Deck key displays."""
 
-import textwrap
 from pathlib import Path
 from typing import Union
 
@@ -294,39 +293,55 @@ class Renderer:
         text_y = start_y + img.height + spacing
         return self.text((48, text_y), text, font=text_font, size=text_size, color=text_color, anchor="mt")
 
-    def text_wrapped(
+    def text_multiline(
         self,
         text: str,
         size: int = 16,
         color: str = "white",
         font: str | None = None,
-        max_width: int = 80,
-        line_spacing: int = 4,
+        line_spacing: int | None = None,
     ) -> "Renderer":
-        """Render text with automatic word wrapping, centered.
+        r"""Render multi-line text centered on the key.
+
+        Splits text on explicit newlines (\\n) and renders each line separately,
+        centered both horizontally and vertically on the key.
 
         Args:
-            text: Text to wrap and display
+            text: Text to display (supports \\n for line breaks)
             size: Font size
             color: Text color
             font: Font name/pattern (defaults to config default_text_font)
-            max_width: Maximum width in pixels before wrapping
-            line_spacing: Pixels between lines
+            line_spacing: Pixels between lines (defaults to 20% of font size if not specified)
         """
         if font is None:
             font = self.default_text_font
 
-        # Simple character-based wrapping (could be improved with actual width measurement)
-        chars_per_line = max_width // (size // 2)  # Rough estimate
-        lines = textwrap.wrap(text, width=chars_per_line)
+        # Calculate line spacing automatically if not provided
+        if line_spacing is None:
+            # Use 20% of font size as default spacing
+            line_spacing = int(size * 0.2)
 
-        # Calculate starting position
-        total_height = len(lines) * size + (len(lines) - 1) * line_spacing
+        # Split on explicit newlines only
+        lines = text.split("\n")
+
+        # Early return if all lines are empty
+        if all(not line for line in lines):
+            return self
+
+        # Get the actual font to measure line height
+        pil_font = FontManager.get_font(font, size)
+
+        # Get font metrics: (ascent, descent) from baseline
+        ascent, descent = pil_font.getmetrics()
+        line_height = ascent + descent
+
+        # Calculate starting position for vertical centering
+        total_height = len(lines) * line_height + (len(lines) - 1) * line_spacing
         y = (96 - total_height) // 2
 
-        # Render each line
+        # Render each line centered horizontally
         for i, line in enumerate(lines):
-            line_y = y + i * (size + line_spacing)
+            line_y = int(y + i * (line_height + line_spacing))
             self.text((48, line_y), line, font=font, size=size, color=color, anchor="mt")
 
         return self

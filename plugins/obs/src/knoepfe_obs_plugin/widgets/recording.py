@@ -60,7 +60,7 @@ class Recording(OBSWidget[RecordingConfig]):
         elif not self.plugin.obs.connected:
             renderer.icon(self.config.stopped_icon, color=self.plugin.disconnected_color)
         elif self.show_help:
-            renderer.text_wrapped("long press\nto toggle", size=16)
+            renderer.text_multiline("long press\nto toggle", size=16)
         elif self.plugin.obs.recording:
             timecode = (await self.plugin.obs.get_recording_timecode() or "").rsplit(".", 1)[0]
             renderer.icon_and_text(

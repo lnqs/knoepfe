@@ -60,7 +60,7 @@ class Streaming(OBSWidget[StreamingConfig]):
         elif not self.plugin.obs.connected:
             renderer.icon(self.config.stopped_icon, color=self.plugin.disconnected_color)
         elif self.show_help:
-            renderer.text_wrapped("long press\nto toggle", size=16)
+            renderer.text_multiline("long press\nto toggle", size=16)
         elif self.plugin.obs.streaming:
             timecode = (await self.plugin.obs.get_streaming_timecode() or "").rsplit(".", 1)[0]
             renderer.icon_and_text(

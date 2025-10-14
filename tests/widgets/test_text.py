@@ -23,8 +23,8 @@ async def test_text_update() -> None:
     # Update widget
     await widget.update(renderer)
 
-    # Verify text_wrapped was called
-    assert renderer.text_wrapped.called
+    # Verify text_multiline was called
+    assert renderer.text_multiline.called
 
 
 def test_text_config_validation() -> None:
@@ -56,8 +56,8 @@ async def test_text_with_font_and_color() -> None:
     # Update widget
     await widget.update(renderer)
 
-    # Verify text_wrapped was called with font and color
-    renderer.text_wrapped.assert_called_once_with("Styled Text", font="sans:style=Bold", color="#ff0000")
+    # Verify text_multiline was called with font and color
+    renderer.text_multiline.assert_called_once_with("Styled Text", font="sans:style=Bold", color="#ff0000")
 
 
 async def test_text_with_defaults() -> None:
@@ -74,5 +74,5 @@ async def test_text_with_defaults() -> None:
     # Update widget
     await widget.update(renderer)
 
-    # Verify text_wrapped was called with default color (font is None)
-    renderer.text_wrapped.assert_called_once_with("Plain Text", font=None, color="white")
+    # Verify text_multiline was called with default color (font is None)
+    renderer.text_multiline.assert_called_once_with("Plain Text", font=None, color="white")

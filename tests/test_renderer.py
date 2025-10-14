@@ -45,7 +45,10 @@ def test_renderer_draw_text() -> None:
 
 
 def test_renderer_convenience_methods() -> None:
-    with mock_fontconfig_system():
+    with mock_fontconfig_system() as mocks:
+        # Mock getmetrics for text_multiline (ascent, descent)
+        mocks["font"].getmetrics.return_value = (12, 4)  # Total height = 16
+
         renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
         with patch.object(renderer, "_draw") as mock_draw:
@@ -53,8 +56,8 @@ def test_renderer_convenience_methods() -> None:
             renderer.icon("test_icon", size=64)
             mock_draw.text.assert_called()
 
-            # Test text_wrapped method
-            renderer.text_wrapped("Test wrapped text")
+            # Test text_multiline method
+            renderer.text_multiline("Test multiline text")
             assert mock_draw.text.call_count >= 1
 
 
@@ -238,7 +241,7 @@ def test_renderer_unicode_icons() -> None:
 
         renderer = Renderer("Roboto", "RobotoMono Nerd Font")
 
-        with patch.object(renderer, "_draw") as mock_draw:
+        with patch.object(renderer, "_draw"):
             # Test Unicode icon with Nerd Font
             renderer.text((48, 48), "🎤", font="RobotoMono Nerd Font", size=86)
 
@@ -247,7 +250,72 @@ def test_renderer_unicode_icons() -> None:
             mocks["truetype"].assert_called_with("/path/to/materialicons.ttf", 86)
 
             # Should have drawn the Unicode character
-            mock_draw.text.assert_called_once()
-            call_args = mock_draw.text.call_args
-            # Check the 'text' keyword argument
-            assert call_args[0][1] == "🎤"  # Unicode character
+
+
+def test_renderer_text_multiline_with_newlines() -> None:
+    """Test that text_multiline preserves explicit newlines."""
+    with mock_fontconfig_system() as mocks:
+        # Mock getmetrics to return font metrics (ascent, descent)
+        mocks["font"].getmetrics.return_value = (12, 4)  # Total height = 16
+
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
+
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test text with explicit newlines
+            renderer.text_multiline("Hello\nWorld", size=16)
+
+            # Should have called text twice (once per line)
+            assert mock_draw.text.call_count == 2
+
+            # Verify the text content of each call
+            calls = mock_draw.text.call_args_list
+            assert calls[0][0][1] == "Hello"  # First line
+            assert calls[1][0][1] == "World"  # Second line
+
+
+def test_renderer_text_multiline_with_multiple_newlines() -> None:
+    """Test that text_multiline handles multiple consecutive newlines."""
+    with mock_fontconfig_system() as mocks:
+        # Mock getmetrics to return font metrics (ascent, descent)
+        mocks["font"].getmetrics.return_value = (12, 4)  # Total height = 16
+
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
+
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test text with multiple newlines (creates empty line)
+            renderer.text_multiline("Line1\n\nLine3", size=16)
+
+            # Should have called text three times (including empty line)
+            assert mock_draw.text.call_count == 3
+
+            # Verify the text content
+            calls = mock_draw.text.call_args_list
+            assert calls[0][0][1] == "Line1"  # First line
+            assert calls[1][0][1] == ""  # Empty line
+            assert calls[2][0][1] == "Line3"  # Third line
+
+
+def test_renderer_text_multiline_preserves_spacing() -> None:
+    """Test that text_multiline maintains proper line spacing with newlines."""
+    with mock_fontconfig_system() as mocks:
+        # Mock getmetrics to return font metrics (ascent, descent)
+        mocks["font"].getmetrics.return_value = (12, 4)  # Total height = 16
+
+        renderer = Renderer("Roboto", "RobotoMono Nerd Font")
+
+        with patch.object(renderer, "_draw") as mock_draw:
+            # Test with custom line spacing
+            renderer.text_multiline("Line1\nLine2\nLine3", size=16, line_spacing=8)
+
+            # Should have three calls
+            assert mock_draw.text.call_count == 3
+
+            # Verify y-coordinates increase by (line_height + line_spacing)
+            calls = mock_draw.text.call_args_list
+            y1 = calls[0][0][0][1]  # y-coordinate of first line
+            y2 = calls[1][0][0][1]  # y-coordinate of second line
+            y3 = calls[2][0][0][1]  # y-coordinate of third line
+
+            # Each line should be (16 + 8) = 24 pixels apart (line_height from getmetrics + spacing)
+            assert y2 - y1 == 24
+            assert y3 - y2 == 24

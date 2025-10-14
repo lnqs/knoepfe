@@ -75,7 +75,7 @@ class ExampleWidget(Widget[ExampleWidgetConfig, ExamplePlugin]):
         # Use the renderer to draw the widget
         renderer.clear()
         # Draw the text
-        renderer.text_wrapped(display_text)
+        renderer.text_multiline(display_text)
 
         return UpdateResult.UPDATED
 
