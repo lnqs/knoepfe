@@ -7,7 +7,7 @@ from pytest import fixture
 
 from knoepfe_obs_plugin.config import OBSPluginConfig
 from knoepfe_obs_plugin.plugin import OBSPlugin
-from knoepfe_obs_plugin.widgets.base import TASK_EVENT_LISTENER, OBSWidget
+from knoepfe_obs_plugin.widgets.obs_widget import TASK_EVENT_LISTENER, OBSWidget
 
 
 class MockWidgetConfig(WidgetConfig):

@@ -6,8 +6,8 @@ import pytest
 from pydantic import ValidationError
 
 from knoepfe_example_plugin.config import ExamplePluginConfig
-from knoepfe_example_plugin.example_widget import ExampleWidget, ExampleWidgetConfig
 from knoepfe_example_plugin.plugin import ExamplePlugin
+from knoepfe_example_plugin.widgets.example_widget import ExampleWidget, ExampleWidgetConfig
 
 
 class TestExampleWidget:

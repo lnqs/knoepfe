@@ -10,10 +10,7 @@ from knoepfe.widgets import Widget
 
 from .config import OBSPluginConfig
 from .plugin import OBSPlugin
-from .widgets.current_scene import CurrentScene
-from .widgets.recording import Recording
-from .widgets.streaming import Streaming
-from .widgets.switch_scene import SwitchScene
+from .widgets import CurrentScene, Recording, Streaming, SwitchScene
 
 __version__ = "0.1.0"
 

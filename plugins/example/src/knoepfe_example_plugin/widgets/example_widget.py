@@ -6,7 +6,7 @@ from knoepfe.widgets import Widget
 from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
-from .plugin import ExamplePlugin
+from ..plugin import ExamplePlugin
 
 
 class ExampleWidgetConfig(WidgetConfig):

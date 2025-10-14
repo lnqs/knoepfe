@@ -9,8 +9,8 @@ from knoepfe.plugins import PluginDescriptor
 from knoepfe.widgets import Widget
 
 from .config import ExamplePluginConfig
-from .example_widget import ExampleWidget
 from .plugin import ExamplePlugin
+from .widgets import ExampleWidget
 
 __version__ = "0.1.0"
 

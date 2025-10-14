@@ -2,10 +2,10 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 from pytest import fixture
 
-from knoepfe_audio_plugin.base import TASK_EVENT_LISTENER
 from knoepfe_audio_plugin.config import AudioPluginConfig
-from knoepfe_audio_plugin.mic_mute import MicMute, MicMuteConfig
 from knoepfe_audio_plugin.plugin import AudioPlugin
+from knoepfe_audio_plugin.widgets.audio_widget import TASK_EVENT_LISTENER
+from knoepfe_audio_plugin.widgets.mic_mute import MicMute, MicMuteConfig
 
 
 @fixture

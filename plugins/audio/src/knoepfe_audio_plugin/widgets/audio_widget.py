@@ -5,7 +5,7 @@ from typing import Any, Generic, TypeVar
 from knoepfe.config.widget import WidgetConfig
 from knoepfe.widgets import Widget
 
-from .plugin import AudioPlugin
+from ..plugin import AudioPlugin
 
 TConfig = TypeVar("TConfig", bound=WidgetConfig)
 

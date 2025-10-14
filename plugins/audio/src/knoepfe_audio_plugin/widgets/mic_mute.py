@@ -7,7 +7,7 @@ from knoepfe.rendering import Renderer
 from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
-from .base import AudioWidget
+from .audio_widget import AudioWidget
 
 logger = logging.getLogger(__name__)
 

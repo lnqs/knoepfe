@@ -6,8 +6,8 @@ from knoepfe.plugins import PluginDescriptor
 from knoepfe.widgets import Widget
 
 from .config import AudioPluginConfig
-from .mic_mute import MicMute
 from .plugin import AudioPlugin
+from .widgets import MicMute
 
 __version__ = "0.1.0"
 

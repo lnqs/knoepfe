@@ -4,7 +4,7 @@ from knoepfe.widgets.actions import UpdateResult
 from pydantic import Field
 
 from ..plugin import OBSPlugin
-from .base import OBSWidget
+from .obs_widget import OBSWidget
 
 
 class SwitchSceneConfig(WidgetConfig):
