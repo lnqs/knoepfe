@@ -83,9 +83,8 @@ class Deck:
                 f"Widgets at positions {device.key_count()} and above will not be displayed."
             )
 
-        with device:
-            for i in range(device.key_count()):
-                device.set_key_image(i, b"")
+        for i in range(device.key_count()):
+            device.set_key_image(i, b"")
 
         for widget in self.widgets:
             widget.update_requested_event = update_requested_event
@@ -127,8 +126,7 @@ class Deck:
                     return
 
                 image = PILHelper.to_native_format(device, renderer.canvas)
-                with device:
-                    device.set_key_image(i, image)
+                device.set_key_image(i, image)
 
                 w.needs_update = False
 

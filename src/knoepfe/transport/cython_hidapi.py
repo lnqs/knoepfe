@@ -95,15 +95,6 @@ class CythonHIDAPI(Transport):
                 # Ignore errors during destruction to avoid shutdown issues
                 pass
 
-        def __enter__(self):
-            """Context manager entry."""
-            self.open()
-            return self
-
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            """Context manager exit."""
-            self.close()
-
         def open(self) -> None:
             """Opens the device for input/output."""
             with self._mutex:
