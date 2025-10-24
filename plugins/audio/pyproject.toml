@@ -1,0 +1,84 @@
+[project]
+name = "knoepfe-audio-plugin"
+dynamic = ["version"]
+description = "Audio control widgets for knoepfe"
+authors = [
+  { name = "Simon Hayessen", email = "simon@lnqs.io" },
+  { name = "Simon Brakhane", email = "simon@brakhane.net" },
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+keywords = ["streamdeck", "audio", "pulseaudio", "knoepfe", "plugin"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
+]
+dependencies = ["knoepfe", "pulsectl>=24.11.0", "pulsectl-asyncio>=1.2.2"]
+
+[project.urls]
+Homepage = "https://github.com/lnqs/knoepfe"
+Repository = "https://github.com/lnqs/knoepfe"
+Issues = "https://github.com/lnqs/knoepfe/issues"
+
+# Audio plugin registration via entry points
+[project.entry-points."knoepfe.plugins"]
+audio = "knoepfe_audio_plugin:AudioPluginDescriptor"
+
+[tool.uv.sources]
+knoepfe = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/knoepfe_audio_plugin/__init__.py"
+
+[dependency-groups]
+dev = ["pytest>=8.4.2", "pytest-asyncio>=0.24.0", "pytest-cov>=5.0.0"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/knoepfe_audio_plugin"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/",
+  "tests/",
+  "README.md",
+  "LICENSE.md",
+  "CHANGELOG.md",
+  "pyproject.toml",
+]
+
+[tool.ruff]
+line-length = 120
+include = ["src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.report]
+fail_under = 100
+exclude_lines = ["if __name__ == .__main__.:", "if sys.platform"]
+exclude_also = [
+  "no cover: start(?s:.)*?no cover: stop",
+  "\\A(?s:.*# pragma: exclude file.*)\\Z",
+]

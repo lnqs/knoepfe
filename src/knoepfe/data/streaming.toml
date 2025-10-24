@@ -1,0 +1,117 @@
+# ============================================================================
+# Knoepfe Configuration for Streaming Setup
+# ============================================================================
+# This configuration includes OBS plugin widgets for streaming control
+# All OBS widgets prevent the device from sleeping while connected to OBS
+
+# ============================================================================
+# DEVICE SETTINGS
+# ============================================================================
+
+[device]
+# Device brightness in percent (0-100)
+brightness = 100
+
+# Time in seconds until the device goes to sleep
+sleep_timeout = 10.0
+
+# Frequency to poll the hardware state in Hz (1-1000)
+device_poll_frequency = 5
+
+# ============================================================================
+# PLUGIN CONFIGURATION - OBS WebSocket
+# ============================================================================
+# obs-websocket (https://github.com/obsproject/obs-websocket) needs to be
+# installed and activated for this to work
+
+[plugins.obs]
+enabled = true
+
+# Host OBS is running on (usually 'localhost')
+host = "localhost"
+
+# Port obs-websocket is listening on (default: 4455)
+port = 4455
+
+# Password for obs-websocket authentication
+# You can use environment variables: password = "${OBS_PASSWORD}"
+# Or set via: export KNOEPFE_PLUGINS__OBS__PASSWORD="your_password"
+password = "supersecret"
+
+# ============================================================================
+# MAIN DECK - Streaming Controls
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Widget 1: Microphone Mute Toggle
+# ----------------------------------------------------------------------------
+# Toggles mute state of a pulseaudio source (i.e. microphone)
+# If no device is specified, the default source is used
+[[deck.main]]
+type = "MicMute"
+
+# ----------------------------------------------------------------------------
+# Widget 2: Timer
+# ----------------------------------------------------------------------------
+# Simple timer widget (acquires wake lock while running)
+[[deck.main]]
+type = "Timer"
+
+# ----------------------------------------------------------------------------
+# Widget 3: Current Time Clock
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Clock"
+[[deck.main.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
+
+# ----------------------------------------------------------------------------
+# Widget 4: OBS Recording Toggle
+# ----------------------------------------------------------------------------
+# Shows and toggles the OBS recording state
+[[deck.main]]
+type = "OBSRecording"
+
+# ----------------------------------------------------------------------------
+# Widget 5: OBS Streaming Toggle
+# ----------------------------------------------------------------------------
+# Shows and toggles the OBS streaming state
+[[deck.main]]
+type = "OBSStreaming"
+
+# ----------------------------------------------------------------------------
+# Widget 6: Current OBS Scene Display
+# ----------------------------------------------------------------------------
+# Shows the currently active OBS scene
+# Switches to 'scenes' deck when pressed to select a different scene
+[[deck.main]]
+type = "OBSCurrentScene"
+switch_deck = "scenes"
+
+# ============================================================================
+# SCENES DECK - OBS Scene Selection
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Widget 1: Switch to 'Scene'
+# ----------------------------------------------------------------------------
+# Shows if 'Scene' is active and activates it on press
+# Returns to main deck after selection
+[[deck.scenes]]
+type = "OBSSwitchScene"
+scene = "Scene"
+switch_deck = "main"
+
+# ----------------------------------------------------------------------------
+# Widget 2: Switch to 'Other Scene'
+# ----------------------------------------------------------------------------
+# Shows if 'Other Scene' is active and activates it on press
+# Returns to main deck after selection
+[[deck.scenes]]
+type = "OBSSwitchScene"
+scene = "Other Scene"
+switch_deck = "main"

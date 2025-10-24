@@ -1,0 +1,142 @@
+# ============================================================================
+# Knoepfe Configuration
+# ============================================================================
+# This file uses TOML format with pydantic-settings for validation
+# Environment variables can override any setting using KNOEPFE_ prefix
+# Example: KNOEPFE_DEVICE__BRIGHTNESS=50
+
+# ============================================================================
+# DEVICE SETTINGS
+# ============================================================================
+
+[device]
+# Display brightness in percent (0-100)
+brightness = 100
+
+# Time in seconds until the device goes to sleep (0 or omit to disable)
+sleep_timeout = 10.0
+
+# Hardware polling rate in Hz (1-1000)
+# Higher values = more responsive but higher CPU usage
+device_poll_frequency = 5
+
+# Default font for text rendering (e.g., 'Roboto', 'sans:style=Bold')
+# default_text_font = "Roboto"
+
+# Default font for icon rendering (e.g., 'RobotoMono Nerd Font')
+# default_icons_font = "RobotoMono Nerd Font"
+
+# Serial number of the device to connect to (omit for first available)
+# serial_number = "ABC123"
+
+# ============================================================================
+# MAIN DECK - Displayed on startup (required)
+# ============================================================================
+# Widgets are displayed in the order they appear below
+# Each [[deck.main]] entry represents one button on the Stream Deck
+#
+# Widget Positioning:
+# - By default, widgets are placed in order of appearance (0, 1, 2, ...)
+# - Use 'index' parameter to explicitly position widgets (0-based)
+# - Widgets can be defined out of order when using 'index'
+# - Unindexed widgets fill remaining positions automatically
+
+# ----------------------------------------------------------------------------
+# Widget 1: Current Time Clock
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Clock"
+[[deck.main.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
+
+# ----------------------------------------------------------------------------
+# Widget 2: Timer
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Timer"
+
+# ----------------------------------------------------------------------------
+# Widget 3: Greeting Text
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Text"
+text = "Hello\nWorld"
+
+# ----------------------------------------------------------------------------
+# Widget 4: Current Date Clock
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Clock"
+interval = 60.0
+[[deck.main.segments]]
+format = "%d.%m.%Y"
+x = 0
+y = 0
+width = 96
+height = 96
+
+# ----------------------------------------------------------------------------
+# Widget 5: Custom Text
+# ----------------------------------------------------------------------------
+[[deck.main]]
+type = "Text"
+text = "Knöpfe"
+
+# ----------------------------------------------------------------------------
+# Widget 6: Another Timer (with explicit index)
+# ----------------------------------------------------------------------------
+# This demonstrates explicit positioning - this widget will be at position 5
+# even though it's defined last in the file
+[[deck.main]]
+type = "Timer"
+index = 5
+
+# ============================================================================
+# UTILITIES DECK - Additional functionality
+# ============================================================================
+# Switch to this deck from main using a widget with switch_deck = "utilities"
+
+# ----------------------------------------------------------------------------
+# Widget 1: Clock with Seconds
+# ----------------------------------------------------------------------------
+[[deck.utilities]]
+type = "Clock"
+interval = 0.5
+[[deck.utilities.segments]]
+format = "%H:%M:%S"
+x = 0
+y = 0
+width = 96
+height = 96
+
+# ----------------------------------------------------------------------------
+# Widget 2: Back to Main Deck Button
+# ----------------------------------------------------------------------------
+[[deck.utilities]]
+type = "Text"
+text = "Back to\nMain"
+switch_deck = "main"
+
+# ----------------------------------------------------------------------------
+# Widget 3: Date with Day Name
+# ----------------------------------------------------------------------------
+[[deck.utilities]]
+type = "Clock"
+interval = 60.0
+[[deck.utilities.segments]]
+format = "%A\n%B %d"
+x = 0
+y = 0
+width = 96
+height = 96
+
+# ----------------------------------------------------------------------------
+# Widget 4: Custom Button
+# ----------------------------------------------------------------------------
+[[deck.utilities]]
+type = "Text"
+text = "Custom\nButton"

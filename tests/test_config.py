@@ -1,109 +1,136 @@
 from pathlib import Path
-from unittest.mock import Mock, mock_open, patch
 
-from pytest import raises
-from schema import Schema
+import pytest
+from pydantic import ValidationError
 
-from knoepfe.config import (
-    create_deck,
-    create_widget,
-    exec_config,
-    get_config_path,
-    process_config,
-)
-from knoepfe.widgets.base import Widget
+from knoepfe.config.loader import ConfigError, load_config
+from knoepfe.config.models import DeviceConfig, GlobalConfig
 
-test_config = """
-deck({ 'widgets': [widget({'type': 'test'})] })
-default_deck({ 'widgets': [widget({'type': 'test'})] })
+
+def test_load_config_valid(tmp_path):
+    """Test loading a valid configuration."""
+    config_content = """
+[device]
+brightness = 80
+sleep_timeout = 30.0
+
+[plugins.obs]
+host = "localhost"
+port = 4455
+
+[[deck.main]]
+type = "Clock"
+[[deck.main.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
+
+[[deck.main]]
+type = "Text"
+text = "Hello"
 """
 
-test_config_multiple_config = """
-config({ 'type': 'knoepfe.config.device', 'brightness': 100 })
-config({ 'type': 'knoepfe.config.device', 'brightness': 90 })
+    config_file = tmp_path / "test.toml"
+    config_file.write_text(config_content)
+
+    config = load_config(config_file)
+
+    assert isinstance(config, GlobalConfig)
+    assert config.device.brightness == 80
+    assert config.device.sleep_timeout == 30.0
+    assert "obs" in config.plugins
+    assert config.plugins["obs"]["host"] == "localhost"
+    assert len(config.decks) == 1
+    assert config.decks[0].name == "main"
+    assert len(config.decks[0].widgets) == 2
+
+
+def test_load_config_validation_error(tmp_path):
+    """Test that invalid config raises ConfigError."""
+    config_content = """
+[device]
+brightness = 150
+
+[[deck.main]]
+type = "Clock"
+[[deck.main.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
 """
 
-test_config_no_default = """
-deck({ 'widgets': [widget({'type': 'test'})] })
+    config_file = tmp_path / "test.toml"
+    config_file.write_text(config_content)
+
+    with pytest.raises(ConfigError, match="validation failed"):
+        load_config(config_file)
+
+
+def test_load_config_no_main_deck(tmp_path):
+    """Test that missing main deck raises ConfigError."""
+    config_content = """
+[[deck.other]]
+type = "Clock"
+[[deck.other.segments]]
+format = "%H:%M"
+x = 0
+y = 0
+width = 96
+height = 96
 """
 
-test_config_multiple_default = """
-default_deck({ 'widgets': [widget({'type': 'test'})] })
-default_deck({ 'widgets': [widget({'type': 'test'})] })
-"""
+    config_file = tmp_path / "test.toml"
+    config_file.write_text(config_content)
+
+    with pytest.raises(ConfigError, match="validation failed"):
+        load_config(config_file)
 
 
-def test_config_path() -> None:
-    assert get_config_path(Path("path")) == Path("path")
-
-    with patch("pathlib.Path.exists", return_value=True):
-        assert str(get_config_path()).endswith(".config/knoepfe/knoepfe.cfg")
-
-    with patch("pathlib.Path.exists", return_value=False):
-        assert str(get_config_path()).endswith("knoepfe/default.cfg")
+def test_load_config_file_not_found():
+    """Test that missing file raises ConfigError."""
+    with pytest.raises(ConfigError, match="not found"):
+        load_config(Path("nonexistent.toml"))
 
 
-def test_exec_config_success() -> None:
-    with (
-        patch("knoepfe.config.create_deck") as create_deck,
-        patch("knoepfe.config.create_widget") as create_widget,
-    ):
-        exec_config(test_config)
-    assert create_deck.called
-    assert create_widget.called
+def test_global_config_device_defaults():
+    """Test that device config has proper defaults."""
+    config = GlobalConfig(deck={"main": []})
+
+    assert config.device.brightness == 100
+    assert config.device.sleep_timeout == 10.0
+    assert config.device.device_poll_frequency == 5
+    assert config.device.serial_number is None
 
 
-def test_exec_config_multiple_config() -> None:
-    with raises(RuntimeError):
-        exec_config(test_config_multiple_config)
+def test_device_config_with_serial_number():
+    """Test that device config accepts serial number."""
+    config = GlobalConfig(
+        device=DeviceConfig(serial_number="ABC123"),
+        deck={"main": []},
+    )
+    assert config.device.serial_number == "ABC123"
 
 
-def test_exec_config_multiple_default() -> None:
-    with patch("knoepfe.config.create_deck"), patch("knoepfe.config.create_widget"):
-        with raises(RuntimeError):
-            exec_config(test_config_multiple_default)
+def test_global_config_validation():
+    """Test GlobalConfig validation."""
+    # Valid config
+    config = GlobalConfig(
+        device=DeviceConfig(brightness=50),
+        deck={"main": []},
+    )
+    assert config.device.brightness == 50
 
+    # Invalid brightness
+    with pytest.raises(ValidationError):
+        GlobalConfig(
+            device=DeviceConfig(brightness=150),
+            deck={"main": []},
+        )
 
-def test_exec_config_invalid_global() -> None:
-    with patch("knoepfe.config.import_module", return_value=Mock(Class=int)):
-        with raises(RuntimeError):
-            exec_config(test_config_multiple_config)
-
-
-def test_exec_config_no_default() -> None:
-    with patch("knoepfe.config.create_deck"), patch("knoepfe.config.create_widget"):
-        with raises(RuntimeError):
-            exec_config(test_config_no_default)
-
-
-def test_process_config() -> None:
-    with (
-        patch(
-            "knoepfe.config.exec_config", return_value=(Mock(), [Mock()])
-        ) as exec_config,
-        patch("builtins.open", mock_open(read_data=test_config)),
-    ):
-        process_config(Path("file"))
-    assert exec_config.called
-
-
-def test_create_deck() -> None:
-    with patch("knoepfe.config.Deck") as deck:
-        create_deck({"id": "id", "widgets": []})
-    assert deck.called
-
-
-def test_create_widget_success() -> None:
-    class TestWidget(Widget):
-        def get_schema(self) -> Schema:
-            return Schema({})
-
-    with patch("knoepfe.config.import_module", return_value=Mock(Class=TestWidget)):
-        w = create_widget({"type": "a.b.c.Class"}, {})
-    assert isinstance(w, TestWidget)
-
-
-def test_create_widget_invalid_type() -> None:
-    with patch("knoepfe.config.import_module", return_value=Mock(Class=int)):
-        with raises(RuntimeError):
-            create_widget({"type": "a.b.c.Class"}, {})
+    # Missing main deck
+    with pytest.raises(ValidationError):
+        GlobalConfig(deck={"other": []})

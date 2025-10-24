@@ -1,6 +1,6 @@
 from asyncio import Event
 
-from knoepfe.wakelock import WakeLock
+from knoepfe.utils.wakelock import WakeLock
 
 
 def test_wake_lock() -> None:

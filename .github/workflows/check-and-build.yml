@@ -23,11 +23,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with: # required to get the correct scm version
-          fetch-depth: 0
-          fetch-tags: true
 
       - name: Build
         uses: ./.github/actions/build
-        with:
-          use-scm-version: true

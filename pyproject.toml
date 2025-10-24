@@ -1,72 +1,117 @@
 [project]
 name = "knoepfe"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Connect and control Elgato Stream Decks"
 authors = [
   { name = "Simon Hayessen", email = "simon@lnqs.io" },
-  { name = "Simon Brakhane", email = "simon@brakhane.net" }
+  { name = "Simon Brakhane", email = "simon@brakhane.net" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.md"
 license = "GPL-3.0-or-later"
-dependencies = [
-  "schema>=0.7.7,<0.8",
-  "appdirs>=1.4.4,<2",
-  "docopt>=0.6.2,<0.7",
-  "streamdeck>=0.9.5,<0.10",
-  "Pillow>=10.4.0,<11",
-  "aiorun>=2024.8.1,<2025",
-  "pulsectl-asyncio>=1.2.1,<2",
-  "pulsectl>=24.8.0,<25",
-  "simpleobsws>=1.4.0",
+keywords = ["streamdeck", "elgato"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia",
+  "Topic :: System :: Hardware",
 ]
+dependencies = [
+  "streamdeck>=0.9.5",
+  "Pillow>=10.4.0",
+  "platformdirs>=4.4.0",
+  "click>=8.2.1",
+  "aiorun>=2025.1.1",
+  "hidapi>=0.14.0.post4",
+  "python-fontconfig>=0.6.2.post1",
+  "pydantic>=2.11.9",
+  "pydantic-settings>=2.11.0",
+]
+
+# Optional dependencies for different widget groups
+[project.optional-dependencies]
+obs = ["knoepfe-obs-plugin"]
+audio = ["knoepfe-audio-plugin"]
+all = ["knoepfe-audio-plugin", "knoepfe-obs-plugin"]
 
 [project.urls]
 Homepage = "https://github.com/lnqs/knoepfe"
 Repository = "https://github.com/lnqs/knoepfe"
 
 [project.scripts]
-knoepfe = "knoepfe.__main__:main"
+knoepfe = "knoepfe.cli:main"
 
-[dependency-groups]
-dev = [
-  "pre-commit>=3.8.0,<4",
-  "pytest>=8.3.3,<9",
-  "pytest-asyncio>=0.24.0,<0.25",
-  "pytest-cov>=5.0.0,<6",
-  "types-appdirs>=1.4.3.5,<2",
-  "types-docopt>=0.6.11.4,<0.7",
-  "types-pillow>=10.2.0.20240822,<11",
-]
+# Plugin entry points
+[project.entry-points."knoepfe.plugins"]
+builtin = "knoepfe.plugins.builtin:BuiltinPluginDescriptor"
+
+# Workspace configuration for development
+[tool.uv.workspace]
+members = ["plugins/*"]
+
+[tool.uv.sources]
+knoepfe-audio-plugin = { workspace = true }
+knoepfe-obs-plugin = { workspace = true }
+knoepfe-example-plugin = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.isort]
-profile = "black"
-extend_skip_glob = [".venv/*"]
+[tool.hatch.version]
+path = "src/knoepfe/__init__.py"
 
-[tool.black]
-extend-exclude = '''
-(
-  \.venv/               # exclude .venv directory
-)
-'''
-
-[tool.mypy]
-strict = true
-
-[[tool.mypy.overrides]]
-module = [
-  "StreamDeck.*",
-  "pulsectl.*",
-  "pulsectl_asyncio.*",
-  "aiorun.*",
-  "schema.*",
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
 ]
-ignore_missing_imports = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/knoepfe"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/",
+  "tests/",
+  "README.md",
+  "LICENSE.md",
+  "CHANGELOG.md",
+  "pyproject.toml",
+]
+
+[tool.ruff]
+lint.select = ["B", "D", "F", "I", "T", "Q"]
+lint.ignore = ["D100", "D101", "D102", "D103", "D104", "D107", "D415"]
+line-length = 120
+include = ["src/**/*.py", "tests/**/*.py", "plugins/**/*.py"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pyright]
+include = ["src", "tests"]
 
 [tool.pytest.ini_options]
-filterwarnings = "ignore::DeprecationWarning:pulsectl_asyncio"
-addopts = "--cov=knoepfe --cov-report=term-missing --asyncio-mode=auto"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.report]
+fail_under = 100
+exclude_lines = ["if __name__ == .__main__.:", "if sys.platform"]
+exclude_also = [
+  "no cover: start(?s:.)*?no cover: stop",
+  "\\A(?s:.*# pragma: exclude file.*)\\Z",
+]
